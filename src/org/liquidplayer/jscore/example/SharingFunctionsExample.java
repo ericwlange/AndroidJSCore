@@ -145,11 +145,15 @@ public class SharingFunctionsExample implements IExample {
 		}
 		@Override
 		public Integer incr() throws JSException {
-			return property("numbah").toNumber().intValue() + 1;
+			Integer numbah = property("numbah").toNumber().intValue() + 1;
+			property("numbah",numbah);
+			return numbah;
 		}
 		@Override
 		public Integer decr() throws JSException {
-			return property("numbah").toNumber().intValue() - 1;
+			Integer numbah = property("numbah").toNumber().intValue() - 1;
+			property("numbah",numbah);
+			return numbah;
 		}
 		
 		private String myLocalString;

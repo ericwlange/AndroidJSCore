@@ -29,7 +29,8 @@ application, Owen's entire Objective-C tutorial is implemented in Java.
 Browse the example app source for more detailed examples that cover the basics, sharing
 data and functions between Java and JavaScript, wrapping JS classes in Java which
 are accessible from both environments, and  asynchronous, multi-threaded callbacks between
-environments.
+environments.  (Pro tip: when looking at OwenMatthewsExample.java, append '?ts=4' to the
+URL.  The file expects a tab width of 4.  I will convert this file to spaces eventually).
 
     JSContext = new JSContext();
     context.property("a", 5);

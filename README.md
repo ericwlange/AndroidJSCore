@@ -74,7 +74,9 @@ select Properties->C/C++ Build->Environment.  Set the following variables:
   * NDK_MODULE_PATH to point to where you installed the JavaScriptCore libraries/includes in step 1 (e.g. /Users/Eric/workspace/AndroidModuleReleases)
 
 #### Step 5: Build AndroidJSCoreExample app
-You should now be able to build the example app.
+You should now be able to build the example app.  To use the library in your project,
+simply right-click on your project and select Properties->Android.  In the 'Library'
+section, add the AndroidJSCoreJNI library and you should be set.
 
 One final note: You should add some memory to Eclipse if you haven't already done
 that.  [Here] is a Mac tutorial.  Bump it up to 1024m (-Xmx1024m).  The C/C++ indexer can

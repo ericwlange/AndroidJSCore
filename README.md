@@ -55,29 +55,26 @@ them and are able to build, then simply change this line
     
     APP_ABI := armeabi armeabi-v7a
 
-in jni/Application.mk to add the appropriate platforms.
+in AndroidJSCoreJNI/jni/Application.mk to add the appropriate platforms.
 
 #### Step 2: Import the AndroidJSCore project into Eclipse
 
-For this to work, you must have the [Android ADT plugin] (which includes the SDK)
-and [NDK] installed.  You will have needed both the SDK and NDK in Step 1 as well.
-You will also want to make sure you have the [CDT plugin] if you want to work with
-the C++ (JNI) code.
+To build the AndroidJSCoreJNI library, you must have the [Android ADT plugin] (which 
+includes the SDK) and [NDK] installed.  You will have needed both the SDK and NDK in 
+Step 1 as well.  You will also want to make sure you have the [CDT plugin] if you want
+to work with the C++ (JNI) code.
 
 #### Step 3: Point Eclipse at your NDK
 Set the path for the NDK you installed in Preferences->Android->NDK->NDK Location
 
 #### Step 4: Set environment variables
-You need to set 2 environment variables.  Right-click on AndroidJSCore project and
+You need to set 2 environment variables.  Right-click on AndroidJSCoreJNI project and
 select Properties->C/C++ Build->Environment.  Set the following variables:
-  * ANDROID_NDK_ROOT to point at your NDK location (e.g. /Users/eric/workspace/android-ndk-r9d)
-  * NDK_MODULE_PATH to point to where you installed the JavaScriptCore libraries/includes in step 1 (e.g. /Users/eric/workspace/AndroidModuleReleases)
+  * ANDROID_NDK_ROOT to point at your NDK location (e.g. /Users/Eric/workspace/android-ndk-r9d)
+  * NDK_MODULE_PATH to point to where you installed the JavaScriptCore libraries/includes in step 1 (e.g. /Users/Eric/workspace/AndroidModuleReleases)
 
-#### Step 5: Build AndroidJSCore app
-You should now be able to build the example app. For now, you can start with this as the
-baseline for your project.  I will be separating the library from the example app so 
-that you can just build a JAR and drop it into your project's /libs directory, but that
-is not done yet.
+#### Step 5: Build AndroidJSCoreExample app
+You should now be able to build the example app.
 
 One final note: You should add some memory to Eclipse if you haven't already done
 that.  [Here] is a Mac tutorial.  Bump it up to 1024m (-Xmx1024m).  The C/C++ indexer can
@@ -86,8 +83,6 @@ occasionally lock up Eclipse if you don't.
 Work in Progress
 ----------------
 
-  - Simplify build process, and split the AndroidJSCore library out of the
-  app to build separately
   - Document the API
   - Test framework
   - Verify that garbage collection works properly

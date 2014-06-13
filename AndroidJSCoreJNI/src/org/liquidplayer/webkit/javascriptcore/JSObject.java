@@ -222,6 +222,34 @@ public class JSObject extends JSValue {
 				else if (pType[i] == Boolean.class) passArgs[i] = args[i].toBoolean();
 				else if (pType[i] == JSObject.class) passArgs[i] = args[i].toObject();
 				else if (pType[i] == JSString.class) passArgs[i] = args[i].toJSString();
+				else if (pType[i].isArray()) {
+					JSObject arr = args[i].toObject();
+					if (arr.property("length") == null) {
+						throw (new JSException(context,"Not an array"));
+					}
+					Integer length = arr.property("length").toNumber().intValue();
+					ArrayList<Object> objList = new ArrayList<Object>();
+					for (int j=0; j<length; j++) {
+						if (pType[i] == Boolean[].class)
+							objList.add(arr.propertyAtIndex(j).toBoolean());
+						else if (pType[i] == Integer[].class)
+							objList.add(arr.propertyAtIndex(j).toNumber().intValue());
+						else if (pType[i] == String[].class)
+							objList.add(arr.propertyAtIndex(j).toString());
+						else if (pType[i] == Long[].class)
+							objList.add(arr.propertyAtIndex(j).toNumber().longValue());
+						else if (pType[i] == Double[].class)
+							objList.add(arr.propertyAtIndex(j).toNumber());
+						else if (pType[i] == JSValue[].class)
+							objList.add(arr.propertyAtIndex(j));
+						else if (pType[i] == JSObject[].class)
+							objList.add(arr.propertyAtIndex(j).toObject());
+						else if (pType[i] == JSString[].class)
+							objList.add(arr.propertyAtIndex(j).toJSString());
+						else objList.add(null);
+ 					}
+					passArgs[i] = objList.toArray(new Object[objList.size()]);
+				}
 				else if (pType[i] == JSValue.class) passArgs[i] = args[i];
 				else passArgs[i] = null;
 			} else {

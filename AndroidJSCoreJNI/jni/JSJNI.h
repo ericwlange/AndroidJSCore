@@ -31,9 +31,9 @@
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <stdlib.h>
 #include <jni.h>
 #include <android/log.h>
-#include <stddef.h>
 
 #include "JavaScriptCore/JavaScript.h"
 

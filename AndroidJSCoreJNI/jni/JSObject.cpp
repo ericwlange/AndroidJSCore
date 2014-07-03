@@ -40,7 +40,7 @@ NATIVE(JSObject,jlong,make) (PARAMS, jlong ctx, jlong data) {
 
 class Instance {
 private:
-	JNIEnv* env;
+	JavaVM *jvm;
 	jobject thiz;
 	JSObjectRef objRef;
 	static std::map<JSObjectRef,Instance *> objMap;
@@ -53,7 +53,8 @@ public:
 	virtual ~Instance();
 	long getObjRef() { return (long) objRef; }
 };
-Instance::Instance(JNIEnv *env, jobject thiz, JSContextRef ctx) : env(env) {
+Instance::Instance(JNIEnv *env, jobject thiz, JSContextRef ctx) {
+	env->GetJavaVM(&jvm);
 	JSClassDefinition definition = kJSClassDefinitionEmpty;
 	definition.finalize = StaticFinalizeCallback;
 	classRef = JSClassCreate(&definition);
@@ -63,6 +64,8 @@ Instance::Instance(JNIEnv *env, jobject thiz, JSContextRef ctx) : env(env) {
 }
 Instance::~Instance() {
 	JSClassRelease(classRef);
+	JNIEnv *env;
+	jvm->AttachCurrentThread(&env, NULL);
 	env->DeleteGlobalRef(thiz);
 	objMap[objRef] = NULL;
 }
@@ -77,6 +80,8 @@ void Instance::StaticFinalizeCallback(JSObjectRef object)
 }
 void Instance::FinalizeCallback(JSObjectRef object)
 {
+	JNIEnv *env;
+	jvm->AttachCurrentThread(&env, NULL);
 	jclass cls = env->GetObjectClass(thiz);
 	jmethodID mid;
 	do {
@@ -98,7 +103,7 @@ NATIVE(JSObject,jlong,makeWithFinalizeCallback) (PARAMS, jlong ctx) {
 
 class Function {
 	private:
-		JNIEnv* env;
+		JavaVM *jvm;
 		jobject thiz;
 		JSObjectRef objRef;
 		JSClassRef classRef;
@@ -122,7 +127,8 @@ class Function {
 		long getObjRef() { return (long) objRef; }
 		static void release(JSContextRef ctx, JSObjectRef function);
 };
-Function::Function(JNIEnv* env, jobject thiz, JSContextRef ctx, JSStringRef name) : env(env) {
+Function::Function(JNIEnv* env, jobject thiz, JSContextRef ctx, JSStringRef name) {
+	env->GetJavaVM(&jvm);
 	definition = kJSClassDefinitionEmpty;
 	definition.callAsFunction = StaticFunctionCallback;
 	definition.callAsConstructor = StaticConstructorCallback;
@@ -134,6 +140,8 @@ Function::Function(JNIEnv* env, jobject thiz, JSContextRef ctx, JSStringRef name
 }
 Function::~Function() {
 	JSClassRelease(classRef);
+	JNIEnv *env;
+	jvm->AttachCurrentThread(&env, NULL);
 	env->DeleteGlobalRef(thiz);
 }
 void Function::release(JSContextRef ctx, JSObjectRef function) {
@@ -165,6 +173,8 @@ JSObjectRef Function::StaticConstructorCallback(JSContextRef ctx, JSObjectRef co
 JSValueRef Function::FunctionCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject,
 		size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception)
 {
+	JNIEnv *env;
+	jvm->AttachCurrentThread(&env, NULL);
 	jclass cls = env->GetObjectClass(thiz);
 	jmethodID mid;
 	do {
@@ -192,6 +202,8 @@ JSValueRef Function::FunctionCallback(JSContextRef ctx, JSObjectRef function, JS
 JSObjectRef Function::ConstructorCallback(JSContextRef ctx, JSObjectRef constructor,
 		size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception)
 {
+	JNIEnv *env;
+	jvm->AttachCurrentThread(&env, NULL);
 	jclass cls = env->GetObjectClass(thiz);
 	jmethodID mid;
 	do {

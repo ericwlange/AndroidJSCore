@@ -54,7 +54,7 @@ public class JSValue {
 		} else if (val instanceof Integer) {
 			valueRef = makeNumber(context.ctxRef(), ((Integer)val).doubleValue());
 		} else if (val instanceof Long) {
-			valueRef = makeNumber(context.ctxRef(), (Double)val);
+			valueRef = makeNumber(context.ctxRef(), ((Long)val).doubleValue());
 		} else if (val instanceof String) {
 			JSString s = new JSString((String)val);
 			valueRef = makeString(context.ctxRef(), s.stringRef);			

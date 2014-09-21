@@ -45,6 +45,7 @@ public class JSError extends JSObject {
 			throw (new JSException(new JSValue(jni.exception, context)));
 		}
 		valueRef = jni.reference;
+		protect(ctx,valueRef);
 	}
 	public JSError(JSContext ctx, String message) throws JSException {
 		context = ctx;
@@ -55,7 +56,8 @@ public class JSError extends JSObject {
 		if (jni.exception!=0) {
 			throw (new JSException(new JSValue(jni.exception, context)));
 		}
-		valueRef = jni.reference;		
+		valueRef = jni.reference;
+		protect(ctx,valueRef);
 	}
 	public JSError(JSContext ctx) throws JSException {
 		context = ctx;
@@ -63,6 +65,7 @@ public class JSError extends JSObject {
 		if (jni.exception!=0) {
 			throw (new JSException(new JSValue(jni.exception, context)));
 		}
-		valueRef = jni.reference;		
+		valueRef = jni.reference;
+		protect(ctx,valueRef);
 	}
 }

@@ -43,11 +43,13 @@ public class JSContext extends JSObject {
 		ctx = create();
 		context = this;
 		valueRef = getGlobalObject(ctx);
+		protect(context,valueRef);
 	}
 	public JSContext(JSContextGroup inGroup) {
 		ctx = createInGroup(inGroup.groupRef());
 		context = this;
 		valueRef = getGlobalObject(ctx);
+		protect(context,valueRef);
 	}
 	public JSContext(Class<?> iface) throws JSException {
 		ctx = create();

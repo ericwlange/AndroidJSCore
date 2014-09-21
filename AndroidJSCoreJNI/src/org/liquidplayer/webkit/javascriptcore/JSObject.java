@@ -45,9 +45,11 @@ public class JSObject extends JSValue {
 	public JSObject(JSContext ctx) {
 		context = ctx;
 		valueRef = make(context.ctxRef(), 0L);
+		protect(ctx,valueRef);
 	}
 	/* Called only by convenience subclasses.  If you use
-	 * this, you must set context and valueRef yourself */
+	 * this, you must set context and valueRef yourself.  Also,
+	 * don't forget to call protect()! */
 	protected JSObject() {
 	}
 	/* Wraps an existing object from JS
@@ -55,6 +57,7 @@ public class JSObject extends JSValue {
 	protected JSObject(long objRef, JSContext ctx) {
 		context = ctx;
 		valueRef = objRef;
+		protect(ctx,valueRef);
 	}
 	/* Creates a new object with function properties set for each method
 	 * in the defined interface.
@@ -109,17 +112,19 @@ public class JSObject extends JSValue {
 		if (protoObj != this) {
 			this.property("prototype", protoObj);
 		}
+		protect(context,valueRef);
 	}
 	/* Creates a new function object which calls method 'method' on Java object 'invoke'
 	 * In JS:
 	 *    var f = function(a) { ... };
 	 */
-	public JSObject(JSContext ctx, Object invoke, Method method) throws JSException {
+	public JSObject(JSContext ctx, JSObject invoke, Method method) throws JSException {
 		context = ctx;
 		this.method = method;
 		this.invokeObject = invoke;
 		valueRef = makeFunctionWithCallback(context.ctxRef(),new JSString(method.getName()).stringRef());
 		hasCallback = true;
+		protect(ctx,valueRef);
 	}
 	/* Creates a javascript function that takes parameters 'parameterNames' and executes the
 	 * js code in 'body'
@@ -143,6 +148,7 @@ public class JSObject extends JSValue {
 			throw (new JSException(new JSValue(context,jni.exception)));
 		}
 		valueRef = jni.reference;
+		protect(ctx,valueRef);
 	}
 
 	@Override
@@ -157,7 +163,7 @@ public class JSObject extends JSValue {
 	private boolean hasCallback = false;
 	private boolean isConstructor = false;
 	private Method method = null;
-	private Object invokeObject = null;
+	private JSObject invokeObject = null;
 	protected JSObject thiz = null;
 	private Class<?> subclass = null;
 	
@@ -172,16 +178,18 @@ public class JSObject extends JSValue {
 			for (int i=0; i<argumentsValueRef.length; i++) {
 				args[i] = new JSValue(argumentsValueRef[i],context);
 			}
-			JSObject thiz = this;
-			if (((JSObject)invokeObject).isConstructor) {
-				thiz = context.getObjectFromRef(thisObjectRef);
-				thiz.invokeObject = thiz;
-				thiz.method = method;
+			JSObject thizz = this;
+			if (invokeObject.isConstructor) {
+				thizz = context.getObjectFromRef(thisObjectRef);
+				thizz.invokeObject = thiz;
+				thizz.method = method;
 			}
-			JSValue value = thiz.function(args);
+			invokeObject.thiz = context.getObjectFromRef(thisObjectRef);
+			JSValue value = thizz.function(args);
 			setException(0L, exceptionRefRef);
 			return (value==null)?0L:value.valueRef();
 		} catch (JSException e) {
+			e.printStackTrace();
 			setException(e.getError().valueRef(), exceptionRefRef);
 			return 0L;
 		}
@@ -262,6 +270,7 @@ public class JSObject extends JSValue {
 			if (ret instanceof JSValue) return (JSValue)ret;
 			return new JSValue(context,ret);
 		} catch (InvocationTargetException e) {
+			e.printStackTrace();
 			throw (new JSException(context,e.toString()));
 		} catch (IllegalAccessException e) {
 			throw (new JSException(context,e.toString()));
@@ -312,10 +321,12 @@ public class JSObject extends JSValue {
 		return new JSValue(jni.reference,context);
 	}
 	public void property(String prop, Object value, int attributes) throws JSException {
-		JNIReturnObject jni = setProperty(context.ctxRef(), valueRef,
+		JNIReturnObject jni = setProperty(
+				context.ctxRef(),
+				valueRef,
 				new JSString(prop).stringRef(),
-					(value instanceof JSValue)?((JSValue)value).valueRef():new JSValue(context,value).valueRef(),
-					attributes);
+				(value instanceof JSValue)?((JSValue)value).valueRef():new JSValue(context,value).valueRef(),
+				attributes);
 		if (jni.exception!=0) {
 			throw (new JSException(new JSValue(jni.exception,context)));
 		}
@@ -345,11 +356,13 @@ public class JSObject extends JSValue {
 		}		
 	}
 	public String [] propertyNames() {
-		long [] refs = getPropertyNames(context.ctxRef(), valueRef);
+		long propertyNameArray = copyPropertyNames(context.ctxRef(), valueRef);
+		long [] refs = getPropertyNames(propertyNameArray);
 		String [] names = new String[refs.length];
 		for (int i=0; i<refs.length; i++) {
 			names[i] = new JSString(refs[i]).toString();
 		}
+		releasePropertyNames(propertyNameArray);
 		return names;
 	}
 	
@@ -392,7 +405,9 @@ public class JSObject extends JSValue {
 	protected native JNIReturnObject callAsFunction(long ctx, long object, long thisObject, long [] args);
 	protected native boolean isConstructor(long ctx, long object);
 	protected native JNIReturnObject callAsConstructor(long ctx, long object, long [] args);
-	protected native long [] getPropertyNames(long ctx, long object);
+	protected native long copyPropertyNames(long ctx, long object);
+	protected native long [] getPropertyNames(long propertyNameArray);
+	protected native void releasePropertyNames(long propertyNameArray);
 	protected native long makeFunctionWithCallback(long ctx, long name);
 	protected native void releaseFunctionWithCallback(long ctx, long function);
 	protected native JNIReturnObject makeFunction(long ctx, long name, long [] parameterNames,

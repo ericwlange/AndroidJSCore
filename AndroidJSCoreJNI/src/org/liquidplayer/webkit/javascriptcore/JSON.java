@@ -36,9 +36,11 @@ public class JSON extends JSValue {
 	public JSON(JSContext ctx, JSString str) {
 		context = ctx;
 		valueRef = this.makeFromJSONString(context.ctxRef(), str.stringRef());
+		protect(ctx,valueRef);
 	}
 	public JSON(JSContext ctx, String str) {
 		context = ctx;
-		valueRef = this.makeFromJSONString(context.ctxRef(), new JSString(str).stringRef());		
+		valueRef = this.makeFromJSONString(context.ctxRef(), new JSString(str).stringRef());
+		protect(ctx,valueRef);
 	}	
 }

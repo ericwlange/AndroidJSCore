@@ -44,6 +44,7 @@ public class JSArray extends JSObject {
 			throw (new JSException(new JSValue(jni.exception, context)));
 		}
 		valueRef = jni.reference;
+		protect(ctx,valueRef);
 	}
 	public JSArray(JSContext ctx) throws JSException {
 		context = ctx;
@@ -53,6 +54,7 @@ public class JSArray extends JSObject {
 			throw (new JSException(new JSValue(jni.exception, context)));
 		}
 		valueRef = jni.reference;
+		protect(ctx,valueRef);
 	}
 	public JSArray(JSContext ctx, Object [] array) throws JSException {
 		context = ctx;
@@ -66,5 +68,6 @@ public class JSArray extends JSObject {
 			throw (new JSException(new JSValue(jni.exception, context)));
 		}
 		valueRef = jni.reference;
+		protect(ctx,valueRef);
 	}
 }

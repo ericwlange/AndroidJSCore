@@ -32,6 +32,11 @@
 */
 package org.liquidplayer.webkit.javascriptcore;
 
+import java.lang.ref.Reference;
+import java.lang.ref.ReferenceQueue;
+import java.lang.ref.WeakReference;
+import java.util.HashMap;
+
 public class JSValue {
 	
 	protected Long valueRef = 0L;
@@ -43,6 +48,7 @@ public class JSValue {
 	public JSValue(JSContext ctx) {
 		context = ctx;
 		valueRef = makeUndefined(context.ctxRef());
+		protect(ctx,valueRef);
 	}
 	public JSValue(JSContext ctx, Object val) {
 		context = ctx;
@@ -57,16 +63,46 @@ public class JSValue {
 			valueRef = makeNumber(context.ctxRef(), ((Long)val).doubleValue());
 		} else if (val instanceof String) {
 			JSString s = new JSString((String)val);
-			valueRef = makeString(context.ctxRef(), s.stringRef);			
+			valueRef = makeString(context.ctxRef(), s.stringRef);
 		} else if (val instanceof JSString) {
 			valueRef = makeString(context.ctxRef(), ((JSString)val).stringRef);
 		} else {
 			valueRef = makeUndefined(context.ctxRef());
 		}
+		protect(ctx,valueRef);
 	}
+	private static class ValRef {
+		public long valueRef;
+		public long ctxRef;
+		public ValRef(long ctx, long val) {
+			ctxRef = ctx; valueRef = val;
+		}
+	}
+	private static ReferenceQueue<JSValue> rq = new ReferenceQueue<JSValue>();
+	private static HashMap<WeakReference<JSValue>,ValRef> whm = new HashMap<WeakReference<JSValue>,ValRef>();
+	protected void protect(JSContext ctx, Long valueRef) {
+		protect(ctx.ctxRef(),valueRef);
+		whm.put(new WeakReference<JSValue>(this,rq), new ValRef(context.ctxRef(),valueRef));
+		unprotectDeadReferences();
+	}
+	private void unprotectDeadReferences() {
+		Reference<? extends JSValue> p;
+		while ((p = rq.poll()) != null) {
+			ValRef vr = whm.get(p);
+			unprotect(vr.ctxRef,vr.valueRef);
+			whm.remove(p);
+		}
+	}
+	
 	public JSValue(long valueRef, JSContext ctx) {
 		context = ctx;
 		this.valueRef = valueRef;
+		protect(ctx,valueRef);
+	}
+	@Override
+	protected void finalize() throws Throwable {
+		super.finalize();
+		unprotectDeadReferences();
 	}
 	
 	/* Testers */
@@ -207,7 +243,7 @@ public class JSValue {
 	protected native JNIReturnObject toNumber(long ctxRef, long valueRef);
 	protected native JNIReturnObject toStringCopy(long ctxRef, long valueRef);
 	protected native JNIReturnObject toObject(long ctxRef, long valueRef);
-	protected native void protect(long ctx, long valueRef); /**/
-	protected native void unprotect(long ctx, long valueRef); /**/
+	private native void protect(long ctx, long valueRef); /**/
+	private native void unprotect(long ctx, long valueRef); /**/
 	protected native void setException(long valueRef, long exceptionRefRef);
 }

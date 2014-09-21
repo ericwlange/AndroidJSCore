@@ -542,17 +542,24 @@ NATIVE(JSObject,jobject,callAsConstructor) (PARAMS, jlong ctx, jlong object, jlo
 	return out;
 }
 
-NATIVE(JSObject,jlongArray,getPropertyNames) (PARAMS,jlong ctx, jlong object) {
-	JSPropertyNameArrayRef propertyNameArray = JSObjectCopyPropertyNames((JSContextRef) ctx, (JSObjectRef) object);
+NATIVE(JSObject,jlong,copyPropertyNames) (PARAMS, jlong ctx, jlong object) {
+	JSPropertyNameArrayRef propertyNameArray = JSObjectCopyPropertyNames((JSContextRef) ctx,
+			(JSObjectRef) object);
+	return (jlong)propertyNameArray;
+}
 
-	size_t count = JSPropertyNameArrayGetCount(propertyNameArray);
+NATIVE(JSObject,jlongArray,getPropertyNames) (PARAMS,jlong propertyNameArray) {
+	size_t count = JSPropertyNameArrayGetCount((JSPropertyNameArrayRef)propertyNameArray);
 	jlongArray retArray = env->NewLongArray(count);
 	jlong* stringRefs = new jlong[count];
 	for (size_t i=0; i<count; i++) {
-		stringRefs[i] = (long) JSPropertyNameArrayGetNameAtIndex(propertyNameArray, i);
+		stringRefs[i] = (long) JSPropertyNameArrayGetNameAtIndex((JSPropertyNameArrayRef)propertyNameArray, i);
 	}
 	env->SetLongArrayRegion(retArray,0,count,stringRefs);
 
-	JSPropertyNameArrayRelease(propertyNameArray);
 	return retArray;
+}
+
+NATIVE(JSObject,void,releasePropertyNames) (PARAMS, jlong propertyNameArray) {
+	JSPropertyNameArrayRelease((JSPropertyNameArrayRef)propertyNameArray);
 }

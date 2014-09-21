@@ -44,6 +44,7 @@ public class JSRegExp extends JSObject {
 			throw (new JSException(new JSValue(jni.exception, context)));
 		}
 		valueRef = jni.reference;
+		protect(ctx,valueRef);
 	}	
 	public JSRegExp(JSContext ctx, String pattern) throws JSException {
 		context = ctx;
@@ -55,5 +56,6 @@ public class JSRegExp extends JSObject {
 			throw (new JSException(new JSValue(jni.exception, context)));
 		}
 		valueRef = jni.reference;
+		protect(ctx,valueRef);
 	}	
 }

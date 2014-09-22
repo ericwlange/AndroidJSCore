@@ -256,7 +256,23 @@ public class JSObject extends JSValue {
 							objList.add(arr.propertyAtIndex(j).toJSString());
 						else objList.add(null);
  					}
-					passArgs[i] = objList.toArray(new Object[objList.size()]);
+					if (pType[i] == Boolean[].class)
+						passArgs[i] = objList.toArray(new Boolean[objList.size()]);
+					else if (pType[i] == Integer[].class)
+						passArgs[i] = objList.toArray(new Integer[objList.size()]);
+					else if (pType[i] == String[].class)
+						passArgs[i] = objList.toArray(new String[objList.size()]);
+					else if (pType[i] == Long[].class)
+						passArgs[i] = objList.toArray(new Long[objList.size()]);
+					else if (pType[i] == Double[].class)
+						passArgs[i] = objList.toArray(new Double[objList.size()]);
+					else if (pType[i] == JSValue[].class)
+						passArgs[i] = objList.toArray(new JSValue[objList.size()]);
+					else if (pType[i] == JSObject[].class)
+						passArgs[i] = objList.toArray(new JSObject[objList.size()]);
+					else if (pType[i] == JSString[].class)
+						passArgs[i] = objList.toArray(new JSString[objList.size()]);
+					else passArgs[i] = objList.toArray(new Object[objList.size()]);
 				}
 				else if (pType[i] == JSValue.class) passArgs[i] = args[i];
 				else passArgs[i] = null;

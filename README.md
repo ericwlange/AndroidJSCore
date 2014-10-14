@@ -85,9 +85,8 @@ occasionally lock up Eclipse if you don't.
 Work in Progress
 ----------------
 
-  - Document the API
   - Test framework
-  - Verify that garbage collection works properly
+  - Some issues remain around garbage collection, debugging
 
 License
 -------

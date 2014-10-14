@@ -32,7 +32,17 @@
 */
 package org.liquidplayer.webkit.javascriptcore;
 
+/**
+ * A convenience class for handling JavaScript arrays
+ *
+ */
 public class JSArray extends JSObject {
+	/**
+	 * Creates a JavaScript array object, initialized with 'array' JSValues
+	 * @param ctx  The JSContext to create the array in
+	 * @param array  An array of JSValues with which to initialize the JavaScript array object
+	 * @throws JSException
+	 */
 	public JSArray(JSContext ctx, JSValue [] array) throws JSException {
 		context = ctx;
 		long [] valueRefs = new long[array.length];
@@ -46,6 +56,11 @@ public class JSArray extends JSObject {
 		valueRef = jni.reference;
 		protect(ctx,valueRef);
 	}
+	/**
+	 * Creates an empty JavaScript array object
+	 * @param ctx  The JSContext to create the array in
+	 * @throws JSException
+	 */
 	public JSArray(JSContext ctx) throws JSException {
 		context = ctx;
 		long [] valueRefs = new long[0];
@@ -56,6 +71,13 @@ public class JSArray extends JSObject {
 		valueRef = jni.reference;
 		protect(ctx,valueRef);
 	}
+	/**
+	 * Creates a JavaScript array object, initialized with 'array' Java values
+	 * @param ctx  The JSContext to create the array in
+	 * @param array  An array of Java objects with which to initialize the JavaScript array object.  Each
+	 *               Object will be converted to a JSValue
+	 * @throws JSException
+	 */
 	public JSArray(JSContext ctx, Object [] array) throws JSException {
 		context = ctx;
 		long [] valueRefs = new long[array.length];
@@ -69,5 +91,112 @@ public class JSArray extends JSObject {
 		}
 		valueRef = jni.reference;
 		protect(ctx,valueRef);
+	}
+
+	/**
+	 * Wraps an existing JavaScript object and treats it as an array.
+	 * @param objRef  The JavaScriptCore reference to the object
+	 * @param ctx  The JSContext in which the array exists
+	 * @throws JSException
+	 */
+	public JSArray(long objRef, JSContext ctx) throws JSException {
+		super(objRef,ctx);
+	}
+	
+	/**
+	 * Extracts Java JSValue array from JavaScript array
+	 * @return JavaScript array as Java array of JSValues
+	 * @throws JSException
+	 */
+	public JSValue [] toArray() throws JSException {
+		int count = property("length").toNumber().intValue();
+		JSValue [] array = new JSValue[count];
+		for (int i=0; i<count; i++) {
+			array[i] = propertyAtIndex(i);
+		}
+		return array;
+	}
+	
+	/**
+	 * Gets JSValue at 'index'
+	 * @param index  Index of the element to get
+	 * @return  The JSValue at index 'index'
+	 * @throws JSException
+	 */
+	public JSValue get(int index) throws JSException {
+		int count = property("length").toNumber().intValue();
+		if (index >= count) {
+			throw new ArrayIndexOutOfBoundsException();
+		}
+		return propertyAtIndex(index);
+	}
+
+	/**
+	 * Replaces a JSValue at array index 'index'.  The Java Object is converted to a JSValue.
+	 * @param index  The index of the object to replace
+	 * @param val  The Java object of the new value to set in the array
+	 * @throws JSException
+	 */
+	public void replace(int index, Object val) throws JSException {
+		int count = property("length").toNumber().intValue();
+		if (index >= count) {
+			throw new ArrayIndexOutOfBoundsException();
+		}
+		propertyAtIndex(index,val);
+	}
+	
+	/**
+	 * Adds a JSValue to the end of an array.  The Java Object is converted to a JSValue.
+	 * @param val  The Java object to add to the array, will get converted to a JSValue
+	 * @throws JSException
+	 */
+	public void add(Object val) throws JSException {
+		int count = property("length").toNumber().intValue();
+		JSValue newVal = new JSValue(context,val);
+		propertyAtIndex(count,newVal);
+	}
+
+	/**
+	 * Removes the value at index 'index'
+	 * @param index  The index of the value to remove
+	 * @throws JSException
+	 */
+	public void remove(int index) throws JSException {
+		int count = property("length").toNumber().intValue();
+		if (index >= count) {
+			throw new ArrayIndexOutOfBoundsException();
+		}
+		for (int i=index+1; i<count; i++) {
+			propertyAtIndex(i-1,propertyAtIndex(i));
+		}
+		property("length",count-1);
+	}
+	
+	/**
+	 * Inserts new object 'val' at index 'index'
+	 * @param index  Index at which to insert value
+	 * @param val  Java object to insert, will get converted to JSValue
+	 * @throws JSException
+	 */
+	public void insert(int index, Object val) throws JSException {
+		int count = property("length").toNumber().intValue();
+		if (index >= count) {
+			throw new ArrayIndexOutOfBoundsException();
+		}
+		propertyAtIndex(count,new JSValue(context));
+		for (int i=count; i>index; --i) {
+			propertyAtIndex(i,propertyAtIndex(i-1));
+		}
+		propertyAtIndex(index,val);
+	}
+	
+	/**
+	 * Gets the number of elements in the array
+	 * @return  length of the array
+	 * @throws JSException
+	 */
+	public int length() throws JSException {
+		int count = property("length").toNumber().intValue();
+		return count;
 	}
 }

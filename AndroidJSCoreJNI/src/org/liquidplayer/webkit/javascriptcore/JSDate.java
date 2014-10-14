@@ -34,7 +34,16 @@ package org.liquidplayer.webkit.javascriptcore;
 
 import java.util.Date;
 
+/**
+ * Convenience class for managing JavaScript date objects 
+ *
+ */
 public class JSDate extends JSObject {
+	/**
+	 * Creates a new date object with the current date and time
+	 * @param ctx  The JSContext in which to create the date object
+	 * @throws JSException
+	 */
 	public JSDate(JSContext ctx) throws JSException {
 		context = ctx;
 		JNIReturnObject jni = this.makeDate(context.ctxRef(), new long[0]);
@@ -44,6 +53,12 @@ public class JSDate extends JSObject {
 		valueRef = jni.reference;
 		protect(ctx,valueRef);
 	}
+	/**
+	 * Creates a new date object, initialized with a Java timestamp
+	 * @param ctx  The JSContext in which to create the date object
+	 * @param date  The Date with which to initialize the object
+	 * @throws JSException
+	 */
 	public JSDate(JSContext ctx, Date date) throws JSException {
 		context = ctx;
 		JSValue time = new JSValue(context, date.getTime());

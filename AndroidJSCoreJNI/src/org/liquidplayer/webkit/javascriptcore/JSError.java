@@ -32,7 +32,21 @@
 */
 package org.liquidplayer.webkit.javascriptcore;
 
+/**
+ *  A convenience class for managing JavaScript error objects
+ *
+ */
 public class JSError extends JSObject {
+	/**
+	 * Generates a JavaScript throwable exception object
+	 * @param ctx  The context in which to create the error
+	 * @param message  The description of the error
+	 * @param filename   The name of the file in which the error occurred. This is used for stack
+	 *                   tracing and is optional.
+	 * @param lineNumber  The line number where the error occurred. This is used for stack tracing
+	 *                    and is optional.
+	 * @throws JSException
+	 */
 	public JSError(JSContext ctx, String message, String filename, Integer lineNumber) throws JSException {
 		context = ctx;
 		long [] args = { 
@@ -47,6 +61,12 @@ public class JSError extends JSObject {
 		valueRef = jni.reference;
 		protect(ctx,valueRef);
 	}
+	/**
+	 * Generates a JavaScript throwable exception object
+	 * @param ctx  The context in which to create the error
+	 * @param message  The description of the error
+	 * @throws JSException
+	 */
 	public JSError(JSContext ctx, String message) throws JSException {
 		context = ctx;
 		long [] args = { 
@@ -59,6 +79,11 @@ public class JSError extends JSObject {
 		valueRef = jni.reference;
 		protect(ctx,valueRef);
 	}
+	/**
+	 * Generates a JavaScript throwable exception object
+	 * @param ctx  The context in which to create the error
+	 * @throws JSException
+	 */
 	public JSError(JSContext ctx) throws JSException {
 		context = ctx;
 		JNIReturnObject jni = makeError(context.ctxRef(), new long[0]);

@@ -32,12 +32,25 @@
 */
 package org.liquidplayer.webkit.javascriptcore;
 
+/**
+ * A convenience class for creating JavaScript values from JSON 
+ */
 public class JSON extends JSValue {
+	/**
+	 * Creates a new JavaScript value from a JSString JSON string
+	 * @param ctx  The context in which to create the value
+	 * @param str  The string containing the JSON
+	 */
 	public JSON(JSContext ctx, JSString str) {
 		context = ctx;
 		valueRef = this.makeFromJSONString(context.ctxRef(), str.stringRef());
 		protect(ctx,valueRef);
 	}
+	/**
+	 * Creates a new JavaScript value from a Java JSON string
+	 * @param ctx  The context in which to create the value
+	 * @param str  The string containing the JSON
+	 */
 	public JSON(JSContext ctx, String str) {
 		context = ctx;
 		valueRef = this.makeFromJSONString(context.ctxRef(), new JSString(str).stringRef());

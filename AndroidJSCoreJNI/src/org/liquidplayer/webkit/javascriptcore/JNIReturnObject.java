@@ -32,9 +32,25 @@
 */
 package org.liquidplayer.webkit.javascriptcore;
 
+/**
+ * Used in communicating with JavaScriptCore JNI.
+ * Clients do not need to use this.
+ */
 public class JNIReturnObject {
+	/**
+	 * The boolean return value
+	 */
 	public boolean bool;
+	/**
+	 * The numeric return value
+	 */
 	public double number;
+	/**
+	 * The reference return value
+	 */
 	public long reference;
+	/**
+	 * The exception reference if one was thrown, otherwise 0L
+	 */
 	public long exception;
 }

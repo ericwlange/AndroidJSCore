@@ -32,17 +32,28 @@
 */
 package org.liquidplayer.webkit.javascriptcore;
 
+/**
+ *  A JSException is thrown for a number of different reasons, mostly by the JavaScriptCore
+ *  library.  The description of the exception is given in the message. 
+ *
+ */
 public class JSException extends Throwable {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 
 	private JSValue error;
 	
+	/**
+	 * Creates a Java exception from a thrown JavaScript exception
+	 * @param error  The JSValue thrown by the JavaScriptCore engine
+	 */
 	public JSException(JSValue error) {
 		this.error = error;
 	}
+	/**
+	 * Creates a JavaScriptCore exception from a string message
+	 * @param ctx  The JSContext in which to create the exception
+	 * @param message  The exception meessage
+	 */
 	public JSException(JSContext ctx, String message) {
 		try {
 			this.error = new JSError(ctx,message);
@@ -51,9 +62,14 @@ public class JSException extends Throwable {
 			this.error = null;
 		}
 	}
+	/**
+	 * Gets the JSValue of the thrown exception
+	 * @return  the JSValue of the JavaScriptCore exception
+	 */
 	public JSValue getError() {
 		return error;
 	}
+	
 	@Override
 	public String toString() {
 		if (error!=null) {

@@ -32,18 +32,30 @@
 */
 package org.liquidplayer.webkit.javascriptcore;
 
+/**
+ *  A JavaScript string 
+ */
 public class JSString {
 
-	protected Long stringRef;
+	protected final Long stringRef;
 	
+	/**
+	 * Creates a JavaScript string from a Java string
+	 * @param s  The Java string with which to initialize the JavaScript string
+	 */
 	public JSString(String s) {
 		stringRef = createWithUTF8CString(s);
 	}
+	/**
+	 * Wraps an existing JavaScript string
+	 * @param stringRef  The JavaScriptCore reference to the string
+	 */
 	public JSString(Long stringRef) {
 		this.stringRef = retain(stringRef);
 	}
 	@Override
 	protected void finalize() throws Throwable {
+		if (stringRef==null) return;
 		if (stringRef!=null && stringRef!=0) release(stringRef);
 		super.finalize();
 	}
@@ -78,10 +90,18 @@ public class JSString {
 		return toString(stringRef);
 	}
 
+	/**
+	 * Gets the JavaScriptCore string reference
+	 * @return  the JavaScriptCore string reference
+	 */
 	public Long stringRef() {
 		return stringRef;
 	}
 	
+	/**
+	 * Gets the length of the string in characters
+	 * @return  the number of characters in the string
+	 */
 	public Integer length() {
 		return getLength(stringRef);
 	}

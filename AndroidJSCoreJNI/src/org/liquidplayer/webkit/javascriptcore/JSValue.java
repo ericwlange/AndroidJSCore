@@ -37,19 +37,38 @@ import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 
+/**
+ * A JavaScript value
+ *
+ */
 public class JSValue {
 	
 	protected Long valueRef = 0L;
 	protected JSContext context = null;
 	
 	/* Constructors */
+	/**
+	 * Creates an empty JSValue.  This can only be used by subclasses, and those
+	 * subclasses must define 'context' and 'valueRef' themselves
+	 */
 	protected JSValue() {
 	}
+	/**
+	 * Creates a new undefined JavaScript value
+	 * @param ctx  The context in which to create the value
+	 */
 	public JSValue(JSContext ctx) {
 		context = ctx;
 		valueRef = makeUndefined(context.ctxRef());
 		protect(ctx,valueRef);
 	}
+	/**
+	 * Creates a new JavaScript value from a Java value.  Classes supported are:
+	 * Boolean, Double, Integer, Long, String, and JSString.  Any other object will
+	 * generate an undefined JavaScript value.
+	 * @param ctx  The context in which to create the value
+	 * @param val  The Java value
+	 */
 	public JSValue(JSContext ctx, Object val) {
 		context = ctx;
 		if (val == null) valueRef = makeNull(context.ctxRef());
@@ -71,29 +90,47 @@ public class JSValue {
 		}
 		protect(ctx,valueRef);
 	}
+	/*
+	 * JavaScript values held by the Java environment must be protected from garbage collection
+	 * in the JS environment.  If only the Java environment holds a reference to a JS object, the
+	 * JS garbage collector will see this value as unreferenced and clean it.  So we must manage
+	 * protecting and unprotecting values we hold references to on the Java side.
+	 */
 	private static class ValRef {
 		public long valueRef;
-		public long ctxRef;
-		public ValRef(long ctx, long val) {
-			ctxRef = ctx; valueRef = val;
+		public JSContext ctx;
+		public ValRef(JSContext ctx, long val) {
+			this.ctx = ctx; valueRef = val;
 		}
 	}
 	private static ReferenceQueue<JSValue> rq = new ReferenceQueue<JSValue>();
 	private static HashMap<WeakReference<JSValue>,ValRef> whm = new HashMap<WeakReference<JSValue>,ValRef>();
-	protected void protect(JSContext ctx, Long valueRef) {
+	private ValRef thisValRef = null;
+	protected synchronized void protect(JSContext ctx, Long valueRef) {
 		protect(ctx.ctxRef(),valueRef);
-		whm.put(new WeakReference<JSValue>(this,rq), new ValRef(context.ctxRef(),valueRef));
+		thisValRef = new ValRef(context,valueRef);
+		whm.put(new WeakReference<JSValue>(this,rq), thisValRef);
 		unprotectDeadReferences();
 	}
-	private void unprotectDeadReferences() {
+	private synchronized void unprotectDeadReferences() {
 		Reference<? extends JSValue> p;
+		HashMap<JSContext,Boolean> collect = new HashMap<JSContext,Boolean>();
 		while ((p = rq.poll()) != null) {
 			ValRef vr = whm.get(p);
-			unprotect(vr.ctxRef,vr.valueRef);
+			unprotect(vr.ctx.ctxRef(),vr.valueRef);
 			whm.remove(p);
+			collect.put(vr.ctx, true);
+		}
+		for (JSContext ctx : collect.keySet()) {
+			ctx.garbageCollect();
 		}
 	}
 	
+	/**
+	 * Wraps an existing JavaScript value
+	 * @param valueRef  The JavaScriptCore reference to the value
+	 * @param ctx  The context in which the value exists
+	 */
 	public JSValue(long valueRef, JSContext ctx) {
 		context = ctx;
 		this.valueRef = valueRef;
@@ -106,24 +143,54 @@ public class JSValue {
 	}
 	
 	/* Testers */
+	/**
+	 * Tests whether the value is undefined
+	 * @return  true if undefined, false otherwise
+	 */
 	public Boolean isUndefined() {
 		return isUndefined(context.ctxRef(), valueRef);
 	}
+	/**
+	 * Tests whether the value is null
+	 * @return  true if null, false otherwise
+	 */
 	public Boolean isNull() {
 		return isNull(context.ctxRef(), valueRef);
 	}
+	/**
+	 * Tests whether the value is boolean
+	 * @return  true if boolean, false otherwise
+	 */
 	public Boolean isBoolean() {
 		return isBoolean(context.ctxRef(), valueRef);		
 	}
+	/**
+	 * Tests whether the value is a number
+	 * @return  true if a number, false otherwise
+	 */
 	public Boolean isNumber() {
 		return isNumber(context.ctxRef(), valueRef);
 	}
+	/**
+	 * Tests whether the value is a string
+	 * @return  true if a string, false otherwise
+	 */
 	public Boolean isString() {
 		return isString(context.ctxRef(), valueRef);
 	}
+	/**
+	 * Tests whether the value is an object
+	 * @return  true if an object, false otherwise
+	 */
 	public Boolean isObject() {
 		return isObject(context.ctxRef(), valueRef);
 	}
+	/**
+	 * Tests whether a value in an instance of a constructor object
+	 * @param constructor  The constructor object to test
+	 * @return  true if the value is an instance of the given constructor object, false otherwise
+	 * @throws JSException
+	 */
 	public Boolean isInstanceOfConstructor(JSObject constructor) throws JSException {
 		JNIReturnObject jni = this.isInstanceOfConstructor(context.ctxRef(), valueRef, constructor.valueRef());
 		if (jni.exception!=0) {
@@ -161,6 +228,11 @@ public class JSValue {
 		return jni.bool;
 	}
 	
+	/**
+	 * Tests whether two values are strict equal.  In JavaScript, equivalent to '==' operator.  
+	 * @param otherJSValue  The value to test against
+	 * @return  true if values are strict equal, false otherwise
+	 */
 	public boolean isStrictEqual(JSValue otherJSValue) {
 		if (otherJSValue == null) return false;
 		if (otherJSValue == this) return true;
@@ -168,9 +240,18 @@ public class JSValue {
 	}
 	
 	/* Getters */
+	/**
+	 * Gets the Boolean value of this JS value
+	 * @return  the Boolean value
+	 */
 	public Boolean toBoolean() {
 		return toBoolean(context.ctxRef(), valueRef);
 	}
+	/**
+	 * Gets the numeric value of this JS value
+	 * @return  The numeric value
+	 * @throws JSException
+	 */
 	public Double toNumber() throws JSException {
 		JNIReturnObject jni = toNumber(context.ctxRef(), valueRef);
 		if (jni.exception!=0) {
@@ -186,6 +267,11 @@ public class JSValue {
 			return e.toString();
 		}
 	}
+	/**
+	 * Gets the JSString value of this JS value
+	 * @return  The JSString value
+	 * @throws JSException
+	 */
 	public JSString toJSString() throws JSException {
 		JNIReturnObject jni = toStringCopy(context.ctxRef(), valueRef);
 		if (jni.exception!=0) {
@@ -193,6 +279,11 @@ public class JSValue {
 		}
 		return new JSString(jni.reference);
 	}
+	/**
+	 * If the JS value is an object, gets the JSObject
+	 * @return  The JSObject for this value
+	 * @throws JSException  if not an object
+	 */
 	public JSObject toObject() throws JSException {
 		JNIReturnObject jni = toObject(context.ctxRef(), valueRef);
 		if (jni.exception!=0) {
@@ -200,6 +291,12 @@ public class JSValue {
 		}
 		return context.getObjectFromRef(jni.reference);
 	}
+	/**
+	 * Gets the JSON of this JS value
+	 * @param indent  number of spaces to indent
+	 * @return  the JSON representing this value
+	 * @throws JSException
+	 */
 	public String toJSON(int indent) throws JSException {
 		JNIReturnObject jni = createJSONString(context.ctxRef(), valueRef, indent);
 		if (jni.exception!=0) {
@@ -210,13 +307,25 @@ public class JSValue {
 		}
 		return new JSString(jni.reference).toString();
 	}
+	/**
+	 * Gets the JSON of this JS value
+	 * @return  the JSON representing this value
+	 * @throws JSException
+	 */
 	public String toJSON() throws JSException {
 		return toJSON(0);
 	}
+	/**
+	 * Gets the JSContext of this value
+	 * @return the JSContext of this value
+	 */
 	public JSContext getContext() {
 		return context;
 	}
-	
+	/**
+	 * Gets the JavaScriptCore value reference
+	 * @return  the JavaScriptCore value reference
+	 */
 	public Long valueRef() {
 		return valueRef;
 	}
@@ -243,7 +352,7 @@ public class JSValue {
 	protected native JNIReturnObject toNumber(long ctxRef, long valueRef);
 	protected native JNIReturnObject toStringCopy(long ctxRef, long valueRef);
 	protected native JNIReturnObject toObject(long ctxRef, long valueRef);
-	private native void protect(long ctx, long valueRef); /**/
+	protected native void protect(long ctx, long valueRef); /**/
 	private native void unprotect(long ctx, long valueRef); /**/
 	protected native void setException(long valueRef, long exceptionRefRef);
 }

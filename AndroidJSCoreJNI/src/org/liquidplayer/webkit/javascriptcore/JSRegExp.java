@@ -32,7 +32,21 @@
 */
 package org.liquidplayer.webkit.javascriptcore;
 
+/**
+ *  A convenience class for managing JavaScript regular expressions.  See
+ *  <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions">
+ *  https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions</a>
+ *  for details on JavaScript regexp.
+ *
+ */
 public class JSRegExp extends JSObject {
+	/**
+	 * Creates a new JavaScript regular expression
+	 * @param ctx  The context in which to create the regular expression
+	 * @param pattern  The REGEXP pattern
+	 * @param flags  The REGEXP flags
+	 * @throws JSException
+	 */
 	public JSRegExp(JSContext ctx, String pattern, String flags) throws JSException {
 		context = ctx;
 		long [] args = { 
@@ -46,6 +60,12 @@ public class JSRegExp extends JSObject {
 		valueRef = jni.reference;
 		protect(ctx,valueRef);
 	}	
+	/**
+	 * Creates a new JavaScript regular expression
+	 * @param ctx  The context in which to create the regular expression
+	 * @param pattern  The REGEXP pattern
+	 * @throws JSException
+	 */
 	public JSRegExp(JSContext ctx, String pattern) throws JSException {
 		context = ctx;
 		long [] args = { 

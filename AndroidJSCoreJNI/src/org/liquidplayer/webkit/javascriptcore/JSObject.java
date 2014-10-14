@@ -37,41 +37,137 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
+/**
+ * A JavaScript object.
+ * 
+ */
 public class JSObject extends JSValue {
 
-	/* Blank canvas. In JS: 
-	 *   var obj = {}; OR 
-	 *   var obj = new Object(); */
+	/**
+	 * Specifies that a property has no special attributes.
+	 */
+	public static int JSPropertyAttributeNone = 0;
+	/**
+	 * Specifies that a property is read-only.
+	 */
+	public static int JSPropertyAttributeReadOnly = 1 << 1;
+	/**
+	 * Specifies that a property should not be enumerated by 
+	 * JSPropertyEnumerators and JavaScript for...in loops.
+	 */
+	public static int JSPropertyAttributeDontEnum = 1 << 2;
+	/**
+	 * Specifies that the delete operation should fail on a property.
+	 */
+	public static int JSPropertyAttributeDontDelete = 1 << 3;
+	
+	/**
+	 * Creates a new, empty JavaScript object.  In JS:
+	 * <pre>
+	 * {@code
+	 * var obj = {}; // OR
+	 * var obj = new Object();
+	 * }
+	 * </pre>
+	 * @param ctx  The JSContext to create the object in
+	 */
 	public JSObject(JSContext ctx) {
 		context = ctx;
 		valueRef = make(context.ctxRef(), 0L);
 		protect(ctx,valueRef);
 	}
-	/* Called only by convenience subclasses.  If you use
+	/**
+ 	 * Called only by convenience subclasses.  If you use
 	 * this, you must set context and valueRef yourself.  Also,
-	 * don't forget to call protect()! */
+	 * don't forget to call protect()!
+	 */
 	protected JSObject() {
 	}
-	/* Wraps an existing object from JS
+	/**
+	 * Wraps an existing object from JavaScript
+	 * 
+	 * @param objRef  The JavaScriptCore object reference
+	 * @param ctx     The JSContext of the reference
 	 */
 	protected JSObject(long objRef, JSContext ctx) {
 		context = ctx;
 		valueRef = objRef;
 		protect(ctx,valueRef);
 	}
-	/* Creates a new object with function properties set for each method
+	/**
+	 * Creates a new object with function properties set for each method
 	 * in the defined interface.
 	 * In JS:
-	 *    var obj = {
-	 *        func1: function(a)   { alert(a); },
-	 *        func2: function(b,c) { alert(b+c); }
-	 *    };
+	 * <pre>
+	 * {@code
+	 * var obj = {
+	 *     func1: function(a)   { alert(a); },
+	 *     func2: function(b,c) { alert(b+c); }
+	 * };
+	 * }
+	 * </pre>
 	 * Where func1, func2, etc. are defined in interface 'iface'.  This JSObject
 	 * must implement 'iface'.
+	 * 
+	 * @param ctx   The JSContext to create the object in
+	 * @param iface The Java Interface defining the methods to expose to JavaScript
+	 * @throws JSException
 	 */
 	public JSObject(JSContext ctx, Class<?> iface) throws JSException {
 		initJSInterface(ctx, iface, null);
 	}
+	/**
+	 * Creates a new instance of a constructor object, which exposes prototype functions in
+	 * 'iface'.
+	 * In JS:
+	 * <pre>
+	 * {@code
+	 * function clss(x,y,z) {
+	 *     prototype : {
+	 *         func1: function(a)   { alert(a); },
+	 *         func2: function(b,c) { alert(b+c+this.x); }
+	 *     }
+	 *     this.x = x;
+	 *     this.y = y;
+	 *     this.z = z;
+	 * };
+	 * }
+	 * </pre>
+	 * Where func1(), func2(), and clss() are defined in 'iface'.  'subclass' must be the
+	 * subclass of JSObject which instantiates this constructor object in Java.  For example:
+	 * <pre>
+	 * {@code
+	 * public interface Clss {
+	 *     // Constructor must have the same name as the interface, prefixed by an underscore
+	 *     public void _Clss(Integer x, String y, JSObject z);
+	 *     public void func1(Integer a);
+	 *     public void func2(Intefer b, Integer c);
+	 * }
+	 * public class MyClass extends JSObject implements Clss {
+	 *     public MyClass(JSContext ctx) {
+	 *         super(ctx, Clss.class, MyClass.cls); // This constructor!
+	 *     }
+	 *     public void _Clss(Integer x, String y, JSObject z) {
+	 *         property("x",x);
+	 *         property("y",y);
+	 *         property("z",z);
+	 *     }
+	 *     public void func1(Integer a) {
+	 *         System.out.println(a);
+	 *     }
+	 *     public void func2(Integer b, Integer c) {
+	 *         Integer out = b + c + property("x").toNumber().intValue();
+	 *         System.out.println(out);
+	 *     }
+	 * }
+	 * }
+	 * </pre>
+	 * @param ctx   The JSContext to create the object in
+	 * @param iface The Java Interface defining the methods to expose to JavaScript, including the constructor
+	 *              function which must have the same name as the interface, prefixed by an underscore
+	 * @param subclass  The JSObject subclass to instantiate when creating an instance of this prototype
+	 * @throws JSException
+	 */
 	public JSObject(JSContext ctx, Class<?> iface, Class<?> subclass) throws JSException {
 		initJSInterface(ctx, iface, subclass);
 	}
@@ -114,9 +210,18 @@ public class JSObject extends JSValue {
 		}
 		protect(context,valueRef);
 	}
-	/* Creates a new function object which calls method 'method' on Java object 'invoke'
+	/**
+	 * Creates a new function object which calls method 'method' on Java object 'invoke'.
 	 * In JS:
-	 *    var f = function(a) { ... };
+	 * <pre>{@code
+	 * var f = function(a) { ... };
+	 * }
+	 * </pre>
+	 * 
+	 * @param ctx   The JSContext to create the object in
+	 * @param invoke  The JSObject on which to invoke the function
+	 * @param method  The method to invoke
+	 * @throws JSException
 	 */
 	public JSObject(JSContext ctx, JSObject invoke, Method method) throws JSException {
 		context = ctx;
@@ -126,8 +231,17 @@ public class JSObject extends JSValue {
 		hasCallback = true;
 		protect(ctx,valueRef);
 	}
-	/* Creates a javascript function that takes parameters 'parameterNames' and executes the
-	 * js code in 'body'
+	/**
+	 * Creates a JavaScript function that takes parameters 'parameterNames' and executes the
+	 * JS code in 'body'.
+	 * 
+	 * @param ctx  The JSContext in which to create the function
+	 * @param name The name of the function
+	 * @param parameterNames  A String array containing the names of the parameters
+	 * @param body  The JavaScript code to execute in the function
+	 * @param sourceURL  The URI of the source file, only used for reporting in stack trace (optional)
+	 * @param startingLineNumber  The beginning line number, only used for reporting in stack trace (optional)
+	 * @throws JSException
 	 */
 	public JSObject(JSContext ctx, String name, String [] parameterNames,
 			String body, String sourceURL, int startingLineNumber) throws JSException {
@@ -223,7 +337,8 @@ public class JSObject extends JSValue {
 		Object [] passArgs = new Object[pType.length];
 		for (int i=0; i<passArgs.length; i++) {
 			if (i<args.length) {
-				if (pType[i] == String.class) passArgs[i] = args[i].toString();
+				if (args[i]==null) passArgs[i] = null;
+				else if (pType[i] == String.class) passArgs[i] = args[i].toString();
 				else if (pType[i] == Double.class) passArgs[i] = args[i].toNumber();
 				else if (pType[i] == Integer.class) passArgs[i] = args[i].toNumber().intValue();
 				else if (pType[i] == Long.class) passArgs[i] = args[i].toNumber().longValue();
@@ -233,46 +348,48 @@ public class JSObject extends JSValue {
 				else if (pType[i].isArray()) {
 					JSObject arr = args[i].toObject();
 					if (arr.property("length") == null) {
-						throw (new JSException(context,"Not an array"));
-					}
-					Integer length = arr.property("length").toNumber().intValue();
-					ArrayList<Object> objList = new ArrayList<Object>();
-					for (int j=0; j<length; j++) {
+						// Not an array
+						passArgs[i] = null;
+					} else {
+						Integer length = arr.property("length").toNumber().intValue();
+						ArrayList<Object> objList = new ArrayList<Object>();
+						for (int j=0; j<length; j++) {
+							if (pType[i] == Boolean[].class)
+								objList.add(arr.propertyAtIndex(j).toBoolean());
+							else if (pType[i] == Integer[].class)
+								objList.add(arr.propertyAtIndex(j).toNumber().intValue());
+							else if (pType[i] == String[].class)
+								objList.add(arr.propertyAtIndex(j).toString());
+							else if (pType[i] == Long[].class)
+								objList.add(arr.propertyAtIndex(j).toNumber().longValue());
+							else if (pType[i] == Double[].class)
+								objList.add(arr.propertyAtIndex(j).toNumber());
+							else if (pType[i] == JSValue[].class)
+								objList.add(arr.propertyAtIndex(j));
+							else if (pType[i] == JSObject[].class)
+								objList.add(arr.propertyAtIndex(j).toObject());
+							else if (pType[i] == JSString[].class)
+								objList.add(arr.propertyAtIndex(j).toJSString());
+							else objList.add(null);
+	 					}
 						if (pType[i] == Boolean[].class)
-							objList.add(arr.propertyAtIndex(j).toBoolean());
+							passArgs[i] = objList.toArray(new Boolean[objList.size()]);
 						else if (pType[i] == Integer[].class)
-							objList.add(arr.propertyAtIndex(j).toNumber().intValue());
+							passArgs[i] = objList.toArray(new Integer[objList.size()]);
 						else if (pType[i] == String[].class)
-							objList.add(arr.propertyAtIndex(j).toString());
+							passArgs[i] = objList.toArray(new String[objList.size()]);
 						else if (pType[i] == Long[].class)
-							objList.add(arr.propertyAtIndex(j).toNumber().longValue());
+							passArgs[i] = objList.toArray(new Long[objList.size()]);
 						else if (pType[i] == Double[].class)
-							objList.add(arr.propertyAtIndex(j).toNumber());
+							passArgs[i] = objList.toArray(new Double[objList.size()]);
 						else if (pType[i] == JSValue[].class)
-							objList.add(arr.propertyAtIndex(j));
+							passArgs[i] = objList.toArray(new JSValue[objList.size()]);
 						else if (pType[i] == JSObject[].class)
-							objList.add(arr.propertyAtIndex(j).toObject());
+							passArgs[i] = objList.toArray(new JSObject[objList.size()]);
 						else if (pType[i] == JSString[].class)
-							objList.add(arr.propertyAtIndex(j).toJSString());
-						else objList.add(null);
- 					}
-					if (pType[i] == Boolean[].class)
-						passArgs[i] = objList.toArray(new Boolean[objList.size()]);
-					else if (pType[i] == Integer[].class)
-						passArgs[i] = objList.toArray(new Integer[objList.size()]);
-					else if (pType[i] == String[].class)
-						passArgs[i] = objList.toArray(new String[objList.size()]);
-					else if (pType[i] == Long[].class)
-						passArgs[i] = objList.toArray(new Long[objList.size()]);
-					else if (pType[i] == Double[].class)
-						passArgs[i] = objList.toArray(new Double[objList.size()]);
-					else if (pType[i] == JSValue[].class)
-						passArgs[i] = objList.toArray(new JSValue[objList.size()]);
-					else if (pType[i] == JSObject[].class)
-						passArgs[i] = objList.toArray(new JSObject[objList.size()]);
-					else if (pType[i] == JSString[].class)
-						passArgs[i] = objList.toArray(new JSString[objList.size()]);
-					else passArgs[i] = objList.toArray(new Object[objList.size()]);
+							passArgs[i] = objList.toArray(new JSString[objList.size()]);
+						else passArgs[i] = null;
+					}
 				}
 				else if (pType[i] == JSValue.class) passArgs[i] = args[i];
 				else passArgs[i] = null;
@@ -316,19 +433,37 @@ public class JSObject extends JSValue {
 			throw (new JSException(context,e.toString()));				
 		}
 	}
-	
+
+	/**
+	 * Gets the prototype object, if it exists
+	 * @return A JSValue referencing the prototype object, or null if none
+	 */
 	public JSValue prototype() {
 		long proto = getPrototype(context.ctxRef(), valueRef);
 		if (proto==0) return null;
 		return new JSValue(proto,context);
 	}
+	/**
+	 * Sets the prototype object
+	 * @param proto The object defining the function prototypes
+	 */
 	public void prototype(JSValue proto) {
 		setPrototype(context.ctxRef(), valueRef, proto.valueRef());
 	}
-	
+	/**
+	 * Determines if the object contains a given property
+	 * @param prop  The property to test the existence of
+	 * @return true if the property exists on the object, false otherwise
+	 */
 	public boolean hasProperty(String prop) {
 		return hasProperty(context.ctxRef(), valueRef, new JSString(prop).stringRef());
 	}
+	/**
+	 * Gets the property named 'prop'
+	 * @param prop  The name of the property to fetch
+	 * @return The JSValue of the property, or null if it does not exist
+	 * @throws JSException
+	 */
 	public JSValue property(String prop) throws JSException {
 		JNIReturnObject jni = getProperty(context.ctxRef(), valueRef, new JSString(prop).stringRef());
 		if (jni.exception!=0) {
@@ -336,27 +471,56 @@ public class JSObject extends JSValue {
 		}
 		return new JSValue(jni.reference,context);
 	}
+	/**
+	 * Sets the value of property 'prop'
+	 * @param prop  The name of the property to set
+	 * @param value  The Java object to set.  The Java object will be converted to a JavaScript object
+	 *               automatically.
+	 * @param attributes  And OR'd list of JSProperty constants
+	 * @throws JSException
+	 */
 	public void property(String prop, Object value, int attributes) throws JSException {
+		JSString name = new JSString(prop);
 		JNIReturnObject jni = setProperty(
 				context.ctxRef(),
 				valueRef,
-				new JSString(prop).stringRef(),
+				name.stringRef,
 				(value instanceof JSValue)?((JSValue)value).valueRef():new JSValue(context,value).valueRef(),
 				attributes);
 		if (jni.exception!=0) {
 			throw (new JSException(new JSValue(jni.exception,context)));
 		}
 	}
+	/**
+	 * Sets the value of property 'prop'.  No JSProperty attributes are set.
+	 * @param prop  The name of the property to set
+	 * @param value  The Java object to set.  The Java object will be converted to a JavaScript object
+	 *               automatically.
+	 * @throws JSException
+	 */
 	public void property(String prop, Object value) throws JSException {
-		property(prop, value, 0);
+		property(prop, value, JSPropertyAttributeNone);
 	}
+	/**
+	 * Deletes a property from the object
+	 * @param prop  The name of the property to delete
+	 * @return true if the property was deleted, false otherwise
+	 * @throws JSException
+	 */
 	public boolean deleteProperty(String prop) throws JSException {
-		JNIReturnObject jni = deleteProperty(context.ctxRef(), valueRef, new JSString(prop).stringRef());
+		JSString name = new JSString(prop);
+		JNIReturnObject jni = deleteProperty(context.ctxRef(), valueRef, name.stringRef());
 		if (jni.exception!=0) {
 			throw (new JSException(new JSValue(jni.exception,context)));
 		}
 		return jni.bool;
 	}
+	/**
+	 * Returns the property at index 'index'.  Used for arrays.
+	 * @param index  The index of the property
+	 * @return  The JSValue of the property at index 'index'
+	 * @throws JSException
+	 */
 	public JSValue propertyAtIndex(int index) throws JSException {
 		JNIReturnObject jni = getPropertyAtIndex(context.ctxRef(), valueRef, index);
 		if (jni.exception!=0) {
@@ -364,6 +528,12 @@ public class JSObject extends JSValue {
 		}
 		return new JSValue(jni.reference,context);
 	}
+	/**
+	 * Sets the property at index 'index'.  Used for arrays.
+	 * @param index  The index of the property to set
+	 * @param value  The Java object to set, will be automatically converted to a JavaScript value
+	 * @throws JSException
+	 */
 	public void propertyAtIndex(int index, Object value) throws JSException {
 		JNIReturnObject jni = setPropertyAtIndex(context.ctxRef(), valueRef,
 				index, (value instanceof JSValue)?((JSValue)value).valueRef():new JSValue(context,value).valueRef());
@@ -371,24 +541,43 @@ public class JSObject extends JSValue {
 			throw (new JSException(new JSValue(jni.exception,context)));
 		}		
 	}
+	/**
+	 * Gets the list of set property names on the object
+	 * @return  A string array containing the property names
+	 */
 	public String [] propertyNames() {
 		long propertyNameArray = copyPropertyNames(context.ctxRef(), valueRef);
 		long [] refs = getPropertyNames(propertyNameArray);
 		String [] names = new String[refs.length];
 		for (int i=0; i<refs.length; i++) {
-			names[i] = new JSString(refs[i]).toString();
+			JSString name = new JSString(refs[i]);
+			names[i] = name.toString();
 		}
 		releasePropertyNames(propertyNameArray);
 		return names;
 	}
 	
+	/**
+	 * Determines if the object is a function
+	 * @return true if the object is a function, false otherwise
+	 */
 	public boolean isFunction() {
 		return isFunction(context.ctxRef(), valueRef);
 	}
+	/**
+	 * Determines if the object is a constructor
+	 * @return  true if the object is a constructor, false otherwise
+	 */
 	public boolean isConstructor() {
 		return isConstructor(context.ctxRef(), valueRef);
 	}
-	
+	/**
+	 * Calls object as a JavaScript function
+	 * @param thiz  The 'this' object on which the function operates, null if not on a constructor object
+	 * @param args  An array of JSValues to pass as arguments to the function
+	 * @return The JSValue returned by the function
+	 * @throws JSException
+	 */
 	public JSValue callAsFunction(JSObject thiz, JSValue [] args) throws JSException {
 		long [] valueRefs = new long[args.length];
 		for (int i=0; i<args.length; i++) {

@@ -63,7 +63,7 @@ NATIVE(JSString,jint,getLength) (PARAMS, long stringRef) {
 }
 
 NATIVE(JSString,jstring,toString) (PARAMS, long stringRef) {
-	char buffer[4096];
+	char buffer[JSStringGetMaximumUTF8CStringSize((JSStringRef) stringRef)+1];
 	size_t len = JSStringGetUTF8CString((JSStringRef) stringRef, buffer, sizeof buffer);
 	return env->NewStringUTF(buffer);
 }

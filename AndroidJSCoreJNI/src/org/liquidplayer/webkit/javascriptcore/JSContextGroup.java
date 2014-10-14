@@ -32,12 +32,27 @@
 */
 package org.liquidplayer.webkit.javascriptcore;
 
+/**
+ * A JSContextGroup associates JavaScript contexts with one another. Contexts
+ * in the same group may share and exchange JavaScript objects. Sharing and/or
+ * exchanging JavaScript objects between contexts in different groups will produce
+ * undefined behavior. When objects from the same context group are used in multiple
+ * threads, explicit synchronization is required.
+ *
+ */
 public class JSContextGroup {
 	private Long group;
 	
+	/**
+	 * Creates a new context group
+	 */
 	public JSContextGroup() {
 		group = create();
 	}
+	/**
+	 * Wraps an existing context group
+	 * @param groupRef  the JavaScriptCore context group reference
+	 */
 	public JSContextGroup(Long groupRef)
 	{
 		group = retain(group);
@@ -49,6 +64,10 @@ public class JSContextGroup {
 		super.finalize();
 	}
 	
+	/**
+	 * Gets the JavaScriptCore context group reference
+	 * @return  the JavaScriptCore context group reference
+	 */
 	public Long groupRef() {
 		return group;
 	}

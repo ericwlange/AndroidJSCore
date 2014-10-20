@@ -40,61 +40,60 @@ import android.support.v4.view.ViewPager;
 
 public class JSCoreExampleActivity extends FragmentActivity {
 
-    JSCoreExampleAdapter mExampleAdapter;
-    ViewPager mViewPager;
+	JSCoreExampleAdapter mExampleAdapter;
+	ViewPager mViewPager;
 
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
 		
-        final ActionBar actionBar = getActionBar();
+		final ActionBar actionBar = getActionBar();
 
 		setContentView(R.layout.activity_main);
 
-        mExampleAdapter =
-                new JSCoreExampleAdapter(
-                        getSupportFragmentManager());
-        mViewPager = (ViewPager) findViewById(R.id.pager);
-        mViewPager.setOnPageChangeListener(
-                new ViewPager.SimpleOnPageChangeListener() {
-                    @Override
-                    public void onPageSelected(int position) {
-                        // When swiping between pages, select the
-                        // corresponding tab.
-                        getActionBar().setSelectedNavigationItem(position);
-                    }
-                });
+		mExampleAdapter =
+				new JSCoreExampleAdapter(
+						getSupportFragmentManager());
+		mViewPager = (ViewPager) findViewById(R.id.pager);
+		mViewPager.setOnPageChangeListener(
+				new ViewPager.SimpleOnPageChangeListener() {
+					@Override
+					public void onPageSelected(int position) {
+						// When swiping between pages, select the
+						// corresponding tab.
+						getActionBar().setSelectedNavigationItem(position);
+					}
+				});
 
-        mViewPager.setAdapter(mExampleAdapter);
-        
+		mViewPager.setAdapter(mExampleAdapter);
+		
 		// Specify that tabs should be displayed in the action bar.
-	    actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
-	    // Create a tab listener that is called when the user changes tabs.
-	    ActionBar.TabListener tabListener = new ActionBar.TabListener() {
-	        public void onTabSelected(ActionBar.Tab tab, FragmentTransaction ft) {
-	            // When the tab is selected, switch to the
-	            // corresponding page in the ViewPager.
-	            mViewPager.setCurrentItem(tab.getPosition());
-	        }
+		// Create a tab listener that is called when the user changes tabs.
+		ActionBar.TabListener tabListener = new ActionBar.TabListener() {
+			public void onTabSelected(ActionBar.Tab tab, FragmentTransaction ft) {
+				// When the tab is selected, switch to the
+				// corresponding page in the ViewPager.
+				mViewPager.setCurrentItem(tab.getPosition());
+			}
 
-	        public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction ft) {
-	            // hide the given tab
-	        }
+			public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction ft) {
+				// hide the given tab
+			}
 
-	        public void onTabReselected(ActionBar.Tab tab, FragmentTransaction ft) {
-	            // probably ignore this event
-	        }
-	    };
-	    
-	    String [] examples = {"Owen Matthews", "Sharing Functions", "Async Callbacks"};
+			public void onTabReselected(ActionBar.Tab tab, FragmentTransaction ft) {
+				// probably ignore this event
+			}
+		};
+		
+		String [] examples = {"Owen Matthews", "Sharing Functions", "Async Callbacks"};
 
-	    // Add 3 tabs, specifying the tab's text and TabListener
-	    for (int i = 0; i < 3; i++) {
-	        actionBar.addTab(
-	                actionBar.newTab()
-	                        .setText(examples[i])
-	                        .setTabListener(tabListener));
-	    }
-
-    }
+		// Add 3 tabs, specifying the tab's text and TabListener
+		for (int i = 0; i < 3; i++) {
+			actionBar.addTab(
+					actionBar.newTab()
+					.setText(examples[i])
+					.setTabListener(tabListener));
+		}
+	}
 }

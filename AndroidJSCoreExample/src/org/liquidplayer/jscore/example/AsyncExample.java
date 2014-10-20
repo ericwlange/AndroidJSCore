@@ -64,31 +64,31 @@ public class AsyncExample implements IExample {
 			new CallMeLater(ms).execute(callback.toObject());
 		}
 		
-	    private class CallMeLater extends AsyncTask<JSObject, Void, JSObject> {
-	    	public CallMeLater(Integer ms) {
-	    		this.ms = ms;
-	    	}
-	    	private final Integer ms;
-	        @Override
-	        protected JSObject doInBackground(JSObject... params) {
-	        	try {
-	        		Thread.sleep(ms);
-	        	} catch (InterruptedException e) {
-	        		Thread.interrupted();
-	        	}
-	            return params[0];
-	        }
+		private class CallMeLater extends AsyncTask<JSObject, Void, JSObject> {
+			public CallMeLater(Integer ms) {
+				this.ms = ms;
+			}
+			private final Integer ms;
+			@Override
+			protected JSObject doInBackground(JSObject... params) {
+				try {
+					Thread.sleep(ms);
+				} catch (InterruptedException e) {
+					Thread.interrupted();
+				}
+				return params[0];
+			}
 
-	        @Override
-	        protected void onPostExecute(JSObject callback) {
-	        	JSValue args [] = { new JSValue(context,"This is a delayed message from Java!") };
-	        	try {
-	        		callback.callAsFunction(null, args);
-	        	} catch (JSException e) {
-	        		System.out.println(e);
-	        	}
-	        }
-	    }
+			@Override
+			protected void onPostExecute(JSObject callback) {
+				JSValue args [] = { new JSValue(context,"This is a delayed message from Java!") };
+				try {
+					callback.callAsFunction(null, args);
+				} catch (JSException e) {
+					System.out.println(e);
+				}
+			}
+		}
 	}
 	
 	public void run() throws JSException {

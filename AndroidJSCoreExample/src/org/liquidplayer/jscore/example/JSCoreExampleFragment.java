@@ -43,34 +43,34 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class JSCoreExampleFragment extends Fragment {
-    public static final String ARG_OBJECT = "object";
+	public static final String ARG_OBJECT = "object";
 
-    @Override
-    public View onCreateView(LayoutInflater inflater,
-            ViewGroup container, Bundle savedInstanceState) {
-        // The last two arguments ensure LayoutParams are inflated
-        // properly.
-        View rootView = inflater.inflate(
-                R.layout.example_fragment, container, false);
-        Bundle args = getArguments();
+	@Override
+	public View onCreateView(LayoutInflater inflater,
+			ViewGroup container, Bundle savedInstanceState) {
+		// The last two arguments ensure LayoutParams are inflated
+		// properly.
+		View rootView = inflater.inflate(
+				R.layout.example_fragment, container, false);
+		Bundle args = getArguments();
 
-        try {
-	        ExampleContext ctx = new ExampleContext(getActivity().getApplicationContext(),
-	        		(TextView)rootView.findViewById(R.id.textview));
-	        IExample example = null;
-	        switch(args.getInt(ARG_OBJECT)) {
-	        case 1: example = new OwenMatthewsExample(ctx); break;
-	        case 2: example = new SharingFunctionsExample(ctx); break;
-	        case 3: example = new AsyncExample(ctx); break;
-	        }
-	        example.run();
-        } catch (JSException e) {
+		try {
+			ExampleContext ctx = new ExampleContext(getActivity().getApplicationContext(),
+					(TextView)rootView.findViewById(R.id.textview));
+			IExample example = null;
+			switch(args.getInt(ARG_OBJECT)) {
+			case 1: example = new OwenMatthewsExample(ctx); break;
+			case 2: example = new SharingFunctionsExample(ctx); break;
+			case 3: example = new AsyncExample(ctx); break;
+			}
+			example.run();
+		} catch (JSException e) {
 			int duration = Toast.LENGTH_LONG;
 			Toast toast = Toast.makeText(getActivity().getApplicationContext(),
 					e.toString(), duration);
-			toast.show();        	
-        }
-        
-        return rootView;
-    }    
+			toast.show();
+		}
+		
+		return rootView;
+	}
 }

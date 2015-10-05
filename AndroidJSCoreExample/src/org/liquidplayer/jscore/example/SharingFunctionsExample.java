@@ -220,7 +220,7 @@ public class SharingFunctionsExample implements IExample {
 				"java_inst.setLocal('I am a property set in Java');\n" +
 				"log(js_inst.getLocal());\n" +
 				"log(java_inst.getLocal());"
-		);		
+		);
 		// We can even set local Java variables in our subclass which will persist
 		// so long as the wrapped JavaScriptObject is still alive
 		context.evaluateScript(

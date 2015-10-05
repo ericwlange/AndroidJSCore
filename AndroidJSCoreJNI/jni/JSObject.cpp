@@ -59,7 +59,7 @@ Instance::Instance(JNIEnv *env, jobject thiz, JSContextRef ctx) {
 	definition.finalize = StaticFinalizeCallback;
 	classRef = JSClassCreate(&definition);
 	this->thiz = env->NewGlobalRef(thiz);
-	objRef = JSObjectMake((JSContextRef) ctx, (JSClassRef) NULL, NULL);
+	objRef = JSObjectMake(ctx, classRef, NULL);
 	objMap[objRef] = this;
 }
 Instance::~Instance() {
@@ -95,7 +95,7 @@ void Instance::FinalizeCallback(JSObjectRef object)
 	} while (true);
 
 	env->CallVoidMethod(thiz, mid, (jlong)object);
-	}
+}
 NATIVE(JSObject,jlong,makeWithFinalizeCallback) (PARAMS, jlong ctx) {
 	Instance *instance = new Instance(env,thiz, (JSContextRef)ctx);
 	return instance->getObjRef();

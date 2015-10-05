@@ -295,7 +295,7 @@ public class JSObject extends JSValue {
 			JSObject thizz = this;
 			if (invokeObject.isConstructor) {
 				thizz = context.getObjectFromRef(thisObjectRef);
-				thizz.invokeObject = thiz;
+				thizz.invokeObject = thizz;
 				thizz.method = method;
 			}
 			invokeObject.thiz = context.getObjectFromRef(thisObjectRef);

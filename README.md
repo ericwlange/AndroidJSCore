@@ -31,7 +31,7 @@ data and functions between Java and JavaScript, wrapping JS classes in Java whic
 are accessible from both environments, and  asynchronous, multi-threaded callbacks between
 environments.
 
-    JSContext = new JSContext();
+    JSContext context = new JSContext();
     context.property("a", 5);
     JSValue aValue = context.property("a");
     double a = aValue.toNumber();

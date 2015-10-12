@@ -17,7 +17,7 @@ Design Goals
 
 Version
 -------
-0.1
+1.0
 
 Example
 -------
@@ -41,8 +41,38 @@ environments.
     JSValue newAValue = context.property("a");
     System.out.printlin(df.format(newAValue.toNumber())); // 10.0
 
-Building AndroidJSCore
-----------------------
+Using the AndrodJSCoreJNI SDK
+-------------------------
+
+If you just want to get started using the SDK in your app, simply download the
+[latest release] AndroidJSCoreJNI tarball, and untar it in the root directory of your Android
+project.  The tarball contains the necessary .jar with all classes, source code
+and javadocs, as well as the compiled .so libraries for the armeabi and armeabi-v7
+platforms.
+
+Building the Example App
+------------------------
+
+1. Clone the repo
+2. Untar the [latest release] AndroidJSCoreJNI tarball in the AndroidJSCore/AndroidJSCoreExample directory
+3. In Eclipse, File->Import->Android->Existing Android Code into Workspace
+4. Browse to the AndroidJSCore directory
+5. Select AndroidJSCoreExample (it is not necessary to import AndroidJSCoreJNI unless you want to build it)
+6. Click 'Finish'.  There will be errors.  That's ok.  We need to link the compatibility library.
+7. File->Import->Android->Existing Android Code into Workspace
+8. Browse to Your_Android_SDK_Directory/extras/android/support/v7 and click 'Open'
+9. Select 'appcompat' (you don't need the others) and click 'Finish'
+10. Right click on AndroidJSCoreExample project, Properties->Android
+11. Under 'Libraries', select 'Add...'
+12. Select the appcompat library and click 'Finish'
+
+You should now be able to build the .apk and run it on your device!
+
+Building AndroidJSCoreJNI
+-------------------------
+
+Up to this point, you can simply drop the SDK into your project and use it.  If, however, you'd like
+to contribute to the project or make any changes to the SDK, you will have to do some extra work.
 
 #### Step 1: Build JavaScriptCore library for Android
 
@@ -55,6 +85,11 @@ them and are able to build, then simply change this line
     APP_ABI := armeabi armeabi-v7a
 
 in AndroidJSCoreJNI/jni/Application.mk to add the appropriate platforms.
+
+I have heard that people have been having trouble with this step.  I don't control this project
+and the instructions may be out of date.  There is another way!  You can use my build.
+Download the JavaScriptCore_build from the [latest release] and untar it in some location 
+to which you will point Eclipse in Step 3, e.g. /Users/Eric/workspace/AndroidModuleReleases).
 
 #### Step 2: Import the AndroidJSCore project into Eclipse
 
@@ -85,7 +120,6 @@ Work in Progress
 ----------------
 
   - Test framework
-  - Some issues remain around garbage collection, debugging
 
 License
 -------
@@ -121,4 +155,5 @@ I am just sticking with Webkit's license, since this thing depends on it.
 [NDK]:https://developer.android.com/tools/sdk/ndk/index.html
 [CDT plugin]:http://www.eclipse.org/cdt/downloads.php
 [Here]:https://confluence.sakaiproject.org/pages/viewpage.action?pageId=61341742
+[latest release]:https://github.com/ericwlange/AndroidJSCore/releases
 

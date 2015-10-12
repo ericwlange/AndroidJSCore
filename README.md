@@ -40,6 +40,11 @@ environments.
     context.evaluateScript("a = 10");
     JSValue newAValue = context.property("a");
     System.out.printlin(df.format(newAValue.toNumber())); // 10.0
+    String script = 
+      "function factorial(x) { var f = 1; for(; x > 1; x--) f *= x; return f; }\n" +
+      "var fact_a = factorial(a);\n";
+    JSValue fact_a = context.property("fact_a");
+    System.out.printlin(df.format(fact_a.toNumber())); // 3628800.0
 
 Using the AndrodJSCoreJNI SDK
 -------------------------
@@ -88,7 +93,7 @@ in AndroidJSCoreJNI/jni/Application.mk to add the appropriate platforms.
 
 I have heard that people have been having trouble with this step.  I don't control this project
 and the instructions may be out of date.  There is another way!  You can use my build.
-Download the JavaScriptCore_build from the [latest release] and untar it in some location 
+Download the JavaScriptCore-Build from the [latest release] and untar it in some location 
 to which you will point Eclipse in Step 3, e.g. /Users/Eric/workspace/AndroidModuleReleases).
 
 #### Step 2: Import the AndroidJSCore project into Eclipse

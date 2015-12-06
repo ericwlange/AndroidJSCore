@@ -47,7 +47,7 @@ environments.
     JSValue fact_a = context.property("fact_a");
     System.out.printlin(df.format(fact_a.toNumber())); // 3628800.0
 
-Using the AndrodJSCoreJNI SDK
+Using the AndroidJSCoreJNI SDK
 -------------------------
 
 If you just want to get started using the SDK in your app, simply download the

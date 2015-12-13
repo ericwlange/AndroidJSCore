@@ -47,14 +47,33 @@ environments.
     JSValue fact_a = context.property("fact_a");
     System.out.printlin(df.format(fact_a.toNumber())); // 3628800.0
 
-Using the AndrodJSCoreJNI SDK
+Using the AndroidJSCoreJNI SDK
 -------------------------
 
 If you just want to get started using the SDK in your app, simply download the
 [latest release] AndroidJSCoreJNI tarball, and untar it in the root directory of your Android
 project.  The tarball contains the necessary .jar with all classes, source code
-and javadocs, as well as the compiled .so libraries for the armeabi and armeabi-v7
+and javadocs, as well as the compiled .so libraries for the arm, arm7, x86, and mips
 platforms.
+
+
+Refactor In Progress
+====================
+
+I am leaving the instructions below intact, because they will still work with older versions of
+the SDK.  As of Android 6.0, nothing south of here seems to work right.  The app won't run
+because of the deprecated navigation bar paradigm (it will build, but it crashes at runtime), and
+I can't update to the new UI concepts because Ecplise has been deprecated as a development
+platform.  On top of that, the referenced JavaScriptCore project is no longer a public repo, so
+I am stuck with old webkit code.  So, I am going to do 3 things for version 2:
+
+1. Upgrade to Android Studio
+2. Get the latest version of webkit to build a standalone JavaScriptCore
+3. Combine AndroidJSCoreJNI with JavaScriptCore to create a single library that compiles together
+
+This is likely going to take awhile, given that I have a full time job.  In the meantime, the
+release binaries should continue to work, with albeit an old version of JavaScriptCore, and you
+can feel free to play with what's below at your own risk.
 
 Building the Example App
 ------------------------
@@ -82,20 +101,14 @@ to contribute to the project or make any changes to the SDK, you will have to do
 
 #### Step 1: Build JavaScriptCore library for Android
 
-Follow the instructions in [this GitHub project] from Appcelerator to build the
-arm and armeabi-v7a libraries.  At the moment, the x86 and MIPS builds are not
-used in AndroidJSCore, but this was only because I couldn't immediately get their
-JavaScriptCore libraries to build correctly and lost interest.  If you want to use
-them and are able to build, then simply change this line
-    
-    APP_ABI := armeabi armeabi-v7a
+*NOTE*: This step is based on the instructions in [this GitHub project] from Appcelerator.
 
-in AndroidJSCoreJNI/jni/Application.mk to add the appropriate platforms.
-
-I have heard that people have been having trouble with this step.  I don't control this project
-and the instructions may be out of date.  There is another way!  You can use my build.
+This totes doesn't work anymore.  I don't control this project
+and the instructions are out of date.  There is another way!  You can use my build.
 Download the JavaScriptCore-Build from the [latest release] and untar it in some location 
 to which you will point Eclipse in Step 3, e.g. /Users/Eric/workspace/AndroidModuleReleases).
+
+I am working on getting this step to work again, and will post the project when I do.
 
 #### Step 2: Import the AndroidJSCore project into Eclipse
 
@@ -132,7 +145,7 @@ License
 
 I am just sticking with Webkit's license, since this thing depends on it.
 
- Copyright (c) 2014 Eric Lange. All rights reserved.
+ Copyright (c) 2014-2015 Eric Lange. All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:

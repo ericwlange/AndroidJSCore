@@ -8,3 +8,4 @@ libs/mips
 libs/x86
 obj
 project.properties
+build/

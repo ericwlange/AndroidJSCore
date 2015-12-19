@@ -1,10 +1,13 @@
 import os,sys
 from subprocess import call
 
-THIRD_PARTY  = '../config/third_party.txt'
+CONFIG       = '../config/'
+THIRD_PARTY  = CONFIG + 'third_party.txt'
 PATCHES      = '../patches/'
-CACHE = 'cache/'
-SOURCE = 'Source/'
+CACHE        = 'cache/'
+SOURCE       = 'Source/'
+TOOLCHAIN    = 'toolchain/'
+
 repos = []
 
 PKG_DIR  = 0
@@ -52,5 +55,5 @@ def read_third_party():
         return -1
 
 def apply_patches():
-    output = call(['cp','-r',PATCHES+'*',SOURCE])
+    output = call(['cp -r ' + PATCHES+'*' + ' ' + SOURCE],shell=True)
     return output

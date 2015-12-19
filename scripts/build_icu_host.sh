@@ -19,6 +19,6 @@ export CPPFLAGS="-Os -DU_USING_ICU_NAMESPACE=1 -fno-short-enums \
 sh $ICU_SOURCES/source/runConfigureICU $HOST --prefix=$PWD/icu_build --enable-extras=yes \
 --enable-strict=no --enable-static --enable-shared=no --enable-tests=yes \
 --enable-samples=no --enable-dyload=no
-make -j8
+make -j4
 make install
 

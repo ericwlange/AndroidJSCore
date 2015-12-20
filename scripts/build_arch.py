@@ -80,11 +80,11 @@ def build_icu(abi):
     return output
 
 def main(argv):
-    if len(argv) > 0:
-        output = build_glib(argv[0])
+    for abi in argv:
+        output = build_glib(abi)
         if output!=0: return output
         
-        output = build_icu(argv[0])
+        output = build_icu(abi)
         if output!=0: return output
 
 if __name__ == "__main__":

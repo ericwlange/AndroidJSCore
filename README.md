@@ -31,21 +31,23 @@ data and functions between Java and JavaScript, wrapping JS classes in Java whic
 are accessible from both environments, and  asynchronous, multi-threaded callbacks between
 environments.
 
-    JSContext context = new JSContext();
-    context.property("a", 5);
-    JSValue aValue = context.property("a");
-    double a = aValue.toNumber();
-    DecimalFormat df = new DecimalFormat(".#");
-    System.out.println(df.format(a)); // 5.0
-    context.evaluateScript("a = 10");
-    JSValue newAValue = context.property("a");
-    System.out.printlin(df.format(newAValue.toNumber())); // 10.0
-    String script = 
-      "function factorial(x) { var f = 1; for(; x > 1; x--) f *= x; return f; }\n" +
-      "var fact_a = factorial(a);\n";
-    context.evaluateScript(script);
-    JSValue fact_a = context.property("fact_a");
-    System.out.printlin(df.format(fact_a.toNumber())); // 3628800.0
+```java
+JSContext context = new JSContext();
+context.property("a", 5);
+JSValue aValue = context.property("a");
+double a = aValue.toNumber();
+DecimalFormat df = new DecimalFormat(".#");
+System.out.println(df.format(a)); // 5.0
+context.evaluateScript("a = 10");
+JSValue newAValue = context.property("a");
+System.out.printlin(df.format(newAValue.toNumber())); // 10.0
+String script = 
+  "function factorial(x) { var f = 1; for(; x > 1; x--) f *= x; return f; }\n" +
+  "var fact_a = factorial(a);\n";
+context.evaluateScript(script);
+JSValue fact_a = context.property("fact_a");
+System.out.printlin(df.format(fact_a.toNumber())); // 3628800.0
+```
 
 Using the AndroidJSCoreJNI SDK
 -------------------------

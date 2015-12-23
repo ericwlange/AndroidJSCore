@@ -17,6 +17,7 @@
 *   for running the data building tools.
 *
 */
+#define WTF_EXPORT_PRIVATE
 #include "unicode/utypes.h"
 #include "unicode/udata.h"
 #include "unicode/uversion.h"
@@ -38,7 +39,7 @@ typedef struct {
                                    /*        pointerTOC to OffsetTOC.     */
 } ICU_Data_Header;
 
-U_EXPORT const ICU_Data_Header U_ICUDATA_ENTRY_POINT = {
+extern "C" const ICU_Data_Header U_ICUDATA_ENTRY_POINT = {
     32,          /* headerSize */
     0xda,        /* magic1,  (see struct MappedData in udata.c)  */
     0x27,        /* magic2     */

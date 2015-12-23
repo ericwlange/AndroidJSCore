@@ -1,26 +1,44 @@
 import os,sys
-from subprocess import call
+from subprocess import call, check_output
+import inspect
 
-CONFIG       = '../config/'
+def require(tool, env):
+    path = os.environ.get(env) or tool
+    path = check_output(['which',path])
+    if path is None or path.strip() == '':
+        print "'" + tool + "' is required.  Either put in PATH or set " + env
+        return None
+    return path.strip()
+
+UNAME = require('uname', 'UNAME')
+CP    = require('cp',    'CP')
+TOUCH = require('touch', 'TOUCH')
+MAKE  = require('make',  'MAKE')
+if not UNAME or not CP or not TOUCH or not MAKE:
+   sys.exit(-1)
+
+SRC_ROOT     = os.path.dirname(inspect.getfile(inspect.currentframe()))
+
+CONFIG       = SRC_ROOT + '/../config/'
 THIRD_PARTY  = CONFIG + 'third_party.txt'
-PATCHES      = '../patches/'
+PATCHES      = SRC_ROOT + '/../patches/'
+SCRIPTS      = SRC_ROOT
 CACHE        = 'cache/'
 SOURCE       = 'Source/'
-TOOLCHAIN    = 'toolchain/'
+
+def determine_host():
+	output = check_output([UNAME,'-a'])
+	if "Darwin" in output: return 'MacOSX'
+	else: return 'Linux/gcc'
+
+ANDROID_NDK_ROOT = os.environ.get('ANDROID_NDK_ROOT')
+HOST             = determine_host()
 
 repos = []
 
 PKG_DIR  = 0
 PKG_URL  = 1
 PKG_FNAME= 2
-
-DEFAULT_ABIS = ['armeabi', 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64', 'mips', 'mips64']
-
-ANDROID_ABIS = os.environ.get('ANDROID_ABIS')
-if ANDROID_ABIS == None:
-    ANDROID_ABIS = DEFAULT_ABIS
-else:
-    ANDROID_ABIS = ANDROID_ABIS.rsplit()
 
 REQUIRED_ENV = ['ANDROID_SDK_ROOT', 'ANDROID_NDK_ROOT']
 
@@ -55,5 +73,9 @@ def read_third_party():
         return -1
 
 def apply_patches():
-    output = call(['cp -r ' + PATCHES+'*' + ' ' + SOURCE],shell=True)
-    return output
+    if not os.path.exists('.patches_applied'):
+        output = call([CP + ' -pr ' + PATCHES+'*' + ' ' + SOURCE],shell=True)
+        if output == 0: 
+            output = call([TOUCH,'.patches_applied'])
+        return output
+    return 0

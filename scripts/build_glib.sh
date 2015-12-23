@@ -32,19 +32,19 @@ mkdir -p ${INSTALL_LOC}/include
 cd ${ABI}
 mkdir -p libiconv-1.14
 cd libiconv-1.14
-${SRC_ROOT}/libiconv-1.14/configure --build=x86_64-unknown-linux-gnu --host=${HOST} --disable-rpath --prefix=${INSTALL_LOC}
+${SRC_ROOT}/libiconv-1.14/configure --build=x86_64-unknown-linux-gnu --host=${HOST} --disable-rpath --enable-shared=no --prefix=${INSTALL_LOC}
 make -j4
 make install
 
 mkdir -p ../libffi-3.0.13
 cd ../libffi-3.0.13
-${SRC_ROOT}/libffi-3.0.13/configure --build=x86_64-unknown-linux-gnu --host=${PREFIX} --prefix=${INSTALL_LOC} --enable-static
+${SRC_ROOT}/libffi-3.0.13/configure --build=x86_64-unknown-linux-gnu --host=${PREFIX} --prefix=${INSTALL_LOC} --enable-static --enable-shared=no
 make -j4
 make install
 
 mkdir -p ../gettext-0.18.3
 cd ../gettext-0.18.3
-${SRC_ROOT}/gettext-0.18.3/configure --build=x86_64-unknown-linux-gnu --host=${HOST} --disable-rpath --prefix=${INSTALL_LOC} --disable-libasprintf --disable-java --disable-native-java --disable-openmp --disable-curses
+${SRC_ROOT}/gettext-0.18.3/configure --build=x86_64-unknown-linux-gnu --host=${HOST} --disable-rpath --prefix=${INSTALL_LOC} --disable-libasprintf --disable-java --disable-native-java --disable-openmp --disable-curses --enable-shared=no
 sed -i.bak '/_prg_LDADD_1 = -lpthread/d' ./gettext-tools/tests/Makefile
 make -j4
 make install
@@ -57,6 +57,6 @@ export PATH=$PATH:${INSTALL_LOC}/bin
 mkdir -p ../glib-2.37.93
 cd ../glib-2.37.93
 cp ${CONFIG_DIR}/android.cache .
-${SRC_ROOT}/glib-2.37.93/configure --build=x86_64-unknown-linux-gnu --host=${PREFIX} --prefix=${INSTALL_LOC} --disable-dependency-tracking --cache-file=android.cache --enable-included-printf --enable-static
+${SRC_ROOT}/glib-2.37.93/configure --build=x86_64-unknown-linux-gnu --host=${PREFIX} --prefix=${INSTALL_LOC} --disable-dependency-tracking --cache-file=android.cache --enable-included-printf --enable-static --enable-shared=no
 make -j4
 make install

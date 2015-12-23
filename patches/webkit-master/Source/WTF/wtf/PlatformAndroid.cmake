@@ -7,13 +7,16 @@ list(APPEND WTF_SOURCES
     glib/MainThreadGLib.cpp
     glib/RunLoopGLib.cpp
     glib/WorkQueueGLib.cpp
-    icu/stubdata.c
+    icu/stubdata.cpp
 )
 
 list(APPEND WTF_LIBRARIES
     ${GLIB_GIO_LIBRARIES}
     ${GLIB_GOBJECT_LIBRARIES}
     ${GLIB_LIBRARIES}
+    ${FFI_LIBRARIES}
+    ${ICONV_LIBRARIES}
+    ${INTL_LIBRARIES}
 )
 
 list(APPEND WTF_SYSTEM_INCLUDE_DIRECTORIES

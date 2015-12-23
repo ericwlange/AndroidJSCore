@@ -3,5 +3,4 @@ libiconv-1.14        http://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.14.tar.gz
 libffi-3.0.13        ftp://sourceware.org/pub/libffi/libffi-3.0.13.tar.gz
 gettext-0.18.3       http://ftp.gnu.org/pub/gnu/gettext/gettext-0.18.3.tar.gz
 icu                  http://download.icu-project.org/files/icu4c/52.1/icu4c-52_1-src.tgz
-android-cmake-master https://github.com/taka-no-me/android-cmake/archive/master.zip
 webkit-master        https://github.com/ericwlange/webkit/archive/master.zip

@@ -5,7 +5,7 @@ AndroidJSCore is an Android Java JNI wrapper around Webkit's JavaScriptCore C li
 It is inspired by the Objective-C JavaScriptCore Framework included natively in
 iOS 7.  Being able to natively use JavaScript in an app without requiring the use of
 JavaScript injection on a bloated, slow, security-constrained WebView is very useful
-for many types of apps, such as games or platforms that support plugins.  However, 
+for many types of apps, such as games or platforms that support plugins.  However,
 its use is artificially limited because the framework is only supported on iOS.  Most
 developers want to use technologies that will scale across both major mobile
 operating systems.  AndroidJSCore was designed to support that requirement.
@@ -31,21 +31,23 @@ data and functions between Java and JavaScript, wrapping JS classes in Java whic
 are accessible from both environments, and  asynchronous, multi-threaded callbacks between
 environments.
 
-    JSContext context = new JSContext();
-    context.property("a", 5);
-    JSValue aValue = context.property("a");
-    double a = aValue.toNumber();
-    DecimalFormat df = new DecimalFormat(".#");
-    System.out.println(df.format(a)); // 5.0
-    context.evaluateScript("a = 10");
-    JSValue newAValue = context.property("a");
-    System.out.printlin(df.format(newAValue.toNumber())); // 10.0
-    String script = 
-      "function factorial(x) { var f = 1; for(; x > 1; x--) f *= x; return f; }\n" +
-      "var fact_a = factorial(a);\n";
-    context.evaluateScript(script);
-    JSValue fact_a = context.property("fact_a");
-    System.out.printlin(df.format(fact_a.toNumber())); // 3628800.0
+```java
+JSContext context = new JSContext();
+context.property("a", 5);
+JSValue aValue = context.property("a");
+double a = aValue.toNumber();
+DecimalFormat df = new DecimalFormat(".#");
+System.out.println(df.format(a)); // 5.0
+context.evaluateScript("a = 10");
+JSValue newAValue = context.property("a");
+System.out.println(df.format(newAValue.toNumber())); // 10.0
+String script =
+  "function factorial(x) { var f = 1; for(; x > 1; x--) f *= x; return f; }\n" +
+  "var fact_a = factorial(a);\n";
+context.evaluateScript(script);
+JSValue fact_a = context.property("fact_a");
+System.out.println(df.format(fact_a.toNumber())); // 3628800.0
+```
 
 Using the AndroidJSCoreJNI SDK
 -------------------------
@@ -105,15 +107,15 @@ to contribute to the project or make any changes to the SDK, you will have to do
 
 This totes doesn't work anymore.  I don't control this project
 and the instructions are out of date.  There is another way!  You can use my build.
-Download the JavaScriptCore-Build from the [latest release] and untar it in some location 
+Download the JavaScriptCore-Build from the [latest release] and untar it in some location
 to which you will point Eclipse in Step 3, e.g. /Users/Eric/workspace/AndroidModuleReleases).
 
 I am working on getting this step to work again, and will post the project when I do.
 
 #### Step 2: Import the AndroidJSCore project into Eclipse
 
-To build the AndroidJSCoreJNI library, you must have the [Android ADT plugin] (which 
-includes the SDK) and [NDK] installed.  You will have needed both the SDK and NDK in 
+To build the AndroidJSCoreJNI library, you must have the [Android ADT plugin] (which
+includes the SDK) and [NDK] installed.  You will have needed both the SDK and NDK in
 Step 1 as well.  You will also want to make sure you have the [CDT plugin] if you want
 to work with the C++ (JNI) code.
 
@@ -167,7 +169,7 @@ I am just sticking with Webkit's license, since this thing depends on it.
  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- 
+
 [blog post]:http://www.bignerdranch.com/blog/javascriptcore-and-ios-7/
 [this github project]:https://github.com/appcelerator/hyperloop/wiki/Building-JavaScriptCore-for-Android
 [Android ADT plugin]:http://developer.android.com/sdk/installing/installing-adt.html
@@ -175,4 +177,3 @@ I am just sticking with Webkit's license, since this thing depends on it.
 [CDT plugin]:http://www.eclipse.org/cdt/downloads.php
 [Here]:https://confluence.sakaiproject.org/pages/viewpage.action?pageId=61341742
 [latest release]:https://github.com/ericwlange/AndroidJSCore/releases
-

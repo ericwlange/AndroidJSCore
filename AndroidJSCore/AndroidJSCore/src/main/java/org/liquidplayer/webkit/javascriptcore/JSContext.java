@@ -202,7 +202,6 @@ public class JSContext extends JSObject {
 	protected native void garbageCollect(long ctx);
 	
 	static {
-		System.loadLibrary("JavaScriptCoreWrapper");
 		System.loadLibrary("JavaScriptCore");
 	}
 }

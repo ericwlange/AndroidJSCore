@@ -17,7 +17,7 @@ FIND_LIBRARY( ANDROID_CPPSTD_LIBRARY stdc++ )
 # we need to override the library install path to
 # put products in the correct architecture specific subdirectory.
 # -DANDROID_ABI=<arch> should have been specified on cmake invocation.
-set(LIB_INSTALL_DIR "lib/${ANDROID_ABI}")
+set(LIB_INSTALL_DIR "${ANDROID_ABI}")
 
 list(APPEND JavaScriptCore_SOURCES
     android/JSContext.cpp
@@ -41,11 +41,5 @@ list(APPEND JavaScriptCore_SYSTEM_INCLUDE_DIRECTORIES
     ${WTF_DIR}
 )
 
-# This will copy the Android.mk used for NDK_MODULE_PATH to the correct location in the install location.
-# The include/.. is a workaround/hack. If I use ${CMAKE_INSTALL_PREFIX},
-# the file gets copied into $CMAKE_INSTALL_PREFIX/$CMAKE_INSTALL_PREFIX,
-# e.g. ~/Source/AndroidModules/JavaScriptCore is the target 
-# specified by -DCMAKE_INSTALL_PREFIX=../AndroidModules/JavaScriptCore
-# and the file gets written to ~/Source/AndroidModules/JavaScriptCore/AndroidModules/JavaScriptCore
-install(FILES android/Android.mk DESTINATION include/..)
+install(FILES DESTINATION)
 

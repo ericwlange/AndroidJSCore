@@ -111,6 +111,7 @@ def set_env_variables(abi):
     os.environ['RUBY']       = RUBY
     os.environ['BISON']      = BISON
     os.environ['GPERF']      = GPERF
+    os.environ['JNI_LIBS']   = config_common.SRC_ROOT + '/../AndroidJSCore/AndroidJSCore/src/main/jniLibs'
 
 def build_glib(abi):
     if os.path.exists(abi+'/third_party/lib/libglib-2.0.a'):

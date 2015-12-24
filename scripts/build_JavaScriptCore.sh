@@ -28,5 +28,5 @@ $CMAKE -DCMAKE_TOOLCHAIN_FILE=${SRC_ROOT}/android.toolchain.cmake \
 -DEXPORT_ONLY_PUBLIC_SYMBOLS=1 -DCMAKE_INSTALL_PREFIX=${INSTALL_LOC}/../../JavaScriptCore \
 ${SRC_ROOT}/webkit-master/
 
-$MAKE -j4
-$MAKE install
+$MAKE -j8 install
+

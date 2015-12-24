@@ -38,5 +38,4 @@ $ICU_SOURCES/source/configure --with-cross-build=${ICU_CROSS_BUILD} \
 --enable-extras=yes --enable-strict=no --enable-static --enable-shared=no \
 --enable-tests=no --enable-samples=no --enable-dyload=no \
 --host=${PREFIX} --prefix=${INSTALL_LOC}
-make -j4
-make install 
+make -j8 install

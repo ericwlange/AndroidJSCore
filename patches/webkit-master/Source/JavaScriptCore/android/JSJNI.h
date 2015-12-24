@@ -38,5 +38,5 @@
 #include "JavaScriptCore/JavaScript.h"
 
 #define NATIVE(package,rt,f) extern "C" rt Java_org_liquidplayer_webkit_javascriptcore_##package##_##f
-#define PARAMS JNIEnv* env, jobject thiz
+#define PARAMS __attribute__((unused))JNIEnv* env, __attribute__((unused))jobject thiz
 

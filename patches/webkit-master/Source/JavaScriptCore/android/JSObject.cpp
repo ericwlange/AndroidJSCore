@@ -127,7 +127,7 @@ class Function {
 		long getObjRef() { return (long) objRef; }
 		static void release(JSContextRef ctx, JSObjectRef function);
 };
-Function::Function(JNIEnv* env, jobject thiz, JSContextRef ctx, JSStringRef name) {
+Function::Function(JNIEnv* env, jobject thiz, JSContextRef ctx, __attribute__((unused))JSStringRef name) {
 	env->GetJavaVM(&jvm);
 	definition = kJSClassDefinitionEmpty;
 	definition.callAsFunction = StaticFunctionCallback;
@@ -144,7 +144,7 @@ Function::~Function() {
 	jvm->AttachCurrentThread(&env, NULL);
 	env->DeleteGlobalRef(thiz);
 }
-void Function::release(JSContextRef ctx, JSObjectRef function) {
+void Function::release(__attribute__((unused))JSContextRef ctx, JSObjectRef function) {
 	Function *f = objMap[function];
 	if (f) {
 		delete f;

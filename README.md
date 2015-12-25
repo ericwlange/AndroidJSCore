@@ -62,6 +62,34 @@ platforms.
 Refactor In Progress
 ====================
 
+Version 2.0 very, very unstable
+-------------------------------
+
+If you want to work on the upcoming v2.0 build, you can build the whole enchilada by following the
+instructions below.  It builds, but doesn't work yet.  Still debugging, but feel free to pitch in.
+
+    # make sure Android Studio 1.5+ is set up
+    
+    % export ANDROID_SDK_ROOT=/path/to/sdk
+    % export ANDROID_NDK_ROOT=/path/to/ndk # at least 10e
+    % git clone https://github.com/ericwlange/AndroidJSCore.git
+    % mkdir build   ### can be any directory, anywhere -- out of source is best
+    % cd build
+    % ../AndroidJSCore/scripts/build_arch.py armeabi armeabi-v7a x86 mips ### this may take an hour
+    % cd ../AndroidJSCore/AndroidJSCore/
+    % ./gradlew assembleRelease
+  
+This will build a single Android library file `AndroidJSCore-release.aar` in `AndroidJSCore/build/outputs/aar/`
+which can then be added to your Android Studio project by going to `File->New->New Module...->Import .JAR/.AAR Package`
+and selecting this file.  You may also have to add
+
+    compile project(':AndroidJSCore-release')
+
+to the app `build.gradle` in the `dependencies` section.
+
+Version 1.0 deprecated instructions
+-----------------------------------
+
 I am leaving the instructions below intact, because they will still work with older versions of
 the SDK.  As of Android 6.0, nothing south of here seems to work right.  The app won't run
 because of the deprecated navigation bar paradigm (it will build, but it crashes at runtime), and

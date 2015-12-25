@@ -85,7 +85,7 @@ def create_toolchain(abi):
 		ANDROID_NDK_ROOT + '/build/tools/make-standalone-toolchain.sh',
 		'--toolchain='+TOOLCHAINS_GCC[abi]+GCC_VERSION,
 #        '--llvm-version='+CLANG_VERSION, # don't use CLANG -- too many bugs
-		'--platform=android-21',
+		'--platform=android-19',
 		'--install-dir='+abi+'/'+TOOLCHAIN,
 		'--system='+SYSTEM_OS,
 		'--stl=gnustl'
@@ -96,22 +96,23 @@ def create_toolchain(abi):
     return output
     
 def set_env_variables(abi):
-    os.environ['SRC_ROOT']   = os.path.abspath(config_common.SOURCE)
-    os.environ['CONFIG_DIR'] = os.path.abspath(config_common.CONFIG)
-    os.environ['PREBUILT']   = os.path.abspath(abi+'/'+TOOLCHAIN)
-    os.environ['ARCH']       = PLATFORMS[abi]
-    os.environ['ABI']        = abi
-    os.environ['INSTALL_LOC']= os.path.abspath(abi) + '/third_party'
-    os.environ['PREFIX']     = PREFIXES[abi]
-    os.environ['HOST']       = HOSTS[abi]
-    os.environ['CMAKE']      = CMAKE
-    os.environ['MAKE']       = MAKE
-    os.environ['PYTHON']     = PYTHON
-    os.environ['PERL']       = PERL
-    os.environ['RUBY']       = RUBY
-    os.environ['BISON']      = BISON
-    os.environ['GPERF']      = GPERF
-    os.environ['JNI_LIBS']   = config_common.SRC_ROOT + '/../AndroidJSCore/AndroidJSCore/src/main/jniLibs'
+    os.environ['SRC_ROOT']    = os.path.abspath(config_common.SOURCE)
+    os.environ['CONFIG_DIR']  = os.path.abspath(config_common.CONFIG)
+    os.environ['PREBUILT']    = os.path.abspath(abi+'/'+TOOLCHAIN)
+    os.environ['ARCH']        = PLATFORMS[abi]
+    os.environ['ABI']         = abi
+    os.environ['INSTALL_LOC'] = os.path.abspath(abi) + '/third_party'
+    os.environ['PREFIX']      = PREFIXES[abi]
+    os.environ['HOST']        = HOSTS[abi]
+    os.environ['CMAKE']       = CMAKE
+    os.environ['MAKE']        = MAKE
+    os.environ['PYTHON']      = PYTHON
+    os.environ['PERL']        = PERL
+    os.environ['RUBY']        = RUBY
+    os.environ['BISON']       = BISON
+    os.environ['GPERF']       = GPERF
+    os.environ['JNI_LIBS']    = config_common.SRC_ROOT + '/../AndroidJSCore/AndroidJSCore/src/main/jniLibs'
+    os.environ['PROJECT_ROOT']= config_common.SRC_ROOT + '/../'
 
 def build_glib(abi):
     if os.path.exists(abi+'/third_party/lib/libglib-2.0.a'):

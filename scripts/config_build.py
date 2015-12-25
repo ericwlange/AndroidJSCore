@@ -12,7 +12,8 @@ RM    = config_common.require('rm',   'RM')
 SH    = config_common.require('sh',   'SH')
 UNZIP = config_common.require('unzip','UNZIP')
 TAR   = config_common.require('tar',  'TAR')
-if not WGET or not RM or not SH or not UNZIP or not TAR:
+PATCH = config_common.require('patch','PATCH')
+if not WGET or not RM or not SH or not UNZIP or not TAR or not PATCH:
    sys.exit(-1)
 
 def setup_dirs():
@@ -40,9 +41,14 @@ def get_third_party():
             elif pkg[config_common.PKG_FNAME].endswith('tar.xz') or pkg[config_common.PKG_FNAME].endswith('.tgx'):
                 output = call([TAR,'xvf',pkg[config_common.PKG_FNAME],'-C',config_common.SOURCE])
             else: output = -1
+            if output==0 and os.path.exists(config_common.PATCHES+pkg[config_common.PKG_DIR]+'.patch'):
+                output = call([PATCH,
+                    '-d',  config_common.SOURCE+pkg[config_common.PKG_DIR],
+                    '-p1',
+                    '-i',  config_common.PATCHES+pkg[config_common.PKG_DIR]+'.patch' ])
             if output != 0:
                 call([RM,'-f',pkg[config_common.PKG_DIR]])
-                print 'ERROR: ' + pkg[config_common.PKG_FNAME] + ' failed to uncompress.'
+                print 'ERROR: ' + pkg[config_common.PKG_FNAME] + ' failed to uncompress/patch'
                 return output
     return 0
 
@@ -70,9 +76,6 @@ def main(argv):
     if result != 0: return result
 
     result = get_third_party()
-    if result != 0: return result
-
-    result = config_common.apply_patches()
     if result != 0: return result
 
     result = build_icu_host()

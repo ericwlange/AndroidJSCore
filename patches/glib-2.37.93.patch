@@ -1,0 +1,27 @@
+diff -Naur glib-2.37.93/gio/gdbusmessage.c ../Source/glib-2.37.93/gio/gdbusmessage.c
+--- glib-2.37.93/gio/gdbusmessage.c	2013-08-08 03:00:40.000000000 -0700
++++ ../Source/glib-2.37.93/gio/gdbusmessage.c	2015-12-24 11:59:51.000000000 -0800
+@@ -3468,9 +3468,9 @@
+                                           statbuf.st_mode);
+                   g_string_append_printf (fs, "%s" "ino=%" G_GUINT64_FORMAT, fs->len > 0 ? "," : "",
+                                           (guint64) statbuf.st_ino);
+-                  g_string_append_printf (fs, "%s" "uid=%d", fs->len > 0 ? "," : "",
++                  g_string_append_printf (fs, "%s" "uid=%ld", fs->len > 0 ? "," : "",
+                                           statbuf.st_uid);
+-                  g_string_append_printf (fs, "%s" "gid=%d", fs->len > 0 ? "," : "",
++                  g_string_append_printf (fs, "%s" "gid=%ld", fs->len > 0 ? "," : "",
+                                           statbuf.st_gid);
+                   g_string_append_printf (fs, "%s" "rdev=%d:%d", fs->len > 0 ? "," : "",
+                                           major (statbuf.st_rdev), minor (statbuf.st_rdev));
+diff -Naur glib-2.37.93/gio/gthreadedresolver.c ../Source/glib-2.37.93/gio/gthreadedresolver.c
+--- glib-2.37.93/gio/gthreadedresolver.c	2013-08-08 03:00:40.000000000 -0700
++++ ../Source/glib-2.37.93/gio/gthreadedresolver.c	2015-12-18 11:32:54.000000000 -0800
+@@ -247,7 +247,7 @@
+ 
+ #if defined(G_OS_UNIX)
+ 
+-#ifdef __BIONIC__
++#if defined(__BIONIC__) && !defined(_ARPA_NAMESER_COMPAT_)
+ /* Copy from bionic/libc/private/arpa_nameser_compat.h
+  * and bionic/libc/private/arpa_nameser.h */
+ typedef struct {

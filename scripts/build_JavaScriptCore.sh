@@ -1,5 +1,4 @@
 # set INSTALL_LOC
-# set SRC_ROOT
 # set ABI
 # set PREBUILT
 # set CMAKE
@@ -10,13 +9,13 @@
 # set BISON
 # set GPERF
 # set JNI_LIBS
-
+# set PROJECT_ROOT
 set -e
 
 mkdir -p ${ABI}/webkit
 cd ${ABI}/webkit
 
-$CMAKE -DCMAKE_TOOLCHAIN_FILE=${SRC_ROOT}/android.toolchain.cmake \
+$CMAKE -DCMAKE_TOOLCHAIN_FILE=${PROJECT_ROOT}/scripts/android.toolchain.cmake \
 -DANDROID_ABI=${ABI} \
 -DCMAKE_BUILD_TYPE=MinSizeRel \
 -DANDROID_STANDALONE_TOOLCHAIN=${PREBUILT} \
@@ -27,7 +26,7 @@ $CMAKE -DCMAKE_TOOLCHAIN_FILE=${SRC_ROOT}/android.toolchain.cmake \
 -DRUBY_EXECUTABLE=$RUBY -DENABLE_LLINT=1 -DSHARED_CORE=1 \
 -DBISON_EXECUTABLE=$BISON -DGPERF_EXECUTABLE=$GPERF \
 -DEXPORT_ONLY_PUBLIC_SYMBOLS=1 -DCMAKE_INSTALL_PREFIX=${JNI_LIBS} \
-${SRC_ROOT}/webkit-master/
+${PROJECT_ROOT}/webkit
 
-$MAKE -j8 install
+$MAKE -j6 install
 

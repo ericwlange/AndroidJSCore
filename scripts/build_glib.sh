@@ -9,7 +9,7 @@
 
 set -e
 
-export API_LEVEL=21
+export API_LEVEL=19
 export PLATFORM=$ANDROID_NDK_ROOT/platforms/android-$API_LEVEL/${ARCH}
 export CFLAGS="-fPIC -DANDROID -Wno-multichar -I${INSTALL_LOC}/include -I${INSTALL_LOC}/lib/libffi-3.0.13/include -I${ANDROID_NDK_ROOT}/sources/android/support/include -Wno-error=implicit-function-declaration"
 export CPPFLAGS="-I${PLATFORM}/usr/include/ -I${INSTALL_LOC}/include -I${INSTALL_LOC}/lib/libffi-3.0.13/include -DANDROID -DNO_XMALLOC -mandroid -I${ANDROID_NDK_ROOT}/sources/android/support/include -Wno-error=implicit-function-declaration"

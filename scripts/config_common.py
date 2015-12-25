@@ -71,11 +71,3 @@ def read_third_party():
         return 0
     else:
         return -1
-
-def apply_patches():
-    if not os.path.exists('.patches_applied'):
-        output = call([CP + ' -pr ' + PATCHES+'*' + ' ' + SOURCE],shell=True)
-        if output == 0: 
-            output = call([TOUCH,'.patches_applied'])
-        return output
-    return 0

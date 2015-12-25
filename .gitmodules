@@ -1,0 +1,3 @@
+[submodule "webkit"]
+	path = webkit
+	url = https://github.com/ericwlange/webkit.git

@@ -179,7 +179,7 @@ public class SharingFunctionsExample implements IExample {
 	}
 	
 	public void run() throws JSException {
-		
+		context.clear();
 		context.log("JS Object with Java methods exposed as properties");
 		context.log("---------------------");
 		ObjectExample objX = new ObjectExample(context);

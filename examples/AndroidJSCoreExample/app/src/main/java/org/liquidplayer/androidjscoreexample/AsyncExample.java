@@ -92,6 +92,7 @@ public class AsyncExample implements IExample {
 	}
 	
 	public void run() throws JSException {
+		context.clear();
 		context.log("Asynchrous Callback");
 		context.log("---------------------");
 		AsyncObj async = new AsyncObj(context);

@@ -50,6 +50,11 @@ public class ExampleContext extends JSContext implements IExampleContext {
 	private final Context androidCtx;
 	private final TextView tv;
 	private String log = "";
+
+	public void clear() {
+		log = "";
+		tv.setText(log);
+	}
 	
 	@Override
 	public void alert(String msg) {

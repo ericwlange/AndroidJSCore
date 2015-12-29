@@ -22,7 +22,8 @@ if not BASH or not RM or not SH or not CMAKE or not MAKE:
 if not PYTHON or not PERL or not RUBY or not BISON or not GPERF:
    sys.exit(-1)
 
-DEFAULT_ABIS = ['armeabi', 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64', 'mips', 'mips64']
+SUPPORTED_ABIS = ['armeabi', 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64', 'mips', 'mips64']
+DEFAULT_ABIS   = ['armeabi', 'armeabi-v7a', 'x86', 'mips']
 
 TOOLCHAIN    = 'toolchain/'
 
@@ -56,6 +57,16 @@ PREFIXES = {
     'mips64'      : 'mips64el-linux-android'
 }
 
+ANDROID_APIS = {
+    'armeabi'     : '19',
+    'armeabi-v7a' : '19',
+    'arm64-v8a'   : '19',
+    'x86'         : '19',
+    'x86_64'      : '21',
+    'mips'        : '21',
+    'mips64'      : '21'
+}
+
 GCC_VERSION      = '4.9'
 if HOST == 'MacOSX':
     SYSTEM_OS = 'darwin-x86_64'
@@ -74,7 +85,7 @@ TOOLCHAINS_GCC = {
 
 CLANG_VERSION  = '3.6'
 
-def create_toolchain(abi):
+def create_toolchain(abi,api):
     if os.path.exists(abi+'/'+TOOLCHAIN):
         return 0
     if not os.path.exists(abi):
@@ -85,7 +96,7 @@ def create_toolchain(abi):
 		ANDROID_NDK_ROOT + '/build/tools/make-standalone-toolchain.sh',
 		'--toolchain='+TOOLCHAINS_GCC[abi]+GCC_VERSION,
 #        '--llvm-version='+CLANG_VERSION, # don't use CLANG -- too many bugs
-		'--platform=android-19',
+		'--platform=android-' + api,
 		'--install-dir='+abi+'/'+TOOLCHAIN,
 		'--system='+SYSTEM_OS,
 		'--stl=gnustl'
@@ -113,6 +124,8 @@ def set_env_variables(abi):
     os.environ['GPERF']       = GPERF
     os.environ['JNI_LIBS']    = config_common.SRC_ROOT + '/../AndroidJSCore/AndroidJSCore/src/main/jniLibs'
     os.environ['PROJECT_ROOT']= config_common.SRC_ROOT + '/../'
+    os.environ['ANDROID_API'] = ANDROID_APIS[abi]
+    os.environ['AAR_INSTALL'] = config_common.SRC_ROOT + '/../lib'
 
 def build_glib(abi):
     if os.path.exists(abi+'/third_party/lib/libglib-2.0.a'):
@@ -132,23 +145,48 @@ def build_icu(abi):
         print "ERROR: Can't build GLIB library for " + abi
     return output
 
-def build_JavaScriptCore(abi):
+def build_JavaScriptCore(abi,link_icu,disable_jit):
+    os.environ['EXTRA_FLAGS'] = ''
+    if link_icu:
+        os.environ['EXTRA_FLAGS'] = os.environ['EXTRA_FLAGS'] + '-DLINK_ICU_DATA=1 '
+    if disable_jit:    
+        os.environ['EXTRA_FLAGS'] = os.environ['EXTRA_FLAGS'] + '-DDISABLE_JIT=1 '
+
     output = call([SH, config_common.SCRIPTS + '/build_JavaScriptCore.sh'])
     if output != 0:
         print "ERROR: Can't build JavaScriptCore library for " + abi
     return output
+    
+def build_aar():
+    output = call([SH, config_common.SCRIPTS + '/build_aar.sh'])
+    if output != 0:
+        print "ERROR: Can't build android library"
+    return output
 
 def main(argv):
+    link_icu = False
+    disable_jit = True
+    if '--link-icu-data' in argv:
+        link_icu = True
+        argv.remove('--link-icu-data')
+    if '--enable-jit' in argv:
+        disable_jit = False
+        argv.remove('--enable-jit')
+
+    if len(argv) == 0:
+	    argv = DEFAULT_ABIS
+
+    output = config_build.main([])
+    if output!=0: return output
+	
     for abi in argv:
-    	if abi not in DEFAULT_ABIS:
+    	if abi not in SUPPORTED_ABIS:
     	    print "ABI '" + abi + "' not supported."
     	    return -1
     	
-        config_build.main([])    	
-    	
     	set_env_variables(abi)
     	
-    	output = create_toolchain(abi)
+    	output = create_toolchain(abi,ANDROID_APIS[abi])
         if output!=0: return output
     
         output = build_glib(abi)
@@ -157,8 +195,13 @@ def main(argv):
         output = build_icu(abi)
         if output!=0: return output
 
-        output = build_JavaScriptCore(abi)
+        output = build_JavaScriptCore(abi,link_icu,disable_jit)
         if output!=0: return output
+    
+    output = build_aar()
+    if output!=0: return output
+    
+    print 'AndroidJSCore library successfully built and installed in ' + os.path.abspath(config_common.SRC_ROOT + '/../lib')
 
 if __name__ == "__main__":
    main(sys.argv[1:])

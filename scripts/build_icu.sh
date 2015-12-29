@@ -5,13 +5,14 @@
 #set SRC_ROOT
 #set ARCH
 #set MARCH
+#set ANDROID_API
 
 set -e
 
 export AR=${PREBUILT}/bin/${PREFIX}-ar
 export ICU_SOURCES=$SRC_ROOT/icu
-export ANDROIDVER=19
-export API_LEVEL=19
+export ANDROIDVER=${ANDROID_API}
+export API_LEVEL=${ANDROID_API}
 export HOST_ICU=${PWD}/${ABI}/icu
 export ICU_CROSS_BUILD=${PWD}/icu_host
 export PLATFORM=$ANDROID_NDK_ROOT/platforms/android-$API_LEVEL/${ARCH}

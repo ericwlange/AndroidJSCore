@@ -80,6 +80,8 @@ def main(argv):
 
     result = build_icu_host()
     if result != 0: return result
+    
+    return 0
 
 if __name__ == "__main__":
    main(sys.argv[1:])

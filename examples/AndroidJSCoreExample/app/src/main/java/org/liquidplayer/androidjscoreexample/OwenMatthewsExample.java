@@ -132,6 +132,7 @@ public class OwenMatthewsExample implements IExample {
      * exactly.  http://www.bignerdranch.com/blog/javascriptcore-and-ios-7/
      */
     public void run() throws JSException {
+        context.clear();
 		
         context.log("Share And Share Alike");
         context.log("---------------------");

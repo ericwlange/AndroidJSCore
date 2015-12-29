@@ -22,8 +22,9 @@ import android.widget.Toast;
 
 import org.liquidplayer.webkit.javascriptcore.JSException;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ViewPager.OnPageChangeListener {
 
+    public static final String ARG_OBJECT = "object";
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
      * fragments for each of the sections. We use a
@@ -33,11 +34,14 @@ public class MainActivity extends AppCompatActivity {
      * {@link android.support.v4.app.FragmentStatePagerAdapter}.
      */
     private SectionsPagerAdapter mSectionsPagerAdapter;
+    protected JSCoreExampleFragment mCurrentFragment;
 
     /**
      * The {@link ViewPager} that will host the section contents.
      */
     private ViewPager mViewPager;
+
+    public static int position = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
+        mViewPager.addOnPageChangeListener(this);
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
@@ -63,11 +68,24 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
+
             }
         });
 
     }
 
+    @Override
+    public void onPageSelected(int position) {
+        MainActivity.position = position + 1;
+    }
+
+    @Override
+    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+    }
+
+    @Override
+    public void onPageScrollStateChanged(int state) {
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -92,13 +110,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public static class JSCoreExampleFragment extends Fragment {
-        public static final String ARG_OBJECT = "object";
+
+        public IExample example = null;
 
         public static JSCoreExampleFragment newInstance(int i) {
             JSCoreExampleFragment fragment = new JSCoreExampleFragment();
             Bundle args = new Bundle();
             // Our object is just an integer :-P
-            args.putInt(JSCoreExampleFragment.ARG_OBJECT, i + 1);
+            args.putInt(ARG_OBJECT, i);
             fragment.setArguments(args);
             return fragment;
         }
@@ -115,13 +134,14 @@ public class MainActivity extends AppCompatActivity {
             try {
                 ExampleContext ctx = new ExampleContext(getActivity().getApplicationContext(),
                         (TextView)rootView.findViewById(R.id.textview));
-                IExample example = null;
                 switch(args.getInt(ARG_OBJECT)) {
                     case 1: example = new OwenMatthewsExample(ctx); break;
                     case 2: example = new SharingFunctionsExample(ctx); break;
                     case 3: example = new AsyncExample(ctx); break;
                 }
-                example.run();
+                if (position == args.getInt(ARG_OBJECT)) {
+                    example.run();
+                }
             } catch (JSException e) {
                 int duration = Toast.LENGTH_LONG;
                 Toast toast = Toast.makeText(getActivity().getApplicationContext(),
@@ -131,8 +151,8 @@ public class MainActivity extends AppCompatActivity {
 
             return rootView;
         }
-    }
 
+    }
 
     /**
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
@@ -148,7 +168,25 @@ public class MainActivity extends AppCompatActivity {
         public Fragment getItem(int position) {
             // getItem is called to instantiate the fragment for the given page.
             // Return a PlaceholderFragment (defined as a static inner class below).
-            return JSCoreExampleFragment.newInstance(position + 1);
+            JSCoreExampleFragment fragment = JSCoreExampleFragment.newInstance(position + 1);
+            return fragment;
+        }
+
+        @Override
+        public void setPrimaryItem(ViewGroup container, int position, Object object) {
+            if (mCurrentFragment != object) {
+                mCurrentFragment = (JSCoreExampleFragment) object;
+                try {
+                    if (mCurrentFragment != null && mCurrentFragment.example != null) {
+                        mCurrentFragment.example.run();
+                    }
+                } catch (JSException e) {
+                    int duration = Toast.LENGTH_LONG;
+                    Toast toast = Toast.makeText(mCurrentFragment.getActivity().getApplicationContext(),
+                            e.toString(), duration);
+                    toast.show();
+                }
+            }
         }
 
         @Override

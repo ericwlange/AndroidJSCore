@@ -1,9 +1,11 @@
 AndroidJSCore
 =============
 
+AndroidJSCore allows Android developers to use JavaScript natively in their apps.
+
 AndroidJSCore is an Android Java JNI wrapper around Webkit's JavaScriptCore C library.
 It is inspired by the Objective-C JavaScriptCore Framework included natively in
-iOS 7.  Being able to natively use JavaScript in an app without requiring the use of
+iOS 7 and above.  Being able to natively use JavaScript in an app without requiring the use of
 JavaScript injection on a bloated, slow, security-constrained WebView is very useful
 for many types of apps, such as games or platforms that support plugins.  However,
 its use is artificially limited because the framework is only supported on iOS.  Most
@@ -17,7 +19,7 @@ Design Goals
 
 Version
 -------
-1.0
+2.0 (not yet released, but HEAD works)
 
 Example
 -------
@@ -49,121 +51,126 @@ JSValue fact_a = context.property("fact_a");
 System.out.println(df.format(fact_a.toNumber())); // 3628800.0
 ```
 
-Using the AndroidJSCoreJNI SDK
--------------------------
-
-If you just want to get started using the SDK in your app, simply download the
-[latest release] AndroidJSCoreJNI tarball, and untar it in the root directory of your Android
-project.  The tarball contains the necessary .jar with all classes, source code
-and javadocs, as well as the compiled .so libraries for the arm, arm7, x86, and mips
-platforms.
-
-
-Refactor In Progress
-====================
-
-Version 2.0 very, very unstable
+Building AndroidJSCore-2.0 library
 -------------------------------
 
-If you want to work on the upcoming v2.0 build, you can build the whole enchilada by following the
-instructions below.  It builds, but doesn't work yet.  Still debugging, but feel free to pitch in.
+#### TL;DR - do this
 
-    # make sure Android Studio 1.5+ is set up
-    
-    % export ANDROID_SDK_ROOT=/path/to/sdk
-    % export ANDROID_NDK_ROOT=/path/to/ndk # at least 10e
+Set `ANDROID_SDK_ROOT` and `ANDROID_NDK_ROOT` environment variables
+
     % git clone https://github.com/ericwlange/AndroidJSCore.git
-    % mkdir build   ### can be any directory, anywhere -- out of source is best
+    % mkdir build
     % cd build
-    % ../AndroidJSCore/scripts/build_arch.py armeabi armeabi-v7a x86 mips ### this may take an hour
-    % cd ../AndroidJSCore/AndroidJSCore/
-    % ./gradlew assembleRelease
-  
-This will build a single Android library file `AndroidJSCore-release.aar` in `AndroidJSCore/build/outputs/aar/`
-which can then be added to your Android Studio project by going to `File->New->New Module...->Import .JAR/.AAR Package`
-and selecting this file.  You may also have to add
+    % ../AndroidJSCore/scripts/build
 
-    compile project(':AndroidJSCore-release')
+Your library now sits in `lib/AndroidJSCore-2.0-release.aar`.  To use it, simply
+add the following to your app's `build.gradle`:
 
-to the app `build.gradle` in the `dependencies` section.
+    repositories {
+        flatDir {
+            dirs '/path/to/lib'
+        }
+    }
 
-Version 1.0 deprecated instructions
------------------------------------
+    dependencies {
+        compile(name:'AndroidJSCore-2.0-release', ext:'aar')
+    }
+    
+If something goes wrong or you want to understand what's going on, read on.
 
-I am leaving the instructions below intact, because they will still work with older versions of
-the SDK.  As of Android 6.0, nothing south of here seems to work right.  The app won't run
-because of the deprecated navigation bar paradigm (it will build, but it crashes at runtime), and
-I can't update to the new UI concepts because Ecplise has been deprecated as a development
-platform.  On top of that, the referenced JavaScriptCore project is no longer a public repo, so
-I am stuck with old webkit code.  So, I am going to do 3 things for version 2:
+#### Step 1 - Set up required tools
 
-1. Upgrade to Android Studio
-2. Get the latest version of webkit to build a standalone JavaScriptCore
-3. Combine AndroidJSCoreJNI with JavaScriptCore to create a single library that compiles together
+At the moment, this has all been verified to work on Mac OSX.  Once I can verify
+that it builds on Linux, as well, I will tag and release 2.0.  If anyone else is
+married to that OS from Seattle, please feel free to get it working and contribute!
 
-This is likely going to take awhile, given that I have a full time job.  In the meantime, the
-release binaries should continue to work, with albeit an old version of JavaScriptCore, and you
-can feel free to play with what's below at your own risk.
+1. Download and install the latest version of [Android Studio], including the [NDK]
+2. Set two environment variables: `ANDROID_SDK_ROOT` and `ANDROID_NDK_ROOT` to point to the SDK and NDK directories, respectively
+3. Clone the repo: `git clone https://github.com/ericwlange/AndroidJSCore.git`
 
-Building the Example App
-------------------------
+This last step will grab both the AndroidJSCore repo, as well as my fork of the
+[webkit] repo.  The latter part is huge, like 6 GBs or something, so settle in.
 
-1. Clone the repo
-2. Untar the [latest release] AndroidJSCoreJNI tarball in the AndroidJSCore/AndroidJSCoreExample directory
-3. In Eclipse, File->Import->Android->Existing Android Code into Workspace
-4. Browse to the AndroidJSCore directory
-5. Select AndroidJSCoreExample (it is not necessary to import AndroidJSCoreJNI unless you want to build it)
-6. Click 'Finish'.  There will be errors.  That's ok.  We need to link the compatibility library.
-7. File->Import->Android->Existing Android Code into Workspace
-8. Browse to Your_Android_SDK_Directory/extras/android/support/v7 and click 'Open'
-9. Select 'appcompat' (you don't need the others) and click 'Finish'
-10. Right click on AndroidJSCoreExample project, Properties->Android
-11. Under 'Libraries', select 'Add...'
-12. Select the appcompat library and click 'Finish'
+The build process requires a bunch of other standard UNIX tools, too.  The below script will
+complain if it can't find something, but you should expect to have the command-line
+tools (OSX), `gcc`, `make`, `cmake`, `python`, `perl`, `gperf`, `bison`, `ruby` and
+a smattering of other standard developer tools installed.
 
-You should now be able to build the .apk and run it on your device!
+#### Step 2 - Create a build directory
 
-Building AndroidJSCoreJNI
--------------------------
+This directory can be anywhere, but an out-of-source build is always recommended, as
+you can blow the whole thing away and start over if something goes awry.
 
-Up to this point, you can simply drop the SDK into your project and use it.  If, however, you'd like
-to contribute to the project or make any changes to the SDK, you will have to do some extra work.
+    % mkdir build
+    % cd build
+    
+#### Step 3 - Build AndroidJSCore-2.0-release.aar
 
-#### Step 1: Build JavaScriptCore library for Android
+From the `build` (or whatever you named it) directory, run the `build` script in `scripts/`:
 
-*NOTE*: This step is based on the instructions in [this GitHub project] from Appcelerator.
+    % ../AndroidJSCore/scripts/build
 
-This totes doesn't work anymore.  I don't control this project
-and the instructions are out of date.  There is another way!  You can use my build.
-Download the JavaScriptCore-Build from the [latest release] and untar it in some location
-to which you will point Eclipse in Step 3, e.g. /Users/Eric/workspace/AndroidModuleReleases).
+Note, the above assumes that your build directory is at the same level as the `AndroidJSCore`
+project.  Salt to taste.
 
-I am working on getting this step to work again, and will post the project when I do.
+This can take an hour, as it does a lot.  Roughly, it will:
+1. Download the `iconv`, `ffi`, `gettext`, `glib-2.0`, and `icu` library sources
+2. Patch the sources to make them build on Android
+3. Build the `icu` library for your host OS
 
-#### Step 2: Import the AndroidJSCore project into Eclipse
+And then for each 32-bit architecture (armeabi, armeabi-v7a, x86, and mips), it will:
+1. Install the prebuilt toolchain for the ABI
+2. Build the five libraries downloaded above
+3. Build the appropriate sections of WebKit required for `JavaScriptCore`
 
-To build the AndroidJSCoreJNI library, you must have the [Android ADT plugin] (which
-includes the SDK) and [NDK] installed.  You will have needed both the SDK and NDK in
-Step 1 as well.  You will also want to make sure you have the [CDT plugin] if you want
-to work with the C++ (JNI) code.
+Finally, it will pull it all together by building the `AndroidJSCore-2.0-release.aar`
+library.  That file will be installed in the `lib/` directory of the `AndroidJSCore`
+source tree.
 
-#### Step 3: Point Eclipse at your NDK
-Set the path for the NDK you installed in Preferences->Android->NDK->NDK Location
+The `build` script has some options:
 
-#### Step 4: Set environment variables
-You need to set 2 environment variables.  Right-click on AndroidJSCoreJNI project and
-select Properties->C/C++ Build->Environment.  Set the following variables:
-  * ANDROID_NDK_ROOT to point at your NDK location (e.g. /Users/Eric/workspace/android-ndk-r9d)
-  * NDK_MODULE_PATH to point to where you installed the JavaScriptCore libraries/includes in step 1 (e.g. /Users/Eric/workspace/AndroidModuleReleases)
+`--link-icu-data` will force the ICU data library to be linked to the source.  By default,
+this library is stubbed out.  The ICU data library adds a whopping 15MB or so to each
+arch (uncompressed).  This library is used for unicode strings, and it isn't clear whether
+it is truly required for JavaScriptCore to function or not.  It is definitely required for
+WebKit as a whole, but it doesn't seem to impact JavaScript to leave it out.  If for some
+reason your project isn't working because of this, you can link the lib back in with this
+option.
 
-#### Step 5: Build AndroidJSCoreExample app
-You should now be able to build the example app.  To use the library in your project,
-simply right-click on your project and select Properties->Android.  In the 'Library'
-section, add the AndroidJSCoreJNI library and you should be set.
+`--enable-jit` will allow architectures that build with just-in-time compilation to use
+it.  This should theoretically significantly improve the speed of JavaScript execution,
+however as of the release of AndroidJSCore 2.0, enabling this flag on arm, at least,
+causes the app to crash on load.  In subsequent releases, I will try to get this to work.
 
-One final note: You should add some memory to Eclipse if you haven't already done
-that.  [Here] is a Mac tutorial.  Bump it up to 1024m (-Xmx1024m).  The C/C++ indexer can
-occasionally lock up Eclipse if you don't.
+You may also specify target architectures explicitly.  Currently, `armeabi`, `armeabi-v7a`,
+`x86` and `mips` build by default, but if you just want to build for a subset of these ABIs,
+then you can specify them explicitly as options.  As of the 2.0 release, only the four
+32-bit architectures work.  The `x86_64` and `arm64-v8a` ABIs get pretty far along before
+they crap out due to what appears to be a compiler bug in GCC 4.9.  The `mips64` target
+won't even get off the ground.  Future versions will include the 64-bit targets as the
+tools mature.
+
+#### Step 4 - Use AndroidJSCore in your project
+
+You can now take `AndroidJSCore-2.0-release.aar` and drop it into your Android Studio
+project.  Just drop the file somewhere in your project (`libs/` is meant just for this) and
+add the following to the app-level `buid.gradle`:
+
+    repositories {
+        flatDir {
+            dirs 'libs'
+        }
+    }
+
+    dependencies {
+        compile(name:'AndroidJSCore-2.0-release', ext:'aar')
+    }
+
+Building the AndroidJSCoreExample app
+---------------------------------
+
+If you just want to see AndroidJSCore in action, once you've successfully built the library,
+you can load the `AndroidJSCoreExample` project in `examples\` and run it.  That's it.
 
 Work in Progress
 ----------------
@@ -199,9 +206,7 @@ I am just sticking with Webkit's license, since this thing depends on it.
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 [blog post]:http://www.bignerdranch.com/blog/javascriptcore-and-ios-7/
-[this github project]:https://github.com/appcelerator/hyperloop/wiki/Building-JavaScriptCore-for-Android
-[Android ADT plugin]:http://developer.android.com/sdk/installing/installing-adt.html
-[NDK]:https://developer.android.com/tools/sdk/ndk/index.html
-[CDT plugin]:http://www.eclipse.org/cdt/downloads.php
-[Here]:https://confluence.sakaiproject.org/pages/viewpage.action?pageId=61341742
+[NDK]:http://developer.android.com/ndk/index.html
 [latest release]:https://github.com/ericwlange/AndroidJSCore/releases
+[Android Studio]:http://developer.android.com/sdk/index.html
+[webkit]:https://github.com/ericwlange/webkit

@@ -20,11 +20,19 @@ android {
     }
 }
 
+repositories {
+    flatDir {
+        dirs '../../../lib'
+    }
+}
+
+dependencies {
+    compile(name:'AndroidJSCore-2.0-release', ext:'aar')
+}
+
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.1.1'
     compile 'com.android.support:design:23.1.1'
-    // Add AndroidJSCore-debug.aar to this project and uncomment the next line
-    // compile project(':AndroidJSCore-debug')
 }

@@ -113,7 +113,7 @@ Building AndroidJSCore-2.0 library
 
 Set `ANDROID_SDK_ROOT` and `ANDROID_NDK_ROOT` environment variables
 
-    % git clone https://github.com/ericwlange/AndroidJSCore.git
+    % git clone --recursive https://github.com/ericwlange/AndroidJSCore.git
     % mkdir build
     % cd build
     % ../AndroidJSCore/scripts/build
@@ -141,7 +141,7 @@ married to that OS from Seattle, please feel free to get it working and contribu
 
 1. Download and install the latest version of [Android Studio], including the [NDK]
 2. Set two environment variables: `ANDROID_SDK_ROOT` and `ANDROID_NDK_ROOT` to point to the SDK and NDK directories, respectively
-3. Clone the repo: `git clone https://github.com/ericwlange/AndroidJSCore.git`
+3. Clone the repo: `git clone --recursive https://github.com/ericwlange/AndroidJSCore.git`
 
 This last step will grab both the AndroidJSCore repo, as well as my fork of the
 [webkit] repo.  The latter part is huge, like 6 GBs or something, so settle in.

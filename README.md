@@ -154,7 +154,7 @@ tools mature.
 
 You can now take `AndroidJSCore-2.0-release.aar` and drop it into your Android Studio
 project.  Just drop the file somewhere in your project (`libs/` is meant just for this) and
-add the following to the app-level `buid.gradle`:
+add the following to the app-level `build.gradle`:
 
     repositories {
         flatDir {
@@ -170,7 +170,7 @@ Building the AndroidJSCoreExample app
 ---------------------------------
 
 If you just want to see AndroidJSCore in action, once you've successfully built the library,
-you can load the `AndroidJSCoreExample` project in `examples\` and run it.  That's it.
+you can load the `AndroidJSCoreExample` project in `examples/` and run it.  That's it.
 
 Work in Progress
 ----------------

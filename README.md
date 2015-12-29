@@ -21,25 +21,38 @@ Version
 -------
 2.0 (not yet released, but HEAD works)
 
-Example
--------
+Working With AndroidJSCore
+--------------------------
 
-See Owen Matthew's excellent [blog post] on the iOS 7 JavaScriptCore framework for an
-introduction.  This example is taken directly from the post.  In the included example
-application, Owen's entire Objective-C tutorial is implemented in Java.
-
-Browse the example app source for more detailed examples that cover the basics, sharing
+Please see the [Javadocs] for complete documentation of the API.  Also take a look at the
+[example app source code].  It contains more detailed examples that cover the basics, sharing
 data and functions between Java and JavaScript, wrapping JS classes in Java which
-are accessible from both environments, and  asynchronous, multi-threaded callbacks between
+are accessible from both environments, and asynchronous, multi-threaded callbacks between
 environments.
+
+To get started, you need to create a JavaScript `JSContext`.  The execution of JS code
+occurs within this context, and separate contexts are isolated virtual machines which
+do not interact with each other.
 
 ```java
 JSContext context = new JSContext();
+```
+
+This context is itself a JavaScript object.  And as such, you can get and set its properties.
+Since this is the global JavaScript object, these properties will be in the top-level
+context for all subsequent code in the environment.
+
+```java
 context.property("a", 5);
 JSValue aValue = context.property("a");
 double a = aValue.toNumber();
 DecimalFormat df = new DecimalFormat(".#");
 System.out.println(df.format(a)); // 5.0
+```
+
+You can also run JavaScript code in the context:
+
+```java
 context.evaluateScript("a = 10");
 JSValue newAValue = context.property("a");
 System.out.println(df.format(newAValue.toNumber())); // 10.0
@@ -50,6 +63,48 @@ context.evaluateScript(script);
 JSValue fact_a = context.property("fact_a");
 System.out.println(df.format(fact_a.toNumber())); // 3628800.0
 ```
+
+AndroidJSCore is much more powerful than that.  You can also write functions in
+Java, but expose them to JavaScript:
+
+```java
+public interface IExposedToJS {
+    public Integer factorial(Integer x);
+}
+public class FactorialObject extends JSObject
+implements IExposedToJS {
+    public FactorialObject(JSContext ctx) {
+        super(ctx,IExposedToJS.class);
+    }
+    @Override
+    public Integer factorial(Integer x) {
+        int factorial = 1;
+        for (; x > 1; x--) {
+        	   factorial *= x;
+        }
+        return factorial;
+    }
+}
+```
+
+This class creates a Java object that is also a JavaScript object, which exposes
+a single function property `factorial`.  It can then be passed to the JavaScript
+VM:
+
+```java
+context.property("myJavaFunctions", new FactorialObject(context));
+context.evaluateScript("var f = myJavaFunctions.factorial(10);")
+JSValue f = context.property("f");
+System.out.println(df.format(f.toNumber())); // 3628800.0
+```
+
+If you are used to working with JavaScriptCore in iOS, see the file
+[OwenMatthewsExample.java] in the example app to see side-by-side how to use
+AndroidJSCore in Java the same way you would use JavaScriptCore in
+Objective-C.
+
+The [Javadocs] and included example app have detailed descriptions of how to do
+just about everything.
 
 Building AndroidJSCore-2.0 library
 -------------------------------
@@ -210,3 +265,6 @@ I am just sticking with Webkit's license, since this thing depends on it.
 [latest release]:https://github.com/ericwlange/AndroidJSCore/releases
 [Android Studio]:http://developer.android.com/sdk/index.html
 [webkit]:https://github.com/ericwlange/webkit
+[Javadocs]:http://ericwlange.github.io/
+[example app source code]:https://github.com/ericwlange/AndroidJSCore/tree/master/examples/AndroidJSCoreExample
+[OwenMatthewsExample.java]:https://github.com/ericwlange/AndroidJSCore/blob/master/examples/AndroidJSCoreExample/app/src/main/java/org/liquidplayer/androidjscoreexample/OwenMatthewsExample.java

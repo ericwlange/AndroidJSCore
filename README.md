@@ -114,14 +114,14 @@ Note, the above assumes that your build directory is at the same level as the `A
 project.  Salt to taste.
 
 This can take an hour, as it does a lot.  Roughly, it will:
-1. Download the `iconv`, `ffi`, `gettext`, `glib-2.0`, and `icu` library sources
-2. Patch the sources to make them build on Android
-3. Build the `icu` library for your host OS
+ 1. Download the `iconv`, `ffi`, `gettext`, `glib-2.0`, and `icu` library sources
+ 2. Patch the sources to make them build on Android
+ 3. Build the `icu` library for your host OS
 
 And then for each 32-bit architecture (armeabi, armeabi-v7a, x86, and mips), it will:
-1. Install the prebuilt toolchain for the ABI
-2. Build the five libraries downloaded above
-3. Build the appropriate sections of WebKit required for `JavaScriptCore`
+ 1. Install the prebuilt toolchain for the ABI
+ 2. Build the five libraries downloaded above
+ 3. Build the appropriate sections of WebKit required for `JavaScriptCore`
 
 Finally, it will pull it all together by building the `AndroidJSCore-2.0-release.aar`
 library.  That file will be installed in the `lib/` directory of the `AndroidJSCore`

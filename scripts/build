@@ -60,7 +60,7 @@ PREFIXES = {
 ANDROID_APIS = {
     'armeabi'     : '19',
     'armeabi-v7a' : '19',
-    'arm64-v8a'   : '19',
+    'arm64-v8a'   : '21',
     'x86'         : '19',
     'x86_64'      : '21',
     'mips'        : '19',
@@ -145,12 +145,14 @@ def build_icu(abi):
         print "ERROR: Can't build GLIB library for " + abi
     return output
 
-def build_JavaScriptCore(abi,link_icu,disable_jit):
+def build_JavaScriptCore(abi,link_icu,disable_jit,force_jit):
     os.environ['EXTRA_FLAGS'] = ''
     if link_icu:
         os.environ['EXTRA_FLAGS'] = os.environ['EXTRA_FLAGS'] + '-DLINK_ICU_DATA=1 '
-    if disable_jit:    
+    if disable_jit:
         os.environ['EXTRA_FLAGS'] = os.environ['EXTRA_FLAGS'] + '-DDISABLE_JIT=1 '
+    if force_jit:
+        os.environ['EXTRA_FLAGS'] = os.environ['EXTRA_FLAGS'] + '-DFORCE_JIT=1 '
 
     output = call([SH, config_common.SCRIPTS + '/build_JavaScriptCore.sh'])
     if output != 0:
@@ -165,13 +167,17 @@ def build_aar():
 
 def main(argv):
     link_icu = False
-    disable_jit = True
+    disable_jit = False
+    force_jit = False
     if '--link-icu-data' in argv:
         link_icu = True
         argv.remove('--link-icu-data')
-    if '--enable-jit' in argv:
-        disable_jit = False
-        argv.remove('--enable-jit')
+    if '--disable-jit' in argv:
+        disable_jit = True
+        argv.remove('--disable-jit')
+    if '--force-jit' in argv:
+        force_jit = True
+        argv.remove('--force-jit')
 
     if len(argv) == 0:
 	    argv = DEFAULT_ABIS
@@ -195,7 +201,7 @@ def main(argv):
         output = build_icu(abi)
         if output!=0: return output
 
-        output = build_JavaScriptCore(abi,link_icu,disable_jit)
+        output = build_JavaScriptCore(abi,link_icu,disable_jit,force_jit)
         if output!=0: return output
     
     output = build_aar()

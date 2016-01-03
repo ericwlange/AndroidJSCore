@@ -10,3 +10,4 @@ obj
 project.properties
 build/
 lib/
+*~

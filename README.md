@@ -19,7 +19,7 @@ Design Goals
 
 Version
 -------
-2.0 (not yet released, but HEAD works)
+2.0
 
 Working With AndroidJSCore
 --------------------------
@@ -106,8 +106,39 @@ Objective-C.
 The [Javadocs] and included example app have detailed descriptions of how to do
 just about everything.
 
+Use AndroidJSCore in your project
+---------------------------------
+The easy way is to simply download the file `AndroidJSCore-2.0-release.aar` from
+the [latest release] and drop it somewhere in your project (`libs/` is meant just for this). Then
+add the following to your app-level `build.gradle`:
+
+    repositories {
+        flatDir {
+            dirs 'libs'
+        }
+    }
+
+    dependencies {
+        compile(name:'AndroidJSCore-2.0-release', ext:'aar')
+    }
+
+Building the AndroidJSCoreExample app
+---------------------------------
+
+If you want to see AndroidJSCore in action, you can run the example app:
+
+    git clone https://github.com/ericwlange/AndroidJSCore.git ~/AndroidJSCore
+    mkdir ~/AndroidJSCore/lib
+
+Then download `AndroidJSCore-2.0-release.aar` from the [latest release] and
+copy it into `~/AndroidJSCore/lib`.  Now you can open `~/AndroidJSCore/examples/AndroidJSCoreExample`
+in Android Studio and run it.
+
 Building AndroidJSCore-2.0 library
 -------------------------------
+
+If you are interested in building the library directly and possibly contributing, you must
+do the following:
 
 #### TL;DR - do this
 
@@ -118,6 +149,8 @@ Set `ANDROID_HOME` and `ANDROID_NDK_ROOT` environment variables
     % cd build
     % ../AndroidJSCore/scripts/build
 
+Note the `--recursive` option in `git clone`.  This is required for building the
+library, but not if you are just downloading the released library as with the example app above.
 Your library now sits in `lib/AndroidJSCore-2.0-release.aar`.  To use it, simply
 add the following to your app's `build.gradle`:
 
@@ -135,16 +168,18 @@ If something goes wrong or you want to understand what's going on, read on.
 
 #### Step 1 - Set up required tools
 
-At the moment, this has all been verified to work on Mac OSX.  Once I can verify
-that it builds on Linux, as well, I will tag and release 2.0.  If anyone else is
-married to that OS from Seattle, please feel free to get it working and contribute!
+This has all been verified to work on Mac OSX (specifically 10.11.2 El Capitan)
+and Linux (Ubuntu 14.04 LTS).  If anyone else is married to that OS from Seattle, 
+please feel free to get it working and contribute!
 
 1. Download and install the latest version of [Android Studio], including the [NDK]
 2. Set two environment variables: `ANDROID_HOME` and `ANDROID_NDK_ROOT` to point to the SDK and NDK directories, respectively
 3. Clone the repo: `git clone --recursive https://github.com/ericwlange/AndroidJSCore.git`
 
 This last step will grab both the AndroidJSCore repo, as well as my fork of the
-[webkit] repo.  The latter part is huge, like 6 GBs or something, so settle in.
+[webkit] repo.  The latter part is huge, like 6 GBs or something, so settle in.  Not that
+the recursive clone is required for building the lib, but is not if you just want to
+build the example app.
 
 The build process requires a bunch of other standard UNIX tools, too.  The below script will
 complain if it can't find something, but you should expect to have the command-line
@@ -192,10 +227,16 @@ WebKit as a whole, but it doesn't seem to impact JavaScript to leave it out.  If
 reason your project isn't working because of this, you can link the lib back in with this
 option.
 
-`--enable-jit` will allow architectures that build with just-in-time compilation to use
-it.  This should theoretically significantly improve the speed of JavaScript execution,
-however as of the release of AndroidJSCore 2.0, enabling this flag on arm, at least,
-causes the app to crash on load.  In subsequent releases, I will try to get this to work.
+`--disable-jit` will disable just-in-time compilation for all architectures.  Currently, it
+is disabled by default for `armeabi` and `mips` because they will not even compile, and it
+is turned off for `armeabi-v7a` because it causes the app to crash on load.  In subsequent
+releases, I will try to get this to work.  This should theoretically significantly improve
+the speed of JavaScript execution, and is currently enabled by default for `x86` and the
+64-bit arches.
+
+`--force-jit` will force enable just-in-time compilation even for arches that don't work.
+Don't use this option unless you are trying to debug JIT.  This option overrides `--disable-jit`
+if used together.
 
 You may also specify target architectures explicitly.  Currently, `armeabi`, `armeabi-v7a`,
 `x86` and `mips` build by default, but if you just want to build for a subset of these ABIs,
@@ -204,28 +245,6 @@ then you can specify them explicitly as options.  As of the 2.0 release, only th
 they crap out due to what appears to be a compiler bug in GCC 4.9.  The `mips64` target
 won't even get off the ground.  Future versions will include the 64-bit targets as the
 tools mature.
-
-#### Step 4 - Use AndroidJSCore in your project
-
-You can now take `AndroidJSCore-2.0-release.aar` and drop it into your Android Studio
-project.  Just drop the file somewhere in your project (`libs/` is meant just for this) and
-add the following to the app-level `build.gradle`:
-
-    repositories {
-        flatDir {
-            dirs 'libs'
-        }
-    }
-
-    dependencies {
-        compile(name:'AndroidJSCore-2.0-release', ext:'aar')
-    }
-
-Building the AndroidJSCoreExample app
----------------------------------
-
-If you just want to see AndroidJSCore in action, once you've successfully built the library,
-you can load the `AndroidJSCoreExample` project in `examples/` and run it.  That's it.
 
 Work in Progress
 ----------------
@@ -260,7 +279,6 @@ I am just sticking with Webkit's license, since this thing depends on it.
  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-[blog post]:http://www.bignerdranch.com/blog/javascriptcore-and-ios-7/
 [NDK]:http://developer.android.com/ndk/index.html
 [latest release]:https://github.com/ericwlange/AndroidJSCore/releases
 [Android Studio]:http://developer.android.com/sdk/index.html

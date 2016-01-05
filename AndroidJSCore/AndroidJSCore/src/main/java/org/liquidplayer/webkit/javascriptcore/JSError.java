@@ -56,7 +56,8 @@ public class JSError extends JSObject {
 		};
 		JNIReturnObject jni = makeError(context.ctxRef(), args);
 		if (jni.exception!=0) {
-			throw (new JSException(new JSValue(jni.exception, context)));
+			context.throwJSException(new JSException(new JSValue(jni.exception, context)));
+			jni.reference = make(context.ctxRef(), 0L);
 		}
 		valueRef = jni.reference;
 		protect(ctx,valueRef);
@@ -74,7 +75,8 @@ public class JSError extends JSObject {
 		};
 		JNIReturnObject jni = makeError(context.ctxRef(), args);
 		if (jni.exception!=0) {
-			throw (new JSException(new JSValue(jni.exception, context)));
+			context.throwJSException(new JSException(new JSValue(jni.exception, context)));
+			jni.reference = make(context.ctxRef(), 0L);
 		}
 		valueRef = jni.reference;
 		protect(ctx,valueRef);
@@ -88,7 +90,8 @@ public class JSError extends JSObject {
 		context = ctx;
 		JNIReturnObject jni = makeError(context.ctxRef(), new long[0]);
 		if (jni.exception!=0) {
-			throw (new JSException(new JSValue(jni.exception, context)));
+			context.throwJSException(new JSException(new JSValue(jni.exception, context)));
+			jni.reference = make(context.ctxRef(), 0L);
 		}
 		valueRef = jni.reference;
 		protect(ctx,valueRef);

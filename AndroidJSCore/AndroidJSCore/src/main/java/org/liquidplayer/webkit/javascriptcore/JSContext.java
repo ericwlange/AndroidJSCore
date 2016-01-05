@@ -35,12 +35,21 @@ package org.liquidplayer.webkit.javascriptcore;
 import java.util.HashMap;
 import java.util.Map;
 
+
 /**
  * Wraps a JavaScriptCore context 
  */
 public class JSContext extends JSObject {
 
+	/**
+	 * Object interface for handling JSExceptions.
+	 */
+	public interface IJSExceptionHandler {
+        public void handle(JSException exception);
+	}
+
 	protected Long ctx;
+	private IJSExceptionHandler exceptionHandler;
 	
 	/**
 	 * Creates a new JavaScript context
@@ -59,7 +68,7 @@ public class JSContext extends JSObject {
 		ctx = createInGroup(inGroup.groupRef());
 		context = this;
 		valueRef = getGlobalObject(ctx);
-		protect(context,valueRef);
+		protect(context, valueRef);
 	}
 	/**
 	 * Creates a JavaScript context, and defines the global object with interface 'iface'.  This
@@ -91,6 +100,36 @@ public class JSContext extends JSObject {
 	protected void finalize() throws Throwable {
 		if (ctx!=null) release(ctx);
 		super.finalize();
+	}
+
+	/**
+	 * Sets the JS exception handler for this context.  Any thrown JSException in this
+	 * context will call the 'handle' method on this object.  The calling function will
+	 * return with an undefined value.
+	 * @param handler An object that implements 'IJSExceptionHandler'
+	 */
+	public void setExceptionHandler(IJSExceptionHandler handler) {
+		exceptionHandler = handler;
+	}
+
+	/**
+	 * Clears a previously set exception handler.
+	 */
+	public void clearExceptionHandler() {
+		exceptionHandler = null;
+	}
+
+	/**
+	 * If an exception handler is set, calls the exception handler, otherwise throws
+	 * the JSException.
+	 * @param exception The JSException to be thrown
+	 */
+	public void throwJSException(JSException exception) throws JSException {
+		if (exceptionHandler == null) {
+			throw exception;
+		} else {
+			exceptionHandler.handle(exception);
+		}
 	}
 	
 	/**
@@ -126,7 +165,8 @@ public class JSContext extends JSObject {
 				(thiz==null)?0L:thiz.valueRef(), (sourceURL==null)?0L:new JSString(sourceURL).stringRef(),
 				startingLineNumber);
 		if (jni.exception!=0) {
-			throw (new JSException(new JSValue(jni.exception,this)));
+			throwJSException(new JSException(new JSValue(jni.exception, context)));
+			return new JSValue(this);
 		}
 		return new JSValue(jni.reference,this);
 	}

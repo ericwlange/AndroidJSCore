@@ -77,6 +77,10 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
     @Override
     public void onPageSelected(int position) {
         MainActivity.position = position + 1;
+        if (mCurrentFragment == null) return;
+        if (MainActivity.position == mCurrentFragment.getArguments().getInt(ARG_OBJECT)) {
+            mCurrentFragment.example.run();
+        }
     }
 
     @Override
@@ -138,6 +142,7 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
                     case 1: example = new OwenMatthewsExample(ctx); break;
                     case 2: example = new SharingFunctionsExample(ctx); break;
                     case 3: example = new AsyncExample(ctx); break;
+                    case 4: example = new ExceptionHandlingExample(ctx); break;
                 }
                 if (position == args.getInt(ARG_OBJECT)) {
                     example.run();
@@ -176,23 +181,13 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
         public void setPrimaryItem(ViewGroup container, int position, Object object) {
             if (mCurrentFragment != object) {
                 mCurrentFragment = (JSCoreExampleFragment) object;
-                try {
-                    if (mCurrentFragment != null && mCurrentFragment.example != null) {
-                        mCurrentFragment.example.run();
-                    }
-                } catch (JSException e) {
-                    int duration = Toast.LENGTH_LONG;
-                    Toast toast = Toast.makeText(mCurrentFragment.getActivity().getApplicationContext(),
-                            e.toString(), duration);
-                    toast.show();
-                }
             }
         }
 
         @Override
         public int getCount() {
-            // Show 3 total pages.
-            return 3;
+            // Show 4 total pages.
+            return 4;
         }
 
         @Override
@@ -204,6 +199,8 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
                     return "Sharing Functions";
                 case 2:
                     return "Async Callbacks";
+                case 3:
+                    return "Exception Handling";
             }
             return null;
         }

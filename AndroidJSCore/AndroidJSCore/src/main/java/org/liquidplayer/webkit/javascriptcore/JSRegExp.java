@@ -55,7 +55,8 @@ public class JSRegExp extends JSObject {
 		};
 		JNIReturnObject jni = makeRegExp(context.ctxRef(), args);
 		if (jni.exception!=0) {
-			throw (new JSException(new JSValue(jni.exception, context)));
+			context.throwJSException(new JSException(new JSValue(jni.exception, context)));
+			jni.reference = make(context.ctxRef(), 0L);
 		}
 		valueRef = jni.reference;
 		protect(ctx,valueRef);
@@ -73,7 +74,8 @@ public class JSRegExp extends JSObject {
 		};
 		JNIReturnObject jni = makeRegExp(context.ctxRef(), args);
 		if (jni.exception!=0) {
-			throw (new JSException(new JSValue(jni.exception, context)));
+			context.throwJSException(new JSException(new JSValue(jni.exception, context)));
+			jni.reference = make(context.ctxRef(), 0L);
 		}
 		valueRef = jni.reference;
 		protect(ctx,valueRef);

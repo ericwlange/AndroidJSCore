@@ -51,7 +51,8 @@ public class JSArray extends JSObject {
 		}
 		JNIReturnObject jni = makeArray(context.ctxRef(), valueRefs);
 		if (jni.exception!=0) {
-			throw (new JSException(new JSValue(jni.exception, context)));
+			context.throwJSException(new JSException(new JSValue(jni.exception, context)));
+            jni.reference = make(context.ctxRef(), 0L);
 		}
 		valueRef = jni.reference;
 		protect(ctx,valueRef);
@@ -66,7 +67,8 @@ public class JSArray extends JSObject {
 		long [] valueRefs = new long[0];
 		JNIReturnObject jni = makeArray(context.ctxRef(), valueRefs);
 		if (jni.exception!=0) {
-			throw (new JSException(new JSValue(jni.exception, context)));
+			context.throwJSException(new JSException(new JSValue(jni.exception, context)));
+            jni.reference = make(context.ctxRef(), 0L);
 		}
 		valueRef = jni.reference;
 		protect(ctx,valueRef);
@@ -86,9 +88,10 @@ public class JSArray extends JSObject {
 			valueRefs[i] = v.valueRef();
 		}
 		JNIReturnObject jni = makeArray(context.ctxRef(), valueRefs);
-		if (jni.exception!=0) {
-			throw (new JSException(new JSValue(jni.exception, context)));
-		}
+        if (jni.exception!=0) {
+            context.throwJSException(new JSException(new JSValue(jni.exception, context)));
+            jni.reference = make(context.ctxRef(), 0L);
+        }
 		valueRef = jni.reference;
 		protect(ctx,valueRef);
 	}

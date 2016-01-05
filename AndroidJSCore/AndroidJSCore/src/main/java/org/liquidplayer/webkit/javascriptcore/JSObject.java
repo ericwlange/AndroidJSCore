@@ -181,7 +181,9 @@ public class JSObject extends JSValue {
 				// This is a constructor
 				this.subclass = subclass;
 				if (subclass == null) {
-					throw (new JSException(context,"Constructor function must specify subclass"));
+					context.throwJSException(new JSException(context,"Constructor function must specify subclass"));
+                    valueRef = make(context.ctxRef(), 0L);
+					return;
 				}
 				isConstructor = true;
 				method = methods[i];
@@ -259,7 +261,8 @@ public class JSObject extends JSValue {
 				(sourceURL==null)?0L:new JSString(sourceURL).stringRef(),
 				startingLineNumber);
 		if (jni.exception!=0) {
-			throw (new JSException(new JSValue(context,jni.exception)));
+			context.throwJSException(new JSException(new JSValue(jni.exception, context)));
+            jni.reference = make(context.ctxRef(), 0L);
 		}
 		valueRef = jni.reference;
 		protect(ctx,valueRef);
@@ -404,10 +407,11 @@ public class JSObject extends JSValue {
 			return new JSValue(context,ret);
 		} catch (InvocationTargetException e) {
 			e.printStackTrace();
-			throw (new JSException(context,e.toString()));
+			context.throwJSException(new JSException(context, e.toString()));
 		} catch (IllegalAccessException e) {
-			throw (new JSException(context,e.toString()));
+			context.throwJSException(new JSException(context, e.toString()));
 		}
+        return new JSValue(context);
 	}
 
 	protected JSObject constructor(JSValue [] args) throws JSException {
@@ -424,14 +428,15 @@ public class JSObject extends JSValue {
 			}
 			return thiz;
 		} catch (NoSuchMethodException e) {
-			throw (new JSException(context,e.toString()));
+			context.throwJSException(new JSException(context, e.toString()));
 		} catch (InvocationTargetException e) {
-			throw (new JSException(context,e.toString()));				
+			context.throwJSException(new JSException(context, e.toString()));
 		} catch (IllegalAccessException e) {
-			throw (new JSException(context,e.toString()));				
+			context.throwJSException(new JSException(context, e.toString()));
 		} catch (InstantiationException e) {
-			throw (new JSException(context,e.toString()));				
+			context.throwJSException(new JSException(context, e.toString()));
 		}
+        return new JSObject(context);
 	}
 
 	/**
@@ -466,9 +471,10 @@ public class JSObject extends JSValue {
 	 */
 	public JSValue property(String prop) throws JSException {
 		JNIReturnObject jni = getProperty(context.ctxRef(), valueRef, new JSString(prop).stringRef());
-		if (jni.exception!=0) {
-			throw (new JSException(new JSValue(jni.exception,context)));
-		}
+        if (jni.exception!=0) {
+            context.throwJSException(new JSException(new JSValue(jni.exception, context)));
+            return new JSValue(context);
+        }
 		return new JSValue(jni.reference,context);
 	}
 	/**
@@ -487,9 +493,9 @@ public class JSObject extends JSValue {
 				name.stringRef,
 				(value instanceof JSValue)?((JSValue)value).valueRef():new JSValue(context,value).valueRef(),
 				attributes);
-		if (jni.exception!=0) {
-			throw (new JSException(new JSValue(jni.exception,context)));
-		}
+        if (jni.exception!=0) {
+            context.throwJSException(new JSException(new JSValue(jni.exception, context)));
+        }
 	}
 	/**
 	 * Sets the value of property 'prop'.  No JSProperty attributes are set.
@@ -510,9 +516,10 @@ public class JSObject extends JSValue {
 	public boolean deleteProperty(String prop) throws JSException {
 		JSString name = new JSString(prop);
 		JNIReturnObject jni = deleteProperty(context.ctxRef(), valueRef, name.stringRef());
-		if (jni.exception!=0) {
-			throw (new JSException(new JSValue(jni.exception,context)));
-		}
+        if (jni.exception!=0) {
+            context.throwJSException(new JSException(new JSValue(jni.exception, context)));
+            return false;
+        }
 		return jni.bool;
 	}
 	/**
@@ -524,7 +531,8 @@ public class JSObject extends JSValue {
 	public JSValue propertyAtIndex(int index) throws JSException {
 		JNIReturnObject jni = getPropertyAtIndex(context.ctxRef(), valueRef, index);
 		if (jni.exception!=0) {
-			throw (new JSException(new JSValue(jni.exception,context)));
+			context.throwJSException(new JSException(new JSValue(jni.exception,context)));
+            return new JSValue(context);
 		}
 		return new JSValue(jni.reference,context);
 	}
@@ -537,8 +545,8 @@ public class JSObject extends JSValue {
 	public void propertyAtIndex(int index, Object value) throws JSException {
 		JNIReturnObject jni = setPropertyAtIndex(context.ctxRef(), valueRef,
 				index, (value instanceof JSValue)?((JSValue)value).valueRef():new JSValue(context,value).valueRef());
-		if (jni.exception!=0) {
-			throw (new JSException(new JSValue(jni.exception,context)));
+		if (jni.exception != 0) {
+            context.throwJSException(new JSException(new JSValue(jni.exception,context)));
 		}		
 	}
 	/**
@@ -585,7 +593,8 @@ public class JSObject extends JSValue {
 		}
 		JNIReturnObject jni = callAsFunction(context.ctxRef(), valueRef, (thiz==null)?0L:thiz.valueRef(), valueRefs);
 		if (jni.exception!=0) {
-			throw (new JSException(new JSValue(jni.exception,context)));
+			context.throwJSException(new JSException(new JSValue(jni.exception,context)));
+            return new JSValue(context);
 		}
 		return new JSValue(jni.reference,context);
 	}

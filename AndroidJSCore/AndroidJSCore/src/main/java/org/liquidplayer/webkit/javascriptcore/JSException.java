@@ -37,7 +37,7 @@ package org.liquidplayer.webkit.javascriptcore;
  *  library.  The description of the exception is given in the message. 
  *
  */
-public class JSException extends Throwable {
+public class JSException extends RuntimeException {
 	private static final long serialVersionUID = 1L;
 
 	private JSValue error;

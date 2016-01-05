@@ -194,7 +194,8 @@ public class JSValue {
 	public Boolean isInstanceOfConstructor(JSObject constructor) throws JSException {
 		JNIReturnObject jni = this.isInstanceOfConstructor(context.ctxRef(), valueRef, constructor.valueRef());
 		if (jni.exception!=0) {
-			throw (new JSException(new JSValue(jni.exception, context)));
+			context.throwJSException(new JSException(new JSValue(jni.exception, context)));
+			return false;
 		}
 		return jni.bool;
 	}
@@ -255,7 +256,8 @@ public class JSValue {
 	public Double toNumber() throws JSException {
 		JNIReturnObject jni = toNumber(context.ctxRef(), valueRef);
 		if (jni.exception!=0) {
-			throw (new JSException(new JSValue(jni.exception, context)));
+			context.throwJSException(new JSException(new JSValue(jni.exception, context)));
+            return 0.0;
 		}
 		return jni.number;
 	}
@@ -275,7 +277,8 @@ public class JSValue {
 	public JSString toJSString() throws JSException {
 		JNIReturnObject jni = toStringCopy(context.ctxRef(), valueRef);
 		if (jni.exception!=0) {
-			throw (new JSException(new JSValue(jni.exception, context)));
+			context.throwJSException(new JSException(new JSValue(jni.exception, context)));
+            return null;
 		}
 		return new JSString(jni.reference);
 	}
@@ -287,7 +290,8 @@ public class JSValue {
 	public JSObject toObject() throws JSException {
 		JNIReturnObject jni = toObject(context.ctxRef(), valueRef);
 		if (jni.exception!=0) {
-			throw (new JSException(new JSValue(jni.exception, context)));
+			context.throwJSException(new JSException(new JSValue(jni.exception, context)));
+            return new JSObject(context);
 		}
 		return context.getObjectFromRef(jni.reference);
 	}
@@ -300,7 +304,8 @@ public class JSValue {
 	public String toJSON(int indent) throws JSException {
 		JNIReturnObject jni = createJSONString(context.ctxRef(), valueRef, indent);
 		if (jni.exception!=0) {
-			throw (new JSException(new JSValue(jni.exception, context)));
+			context.throwJSException(new JSException(new JSValue(jni.exception, context)));
+            return null;
 		}
 		if (jni.reference==0) {
 			return null;

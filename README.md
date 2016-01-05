@@ -178,7 +178,7 @@ please feel free to get it working and contribute!
 3. Clone the repo: `git clone --recursive https://github.com/ericwlange/AndroidJSCore.git`
 
 This last step will grab both the AndroidJSCore repo, as well as my fork of the
-[webkit] repo.  The latter part is huge, like 6 GBs or something, so settle in.  Not that
+[webkit] repo.  The latter part is huge, like 6 GBs or something, so settle in.  Note that
 the recursive clone is required for building the lib, but is not if you just want to
 build the example app.
 
@@ -255,9 +255,7 @@ Work in Progress
 License
 -------
 
-I am just sticking with Webkit's license, since this thing depends on it.
-
- Copyright (c) 2014-2015 Eric Lange. All rights reserved.
+ Copyright (c) 2014-2016 Eric Lange. All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:

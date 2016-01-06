@@ -129,7 +129,7 @@ If you want to see AndroidJSCore in action, you can run the example app:
 
     git clone https://github.com/ericwlange/AndroidJSCore.git ~/AndroidJSCore
     cd ~/AndroidJSCore
-    git checkout tags/v2.0
+    git checkout tags/2.0
     mkdir ~/AndroidJSCore/lib
 
 Then download `AndroidJSCore-2.0-release.aar` from the [latest release] and

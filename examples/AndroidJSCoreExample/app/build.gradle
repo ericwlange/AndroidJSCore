@@ -5,7 +5,7 @@ android {
     buildToolsVersion "23.0.2"
     defaultConfig {
         applicationId "org.liquidplayer.androidjscoreexample"
-        minSdkVersion 19
+        minSdkVersion 16
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
@@ -27,7 +27,7 @@ repositories {
 }
 
 dependencies {
-    compile(name:'AndroidJSCore-2.0-release', ext:'aar')
+    compile(name:'AndroidJSCore-2.1-release', ext:'aar')
 }
 
 dependencies {

@@ -15,7 +15,7 @@ export PLATFORM=$ANDROID_NDK_ROOT/platforms/android-$API_LEVEL/${ARCH}
 export CFLAGS="-fPIC -DANDROID -Wno-multichar -I${INSTALL_LOC}/include -I${INSTALL_LOC}/lib/libffi-3.0.13/include -I${ANDROID_NDK_ROOT}/sources/android/support/include -Wno-error=implicit-function-declaration -DANDROID_API=${ANDROID_API}"
 export CPPFLAGS="-I${PLATFORM}/usr/include/ -I${INSTALL_LOC}/include -I${INSTALL_LOC}/lib/libffi-3.0.13/include -DANDROID -DNO_XMALLOC -mandroid -I${ANDROID_NDK_ROOT}/sources/android/support/include -Wno-error=implicit-function-declaration -DANDROID_API=${ANDROID_API}"
 export LIBS="-lc "
-export LDFLAGS="-Wl,-rpath-link=${PLATFORM}/usr/lib/ -L${INSTALL_LOC}/lib -L${INSTALL_LOC}/lib64 -L${PLATFORM}/usr/lib"
+export LDFLAGS="-Wl,-rpath-link=${PLATFORM}/usr/lib/ -L${INSTALL_LOC}/lib64 -L${INSTALL_LOC}/lib -L${PLATFORM}/usr/lib64 -L${PLATFORM}/usr/lib"
 
 export CROSS_COMPILE=${PREBUILT}/bin/${PREFIX}
 export CC="${CROSS_COMPILE}-gcc --sysroot=$PLATFORM"

@@ -5,7 +5,7 @@ diff -Naur gettext-0.18.3/gettext-tools/gnulib-lib/getdtablesize.c ../Source/get
      }
    return dtablesize;
  }
-+#elif defined(__aarch64__) || defined(__x86_64__) || defined(__mips64__)
++#elif defined(__ANDROID__)
  
 +#include <sys/resource.h>
 +#include <sys/sysconf.h>

@@ -16,6 +16,7 @@ PERL   = config_common.require('perl',  'PERL')
 RUBY   = config_common.require('ruby',  'RUBY')
 BISON  = config_common.require('bison', 'BISON')
 GPERF  = config_common.require('gperf', 'GPERF')
+TAR    = config_common.require('tar',   'TAR')
 
 if not BASH or not RM or not SH or not CMAKE or not MAKE:
    sys.exit(-1)
@@ -58,12 +59,12 @@ PREFIXES = {
 }
 
 ANDROID_APIS = {
-    'armeabi'     : '19',
-    'armeabi-v7a' : '19',
+    'armeabi'     : '16',
+    'armeabi-v7a' : '16',
     'arm64-v8a'   : '21',
-    'x86'         : '19',
+    'x86'         : '16',
     'x86_64'      : '21',
-    'mips'        : '19',
+    'mips'        : '16',
     'mips64'      : '21'
 }
 
@@ -104,6 +105,20 @@ def create_toolchain(abi,api):
     if output != 0:
         print "ERROR: Can't build toolchain for " + abi
         call([RM,'-rf',abi+'/'+TOOLCHAIN])
+    if HOST == 'Linux/gcc' and abi in ['arm64-v8a','x86_64','mips64']:
+        dist = abi
+        if dist == 'arm64-v8a': dist = 'arm64'
+        dist = 'gcc-'+dist+'-linux-x86_64.tar.bz2' 
+        output = call([TAR,
+                    'xvf',
+                    os.path.abspath(config_common.CONFIG+'/../dist/' + dist),
+                    '--strip-components=1',
+                    '-C',
+                    abi+'/'+TOOLCHAIN
+                 ])
+        if output != 0:
+            print "ERROR: Can't extract gcc patch for " + abi
+            call([RM,'-rf',abi+'/'+TOOLCHAIN])
     return output
     
 def set_env_variables(abi):

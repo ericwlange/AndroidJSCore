@@ -98,7 +98,10 @@ public class JSContext extends JSObject {
 	}
 	@Override
 	protected void finalize() throws Throwable {
-		if (ctx!=null) release(ctx);
+		if (ctx!=null) {
+            release(ctx);
+            finalizeContext(ctx);
+        }
 		super.finalize();
 	}
 
@@ -128,7 +131,13 @@ public class JSContext extends JSObject {
 		if (exceptionHandler == null) {
 			throw exception;
 		} else {
-			exceptionHandler.handle(exception);
+            // Before handling this exception, disable the exception handler.  If a JSException
+            // is thrown in the handler, then it would recurse and blow the stack.  This way an
+            // actual exception will get thrown.  If successfully handled, then turn it back on.
+            IJSExceptionHandler temp = exceptionHandler;
+            exceptionHandler = null;
+			temp.handle(exception);
+            exceptionHandler = temp;
 		}
 	}
 	
@@ -209,7 +218,7 @@ public class JSContext extends JSObject {
 	 * @param obj
 	 */
 	public void finalizeObject(JSObject obj) {
-		objects.remove(obj.valueRef());
+        objects.remove(obj.valueRef());
 	}
 	/**
 	 * Reuses a stored reference to a JavaScript object if it exists, otherwise, it creates the
@@ -231,7 +240,8 @@ public class JSContext extends JSObject {
 		garbageCollect(ctx);
 	}
 	
-	protected native long create();
+	protected static native void staticInit();
+    protected native long create();
 	protected native long createInGroup(long group);
 	protected native long retain(long ctx);
 	protected native long release(long ctx);
@@ -240,8 +250,10 @@ public class JSContext extends JSObject {
 	protected native JNIReturnObject evaluateScript(long ctx, long script, long thisObject, long sourceURL, int startingLineNumber);
 	protected native JNIReturnObject checkScriptSyntax(long ctx, long script, long sourceURL, int startingLineNumber);
 	protected native void garbageCollect(long ctx);
+    protected native void finalizeContext(long ctx);
 	
 	static {
 		System.loadLibrary("JavaScriptCore");
+        staticInit();
 	}
 }

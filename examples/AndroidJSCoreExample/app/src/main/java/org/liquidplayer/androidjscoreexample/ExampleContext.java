@@ -38,6 +38,8 @@ import org.liquidplayer.webkit.javascriptcore.JSException;
 import android.content.Context;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.os.Handler;
+import android.os.Looper;
 
 public class ExampleContext extends JSContext implements IExampleContext {
 
@@ -58,18 +60,38 @@ public class ExampleContext extends JSContext implements IExampleContext {
 	
 	@Override
 	public void alert(String msg) {
-		CharSequence text = msg.toString();
-		int duration = Toast.LENGTH_LONG;
+		final String message = msg;
+		Handler handler = new Handler(Looper.getMainLooper());
+		handler.post(
+				new Runnable() {
+					@Override
+					public void run() {
+						CharSequence text = message.toString();
+						int duration = Toast.LENGTH_LONG;
 
-		Toast toast = Toast.makeText(androidCtx, text, duration);
-		toast.show();
+						Toast toast = Toast.makeText(androidCtx, text, duration);
+						toast.show();
+					}
+				}
+		);
 	}
 
 	@Override
 	public void log(String msg) {
-		log = log.concat(msg);
-		log = log.concat("\n");
-		tv.setText(log);
+		final String message = msg;
+		Handler handler = new Handler(Looper.getMainLooper());
+		handler.post(
+				new Runnable()
+				{
+					@Override
+					public void run()
+					{
+						log = log.concat(message);
+						log = log.concat("\n");
+						tv.setText(log);
+					}
+				}
+		);
 	}
 
 }

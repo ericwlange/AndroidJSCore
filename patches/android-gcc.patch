@@ -37,7 +37,7 @@ index d6642d0..eab9a65 100644
 +	       "model for %<__atomic_compare_exchange%>");
 +      success = MEMMODEL_SEQ_CST;
      }
-+ 
++
 +  if ((failure & MEMMODEL_MASK) == MEMMODEL_RELEASE
 +      || (failure & MEMMODEL_MASK) == MEMMODEL_ACQ_REL)
 +    {
@@ -46,7 +46,7 @@ index d6642d0..eab9a65 100644
 +	       "%<__atomic_compare_exchange%>");
 +      failure = MEMMODEL_SEQ_CST;
 +      success = MEMMODEL_SEQ_CST;
-+    }  
++    }
    
    if (!flag_inline_atomics)
      return NULL_RTX;

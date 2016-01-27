@@ -37,7 +37,7 @@ package org.liquidplayer.webkit.javascriptcore;
  *  <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions">
  *  https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions</a>
  *  for details on JavaScript regexp.
- *
+ * @since 1.0
  */
 public class JSRegExp extends JSObject {
 	/**
@@ -45,6 +45,7 @@ public class JSRegExp extends JSObject {
 	 * @param ctx  The context in which to create the regular expression
 	 * @param pattern  The REGEXP pattern
 	 * @param flags  The REGEXP flags
+	 * @since 1.0
 	 * @throws JSException
 	 */
 	public JSRegExp(JSContext ctx, String pattern, String flags) throws JSException {
@@ -65,6 +66,7 @@ public class JSRegExp extends JSObject {
 	 * Creates a new JavaScript regular expression
 	 * @param ctx  The context in which to create the regular expression
 	 * @param pattern  The REGEXP pattern
+	 * @since 1.0
 	 * @throws JSException
 	 */
 	public JSRegExp(JSContext ctx, String pattern) throws JSException {

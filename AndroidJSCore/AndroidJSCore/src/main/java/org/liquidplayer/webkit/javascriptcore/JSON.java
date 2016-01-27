@@ -34,13 +34,15 @@ package org.liquidplayer.webkit.javascriptcore;
 
 /**
  * A convenience class for creating JavaScript values from JSON 
+ * @since 1.0
  */
 public class JSON extends JSValue {
 	/**
 	 * Creates a new JavaScript value from a JSString JSON string
 	 * @param ctx  The context in which to create the value
 	 * @param str  The string containing the JSON
-	 */
+     * @since 1.0
+     */
 	public JSON(JSContext ctx, JSString str) {
 		context = ctx;
 		valueRef = this.makeFromJSONString(context.ctxRef(), str.stringRef());
@@ -50,7 +52,8 @@ public class JSON extends JSValue {
 	 * Creates a new JavaScript value from a Java JSON string
 	 * @param ctx  The context in which to create the value
 	 * @param str  The string containing the JSON
-	 */
+     * @since 1.0
+     */
 	public JSON(JSContext ctx, String str) {
 		context = ctx;
 		valueRef = this.makeFromJSONString(context.ctxRef(), new JSString(str).stringRef());

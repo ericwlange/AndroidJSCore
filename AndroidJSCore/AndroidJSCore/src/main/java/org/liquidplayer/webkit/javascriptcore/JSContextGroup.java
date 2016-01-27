@@ -45,6 +45,7 @@ public class JSContextGroup {
 	
 	/**
 	 * Creates a new context group
+	 * @since 1.0
 	 */
 	public JSContextGroup() {
 		group = create();
@@ -52,6 +53,7 @@ public class JSContextGroup {
 	/**
 	 * Wraps an existing context group
 	 * @param groupRef  the JavaScriptCore context group reference
+	 * @since 1.0
 	 */
 	public JSContextGroup(Long groupRef)
 	{
@@ -66,6 +68,7 @@ public class JSContextGroup {
 	
 	/**
 	 * Gets the JavaScriptCore context group reference
+	 * @since 1.0
 	 * @return  the JavaScriptCore context group reference
 	 */
 	public Long groupRef() {

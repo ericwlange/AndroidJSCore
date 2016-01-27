@@ -41,6 +41,7 @@ public class JSArray extends JSObject {
 	 * Creates a JavaScript array object, initialized with 'array' JSValues
 	 * @param ctx  The JSContext to create the array in
 	 * @param array  An array of JSValues with which to initialize the JavaScript array object
+	 * @since 1.0
 	 * @throws JSException
 	 */
 	public JSArray(JSContext ctx, JSValue [] array) throws JSException {
@@ -60,6 +61,7 @@ public class JSArray extends JSObject {
 	/**
 	 * Creates an empty JavaScript array object
 	 * @param ctx  The JSContext to create the array in
+	 * @since 1.0
 	 * @throws JSException
 	 */
 	public JSArray(JSContext ctx) throws JSException {
@@ -78,6 +80,7 @@ public class JSArray extends JSObject {
 	 * @param ctx  The JSContext to create the array in
 	 * @param array  An array of Java objects with which to initialize the JavaScript array object.  Each
 	 *               Object will be converted to a JSValue
+	 * @since 1.0
 	 * @throws JSException
 	 */
 	public JSArray(JSContext ctx, Object [] array) throws JSException {
@@ -100,6 +103,7 @@ public class JSArray extends JSObject {
 	 * Wraps an existing JavaScript object and treats it as an array.
 	 * @param objRef  The JavaScriptCore reference to the object
 	 * @param ctx  The JSContext in which the array exists
+	 * @since 1.0
 	 * @throws JSException
 	 */
 	public JSArray(long objRef, JSContext ctx) throws JSException {
@@ -124,6 +128,7 @@ public class JSArray extends JSObject {
 	 * Gets JSValue at 'index'
 	 * @param index  Index of the element to get
 	 * @return  The JSValue at index 'index'
+	 * @since 1.0
 	 * @throws JSException
 	 */
 	public JSValue get(int index) throws JSException {
@@ -138,6 +143,7 @@ public class JSArray extends JSObject {
 	 * Replaces a JSValue at array index 'index'.  The Java Object is converted to a JSValue.
 	 * @param index  The index of the object to replace
 	 * @param val  The Java object of the new value to set in the array
+	 * @since 1.0
 	 * @throws JSException
 	 */
 	public void replace(int index, Object val) throws JSException {
@@ -151,6 +157,7 @@ public class JSArray extends JSObject {
 	/**
 	 * Adds a JSValue to the end of an array.  The Java Object is converted to a JSValue.
 	 * @param val  The Java object to add to the array, will get converted to a JSValue
+	 * @since 1.0
 	 * @throws JSException
 	 */
 	public void add(Object val) throws JSException {
@@ -162,6 +169,7 @@ public class JSArray extends JSObject {
 	/**
 	 * Removes the value at index 'index'
 	 * @param index  The index of the value to remove
+	 * @since 1.0
 	 * @throws JSException
 	 */
 	public void remove(int index) throws JSException {
@@ -179,6 +187,7 @@ public class JSArray extends JSObject {
 	 * Inserts new object 'val' at index 'index'
 	 * @param index  Index at which to insert value
 	 * @param val  Java object to insert, will get converted to JSValue
+	 * @since 1.0
 	 * @throws JSException
 	 */
 	public void insert(int index, Object val) throws JSException {
@@ -196,6 +205,7 @@ public class JSArray extends JSObject {
 	/**
 	 * Gets the number of elements in the array
 	 * @return  length of the array
+	 * @since 1.0
 	 * @throws JSException
 	 */
 	public int length() throws JSException {

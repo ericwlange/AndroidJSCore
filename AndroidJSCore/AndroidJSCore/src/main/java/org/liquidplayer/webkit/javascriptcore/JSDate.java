@@ -36,12 +36,13 @@ import java.util.Date;
 
 /**
  * Convenience class for managing JavaScript date objects 
- *
+ * @since 1.0
  */
 public class JSDate extends JSObject {
 	/**
 	 * Creates a new date object with the current date and time
 	 * @param ctx  The JSContext in which to create the date object
+	 * @since 1.0
 	 * @throws JSException
 	 */
 	public JSDate(JSContext ctx) throws JSException {
@@ -58,6 +59,7 @@ public class JSDate extends JSObject {
 	 * Creates a new date object, initialized with a Java timestamp
 	 * @param ctx  The JSContext in which to create the date object
 	 * @param date  The Date with which to initialize the object
+	 * @since 1.0
 	 * @throws JSException
 	 */
 	public JSDate(JSContext ctx, Date date) throws JSException {

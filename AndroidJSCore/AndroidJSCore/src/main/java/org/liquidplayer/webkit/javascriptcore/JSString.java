@@ -34,6 +34,7 @@ package org.liquidplayer.webkit.javascriptcore;
 
 /**
  *  A JavaScript string 
+ * @since 1.0
  */
 public class JSString {
 
@@ -42,6 +43,7 @@ public class JSString {
 	/**
 	 * Creates a JavaScript string from a Java string
 	 * @param s  The Java string with which to initialize the JavaScript string
+	 * @since 1.0
 	 */
 	public JSString(String s) {
 		stringRef = createWithUTF8CString(s);
@@ -93,6 +95,7 @@ public class JSString {
 	/**
 	 * Gets the JavaScriptCore string reference
 	 * @return  the JavaScriptCore string reference
+	 * @since 1.0
 	 */
 	public Long stringRef() {
 		return stringRef;
@@ -101,6 +104,7 @@ public class JSString {
 	/**
 	 * Gets the length of the string in characters
 	 * @return  the number of characters in the string
+	 * @since 1.0
 	 */
 	public Integer length() {
 		return getLength(stringRef);

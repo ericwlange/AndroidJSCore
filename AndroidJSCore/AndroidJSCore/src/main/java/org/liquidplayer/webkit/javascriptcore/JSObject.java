@@ -39,7 +39,8 @@ import java.util.ArrayList;
 
 /**
  * A JavaScript object.
- * 
+ * @since 1.0
+ *
  */
 public class JSObject extends JSValue {
 
@@ -70,6 +71,7 @@ public class JSObject extends JSValue {
 	 * }
 	 * </pre>
 	 * @param ctx  The JSContext to create the object in
+	 * @since 1.0
 	 */
 	public JSObject(JSContext ctx) {
 		context = ctx;
@@ -88,6 +90,7 @@ public class JSObject extends JSValue {
 	 * 
 	 * @param objRef  The JavaScriptCore object reference
 	 * @param ctx     The JSContext of the reference
+	 * @since 1.0
 	 */
 	protected JSObject(long objRef, JSContext ctx) {
 		context = ctx;
@@ -111,6 +114,7 @@ public class JSObject extends JSValue {
 	 * 
 	 * @param ctx   The JSContext to create the object in
 	 * @param iface The Java Interface defining the methods to expose to JavaScript
+	 * @since 1.0
 	 * @throws JSException
 	 */
 	public JSObject(JSContext ctx, Class<?> iface) throws JSException {
@@ -166,6 +170,7 @@ public class JSObject extends JSValue {
 	 * @param iface The Java Interface defining the methods to expose to JavaScript, including the constructor
 	 *              function which must have the same name as the interface, prefixed by an underscore
 	 * @param subclass  The JSObject subclass to instantiate when creating an instance of this prototype
+	 * @since 1.0
 	 * @throws JSException
 	 */
 	public JSObject(JSContext ctx, Class<?> iface, Class<?> subclass) throws JSException {
@@ -223,6 +228,7 @@ public class JSObject extends JSValue {
 	 * @param ctx   The JSContext to create the object in
 	 * @param invoke  The JSObject on which to invoke the function
 	 * @param method  The method to invoke
+	 * @since 1.0
 	 * @throws JSException
 	 */
 	public JSObject(JSContext ctx, JSObject invoke, Method method) throws JSException {
@@ -243,6 +249,7 @@ public class JSObject extends JSValue {
 	 * @param body  The JavaScript code to execute in the function
 	 * @param sourceURL  The URI of the source file, only used for reporting in stack trace (optional)
 	 * @param startingLineNumber  The beginning line number, only used for reporting in stack trace (optional)
+	 * @since 1.0
 	 * @throws JSException
 	 */
 	public JSObject(JSContext ctx, String name, String [] parameterNames,
@@ -442,6 +449,7 @@ public class JSObject extends JSValue {
 	/**
 	 * Gets the prototype object, if it exists
 	 * @return A JSValue referencing the prototype object, or null if none
+	 * @since 1.0
 	 */
 	public JSValue prototype() {
 		long proto = getPrototype(context.ctxRef(), valueRef);
@@ -451,6 +459,7 @@ public class JSObject extends JSValue {
 	/**
 	 * Sets the prototype object
 	 * @param proto The object defining the function prototypes
+	 * @since 1.0
 	 */
 	public void prototype(JSValue proto) {
 		setPrototype(context.ctxRef(), valueRef, proto.valueRef());
@@ -459,6 +468,7 @@ public class JSObject extends JSValue {
 	 * Determines if the object contains a given property
 	 * @param prop  The property to test the existence of
 	 * @return true if the property exists on the object, false otherwise
+	 * @since 1.0
 	 */
 	public boolean hasProperty(String prop) {
 		return hasProperty(context.ctxRef(), valueRef, new JSString(prop).stringRef());
@@ -467,6 +477,7 @@ public class JSObject extends JSValue {
 	 * Gets the property named 'prop'
 	 * @param prop  The name of the property to fetch
 	 * @return The JSValue of the property, or null if it does not exist
+	 * @since 1.0
 	 * @throws JSException
 	 */
 	public JSValue property(String prop) throws JSException {
@@ -483,6 +494,7 @@ public class JSObject extends JSValue {
 	 * @param value  The Java object to set.  The Java object will be converted to a JavaScript object
 	 *               automatically.
 	 * @param attributes  And OR'd list of JSProperty constants
+	 * @since 1.0
 	 * @throws JSException
 	 */
 	public void property(String prop, Object value, int attributes) throws JSException {
@@ -502,6 +514,7 @@ public class JSObject extends JSValue {
 	 * @param prop  The name of the property to set
 	 * @param value  The Java object to set.  The Java object will be converted to a JavaScript object
 	 *               automatically.
+	 * @since 1.0
 	 * @throws JSException
 	 */
 	public void property(String prop, Object value) throws JSException {
@@ -511,6 +524,7 @@ public class JSObject extends JSValue {
 	 * Deletes a property from the object
 	 * @param prop  The name of the property to delete
 	 * @return true if the property was deleted, false otherwise
+	 * @since 1.0
 	 * @throws JSException
 	 */
 	public boolean deleteProperty(String prop) throws JSException {
@@ -526,6 +540,7 @@ public class JSObject extends JSValue {
 	 * Returns the property at index 'index'.  Used for arrays.
 	 * @param index  The index of the property
 	 * @return  The JSValue of the property at index 'index'
+	 * @since 1.0
 	 * @throws JSException
 	 */
 	public JSValue propertyAtIndex(int index) throws JSException {
@@ -540,6 +555,7 @@ public class JSObject extends JSValue {
 	 * Sets the property at index 'index'.  Used for arrays.
 	 * @param index  The index of the property to set
 	 * @param value  The Java object to set, will be automatically converted to a JavaScript value
+	 * @since 1.0
 	 * @throws JSException
 	 */
 	public void propertyAtIndex(int index, Object value) throws JSException {
@@ -552,6 +568,7 @@ public class JSObject extends JSValue {
 	/**
 	 * Gets the list of set property names on the object
 	 * @return  A string array containing the property names
+	 * @since 1.0
 	 */
 	public String [] propertyNames() {
 		long propertyNameArray = copyPropertyNames(context.ctxRef(), valueRef);
@@ -568,6 +585,7 @@ public class JSObject extends JSValue {
 	/**
 	 * Determines if the object is a function
 	 * @return true if the object is a function, false otherwise
+	 * @since 1.0
 	 */
 	public boolean isFunction() {
 		return isFunction(context.ctxRef(), valueRef);
@@ -575,6 +593,7 @@ public class JSObject extends JSValue {
 	/**
 	 * Determines if the object is a constructor
 	 * @return  true if the object is a constructor, false otherwise
+	 * @since 1.0
 	 */
 	public boolean isConstructor() {
 		return isConstructor(context.ctxRef(), valueRef);
@@ -584,6 +603,7 @@ public class JSObject extends JSValue {
 	 * @param thiz  The 'this' object on which the function operates, null if not on a constructor object
 	 * @param args  An array of JSValues to pass as arguments to the function
 	 * @return The JSValue returned by the function
+	 * @since 1.0
 	 * @throws JSException
 	 */
 	public JSValue callAsFunction(JSObject thiz, JSValue [] args) throws JSException {

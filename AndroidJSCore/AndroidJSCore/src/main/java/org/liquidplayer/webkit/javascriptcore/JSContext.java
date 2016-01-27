@@ -43,8 +43,14 @@ public class JSContext extends JSObject {
 
 	/**
 	 * Object interface for handling JSExceptions.
+	 * @since 1.0
 	 */
 	public interface IJSExceptionHandler {
+		/**
+		 * Implement this method to catch JSExceptions
+		 * @param exception caught exception
+		 * @since 2.1
+		 */
         public void handle(JSException exception);
 	}
 
@@ -63,6 +69,7 @@ public class JSContext extends JSObject {
 	/**
 	 * Creates a new JavaScript context in the context group 'inGroup'.
 	 * @param inGroup  The context group to create the context in
+	 * @since 1.0
 	 */
 	public JSContext(JSContextGroup inGroup) {
 		ctx = createInGroup(inGroup.groupRef());
@@ -74,6 +81,7 @@ public class JSContext extends JSObject {
 	 * Creates a JavaScript context, and defines the global object with interface 'iface'.  This
 	 * object must implement 'iface'.  The methods in 'iface' will be exposed to the JavaScript environment.
 	 * @param iface  The interface to expose to JavaScript
+	 * @since 1.0
 	 * @throws JSException
 	 */
 	public JSContext(Class<?> iface) throws JSException {
@@ -88,6 +96,7 @@ public class JSContext extends JSObject {
 	 * be exposed to the JavaScript environment.
 	 * @param inGroup  The context group to create the context in
 	 * @param iface  The interface to expose to JavaScript
+	 * @since 1.0
 	 * @throws JSException
 	 */
 	public JSContext(JSContextGroup inGroup, Class<?> iface) throws JSException {
@@ -101,7 +110,7 @@ public class JSContext extends JSObject {
 		if (ctx!=null) {
             release(ctx);
             finalizeContext(ctx);
-        }
+		}
 		super.finalize();
 	}
 
@@ -110,6 +119,7 @@ public class JSContext extends JSObject {
 	 * context will call the 'handle' method on this object.  The calling function will
 	 * return with an undefined value.
 	 * @param handler An object that implements 'IJSExceptionHandler'
+	 * @since 2.1
 	 */
 	public void setExceptionHandler(IJSExceptionHandler handler) {
 		exceptionHandler = handler;
@@ -117,6 +127,7 @@ public class JSContext extends JSObject {
 
 	/**
 	 * Clears a previously set exception handler.
+	 * @since 2.1
 	 */
 	public void clearExceptionHandler() {
 		exceptionHandler = null;
@@ -126,6 +137,7 @@ public class JSContext extends JSObject {
 	 * If an exception handler is set, calls the exception handler, otherwise throws
 	 * the JSException.
 	 * @param exception The JSException to be thrown
+	 * @since 1.0
 	 */
 	public void throwJSException(JSException exception) throws JSException {
 		if (exceptionHandler == null) {
@@ -166,12 +178,13 @@ public class JSContext extends JSObject {
 	 * @param sourceURL  The URI of the source file, only used for reporting in stack trace (optional)
 	 * @param startingLineNumber  The beginning line number, only used for reporting in stack trace (optional)
 	 * @return  The return value returned by 'script'
+	 * @since 1.0
 	 * @throws JSException
 	 */
 	public JSValue evaluateScript(String script, JSObject thiz,
 			String sourceURL, int startingLineNumber) throws JSException {
 		JNIReturnObject jni = evaluateScript(ctx, new JSString(script).stringRef(),
-				(thiz==null)?0L:thiz.valueRef(), (sourceURL==null)?0L:new JSString(sourceURL).stringRef(),
+				(thiz == null) ? 0L : thiz.valueRef(), (sourceURL == null) ? 0L : new JSString(sourceURL).stringRef(),
 				startingLineNumber);
 		if (jni.exception!=0) {
 			throwJSException(new JSException(new JSValue(jni.exception, context)));
@@ -185,6 +198,7 @@ public class JSContext extends JSObject {
 	 * @param script  The code to execute
 	 * @param thiz  The 'this' object
 	 * @return  The return value returned by 'script'
+	 * @since 1.0
 	 * @throws JSException
 	 */
 	public JSValue evaluateScript(String script, JSObject thiz) throws JSException {
@@ -194,6 +208,7 @@ public class JSContext extends JSObject {
 	 * Executes a the JavaScript code in 'script' in this context
 	 * @param script  The code to execute
 	 * @return  The return value returned by 'script'
+	 * @since 1.0
 	 * @throws JSException
 	 */
 	public JSValue evaluateScript(String script) throws JSException {
@@ -208,6 +223,7 @@ public class JSContext extends JSObject {
 	 * local variables in the Java object will stay wrapped around all returns of the same
 	 * instance.  This is handled by JSObject, and should not need to be called by clients.
 	 * @param obj  The object with which to associate with this context
+	 * @since 1.0
 	 */
 	public void persistObject(JSObject obj) {
 		objects.put(obj.valueRef(), obj);
@@ -216,6 +232,7 @@ public class JSContext extends JSObject {
 	 * Removes a reference to an object in this context.  Should only be used from the 'finalize'
 	 * object method.  This is handled by JSObject, and should not need to be called by clients.
 	 * @param obj
+	 * @since 1.0
 	 */
 	public void finalizeObject(JSObject obj) {
         objects.remove(obj.valueRef());
@@ -224,6 +241,7 @@ public class JSContext extends JSObject {
 	 * Reuses a stored reference to a JavaScript object if it exists, otherwise, it creates the
 	 * reference.
 	 * @param objRef
+	 * @since 1.0
 	 * @return The JSObject representing the reference
 	 */
 	public JSObject getObjectFromRef(long objRef) {
@@ -235,6 +253,7 @@ public class JSContext extends JSObject {
 	}
 	/**
 	 * Forces JavaScript garbage collection on this context
+	 * @since 1.0
 	 */
 	public void garbageCollect() {
 		garbageCollect(ctx);
@@ -254,6 +273,6 @@ public class JSContext extends JSObject {
 	
 	static {
 		System.loadLibrary("JavaScriptCore");
-        staticInit();
+		staticInit();
 	}
 }

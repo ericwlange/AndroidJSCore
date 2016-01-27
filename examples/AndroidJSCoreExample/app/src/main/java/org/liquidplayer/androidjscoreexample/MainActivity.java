@@ -85,11 +85,6 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
 
     @Override
     public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-        MainActivity.position = position + 1;
-        if (mCurrentFragment == null) return;
-        if (MainActivity.position == mCurrentFragment.getArguments().getInt(ARG_OBJECT)) {
-            mCurrentFragment.example.run();
-        }
     }
 
     @Override

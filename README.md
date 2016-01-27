@@ -19,7 +19,7 @@ Design Goals
 
 Version
 -------
-2.0
+2.1
 
 Working With AndroidJSCore
 --------------------------
@@ -108,7 +108,7 @@ just about everything.
 
 Use AndroidJSCore in your project
 ---------------------------------
-The easy way is to simply download the file `AndroidJSCore-2.0-release.aar` from
+The easy way is to simply download the file `AndroidJSCore-2.1-release.aar` from
 the [latest release] and drop it somewhere in your project (`libs/` is meant just for this). Then
 add the following to your app-level `build.gradle`:
 
@@ -119,7 +119,7 @@ add the following to your app-level `build.gradle`:
     }
 
     dependencies {
-        compile(name:'AndroidJSCore-2.0-release', ext:'aar')
+        compile(name:'AndroidJSCore-2.1-release', ext:'aar')
     }
 
 Building the AndroidJSCoreExample app
@@ -129,10 +129,10 @@ If you want to see AndroidJSCore in action, you can run the example app:
 
     git clone https://github.com/ericwlange/AndroidJSCore.git ~/AndroidJSCore
     cd ~/AndroidJSCore
-    git checkout tags/2.0
+    git checkout tags/2.1
     mkdir ~/AndroidJSCore/lib
 
-Then download `AndroidJSCore-2.0-release.aar` from the [latest release] and
+Then download `AndroidJSCore-2.1-release.aar` from the [latest release] and
 copy it into `~/AndroidJSCore/lib`.  Now you can open `~/AndroidJSCore/examples/AndroidJSCoreExample`
 in Android Studio and run it.
 
@@ -163,7 +163,7 @@ add the following to your app's `build.gradle`:
     }
 
     dependencies {
-        compile(name:'AndroidJSCore-2.0-release', ext:'aar')
+        compile(name:'AndroidJSCore-2.1-release', ext:'aar')
     }
     
 If something goes wrong or you want to understand what's going on, read on.
@@ -196,7 +196,7 @@ you can blow the whole thing away and start over if something goes awry.
     % mkdir build
     % cd build
     
-#### Step 3 - Build AndroidJSCore-2.0-release.aar
+#### Step 3 - Build AndroidJSCore-2.1-release.aar
 
 From the `build` (or whatever you named it) directory, run the `build` script in `scripts/`:
 
@@ -215,7 +215,7 @@ And then for each 32-bit architecture (armeabi, armeabi-v7a, x86, and mips), it 
  2. Build the five libraries downloaded above
  3. Build the appropriate sections of WebKit required for `JavaScriptCore`
 
-Finally, it will pull it all together by building the `AndroidJSCore-2.0-release.aar`
+Finally, it will pull it all together by building the `AndroidJSCore-2.1-release.aar`
 library.  That file will be installed in the `lib/` directory of the `AndroidJSCore`
 source tree.
 
@@ -232,7 +232,7 @@ option.
 `--disable-jit` will disable just-in-time compilation for all architectures.  Currently, it
 is disabled by default for `armeabi` and `mips` because they will not even compile, and it
 is turned off for `armeabi-v7a` because it causes the app to crash on load.  In subsequent
-releases, I will try to get this to work.  This should theoretically significantly improve
+releases, I will try to get `armeabi-v7a` to work.  This should theoretically significantly improve
 the speed of JavaScript execution, and is currently enabled by default for `x86` and the
 64-bit arches.
 
@@ -240,13 +240,9 @@ the speed of JavaScript execution, and is currently enabled by default for `x86`
 Don't use this option unless you are trying to debug JIT.  This option overrides `--disable-jit`
 if used together.
 
-You may also specify target architectures explicitly.  Currently, `armeabi`, `armeabi-v7a`,
-`x86` and `mips` build by default, but if you just want to build for a subset of these ABIs,
-then you can specify them explicitly as options.  As of the 2.0 release, only the four
-32-bit architectures work.  The `x86_64` and `arm64-v8a` ABIs get pretty far along before
-they crap out due to what appears to be a compiler bug in GCC 4.9.  The `mips64` target
-won't even get off the ground.  Future versions will include the 64-bit targets as the
-tools mature.
+You may also specify target architectures explicitly.  By default, all architectures 
+(`armeabi`, `armeabi-v7a`, `x86`, `mips`, `arm64-v8a`, `x86_64`, and `mips64`) will build,
+but if you only want to build a subset, just specify them on the command line.
 
 Work in Progress
 ----------------

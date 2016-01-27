@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
      * {@link android.support.v4.app.FragmentStatePagerAdapter}.
      */
     private SectionsPagerAdapter mSectionsPagerAdapter;
-    protected JSCoreExampleFragment mCurrentFragment;
+    static JSCoreExampleFragment [] fragments = new JSCoreExampleFragment[4];
 
     /**
      * The {@link ViewPager} that will host the section contents.
@@ -76,15 +76,14 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
 
     @Override
     public void onPageSelected(int position) {
-        MainActivity.position = position + 1;
-        if (mCurrentFragment == null) return;
-        if (MainActivity.position == mCurrentFragment.getArguments().getInt(ARG_OBJECT)) {
-            mCurrentFragment.example.run();
-        }
     }
 
     @Override
     public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+        if (positionOffset == 0.0) {
+            if (fragments[position] == null) return;
+            fragments[position].example.run();
+        }
     }
 
     @Override
@@ -144,9 +143,7 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
                     case 3: example = new AsyncExample(ctx); break;
                     case 4: example = new ExceptionHandlingExample(ctx); break;
                 }
-                if (position == args.getInt(ARG_OBJECT)) {
-                    example.run();
-                }
+                fragments[args.getInt(ARG_OBJECT)-1] = this;
             } catch (JSException e) {
                 int duration = Toast.LENGTH_LONG;
                 Toast toast = Toast.makeText(getActivity().getApplicationContext(),
@@ -179,9 +176,6 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
 
         @Override
         public void setPrimaryItem(ViewGroup container, int position, Object object) {
-            if (mCurrentFragment != object) {
-                mCurrentFragment = (JSCoreExampleFragment) object;
-            }
         }
 
         @Override

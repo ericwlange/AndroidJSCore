@@ -132,6 +132,9 @@ If you want to see AndroidJSCore in action, you can run the example app:
     git checkout tags/2.1
     mkdir ~/AndroidJSCore/lib
 
+Note that this requires [GIT LFS](https://git-lfs.github.com/).  If you don't already have it installed,
+you will need to install it.
+
 Then download `AndroidJSCore-2.1-release.aar` from the [latest release] and
 copy it into `~/AndroidJSCore/lib`.  Now you can open `~/AndroidJSCore/examples/AndroidJSCoreExample`
 in Android Studio and run it.
@@ -150,6 +153,9 @@ Set `ANDROID_HOME` and `ANDROID_NDK_ROOT` environment variables
     % mkdir build
     % cd build
     % ../AndroidJSCore/scripts/build
+
+Note that this requires [GIT LFS](https://git-lfs.github.com/).  If you don't already have it installed,
+you will need to install it.
 
 Note the `--recursive` option in `git clone`.  This is required for building the
 library, but not if you are just downloading the released library as with the example app above.

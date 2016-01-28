@@ -139,7 +139,7 @@ Then download `AndroidJSCore-2.1-release.aar` from the [latest release] and
 copy it into `~/AndroidJSCore/lib`.  Now you can open `~/AndroidJSCore/examples/AndroidJSCoreExample`
 in Android Studio and run it.
 
-Building AndroidJSCore-2.0 library
+Building AndroidJSCore-2.1 library
 -------------------------------
 
 If you are interested in building the library directly and possibly contributing, you must
@@ -159,7 +159,7 @@ you will need to install it.
 
 Note the `--recursive` option in `git clone`.  This is required for building the
 library, but not if you are just downloading the released library as with the example app above.
-Your library now sits in `lib/AndroidJSCore-2.0-release.aar`.  To use it, simply
+Your library now sits in `lib/AndroidJSCore-2.1-release.aar`.  To use it, simply
 add the following to your app's `build.gradle`:
 
     repositories {

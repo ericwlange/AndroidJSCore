@@ -216,7 +216,7 @@ This can take an hour, as it does a lot.  Roughly, it will:
  2. Patch the sources to make them build on Android
  3. Build the `icu` library for your host OS
 
-And then for each 32-bit architecture (armeabi, armeabi-v7a, x86, and mips), it will:
+And then for each architecture (`armeabi`, `armeabi-v7a`, `arm64-v8a`, `x86`, `x86_64`, `mips`, and `mips64`), it will:
  1. Install the prebuilt toolchain for the ABI
  2. Build the five libraries downloaded above
  3. Build the appropriate sections of WebKit required for `JavaScriptCore`

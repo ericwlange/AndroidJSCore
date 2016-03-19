@@ -19,7 +19,8 @@ Design Goals
 
 Version
 -------
-2.1
+~~2.1~~
+Recommend using version 2.0.  There is a bug in version 2.1 that causes the app to hang.  Working on a patch.
 
 Working With AndroidJSCore
 --------------------------

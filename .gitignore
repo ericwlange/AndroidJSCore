@@ -2,10 +2,7 @@
 .settings
 bin
 gen
-libs/armeabi
-libs/armeabi-v7a
-libs/mips
-libs/x86
+libs/
 obj
 project.properties
 build/

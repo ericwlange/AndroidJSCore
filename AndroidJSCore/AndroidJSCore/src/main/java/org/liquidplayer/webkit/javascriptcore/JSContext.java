@@ -32,6 +32,8 @@
 */
 package org.liquidplayer.webkit.javascriptcore;
 
+import org.liquidplayer.hemroid.JavaScriptCoreGTK;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,7 +45,7 @@ public class JSContext extends JSObject {
 
 	/**
 	 * Object interface for handling JSExceptions.
-	 * @since 1.0
+	 * @since 2.1
 	 */
 	public interface IJSExceptionHandler {
 		/**
@@ -59,6 +61,7 @@ public class JSContext extends JSObject {
 	
 	/**
 	 * Creates a new JavaScript context
+	 * @since 1.0
 	 */
 	public JSContext() {
 		ctx = create();
@@ -231,7 +234,7 @@ public class JSContext extends JSObject {
 	/**
 	 * Removes a reference to an object in this context.  Should only be used from the 'finalize'
 	 * object method.  This is handled by JSObject, and should not need to be called by clients.
-	 * @param obj
+	 * @param obj the JSObject to dereference
 	 * @since 1.0
 	 */
 	public void finalizeObject(JSObject obj) {
@@ -240,7 +243,7 @@ public class JSContext extends JSObject {
 	/**
 	 * Reuses a stored reference to a JavaScript object if it exists, otherwise, it creates the
 	 * reference.
-	 * @param objRef
+	 * @param objRef the JavaScriptCore object reference
 	 * @since 1.0
 	 * @return The JSObject representing the reference
 	 */
@@ -272,7 +275,8 @@ public class JSContext extends JSObject {
     protected native void finalizeContext(long ctx);
 	
 	static {
-		System.loadLibrary("JavaScriptCore");
+		new JavaScriptCoreGTK(null);
+		System.loadLibrary("android-js-core");
 		staticInit();
 	}
 }

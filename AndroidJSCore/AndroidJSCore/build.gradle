@@ -3,11 +3,12 @@ apply plugin: 'com.android.library'
 android {
     compileSdkVersion 23
     buildToolsVersion "23.0.2"
+
     defaultConfig {
-        minSdkVersion 16
+        minSdkVersion 9
         targetSdkVersion 23
         versionCode 2
-        versionName "2.1"
+        versionName "2.2-pre1"
         setProperty("archivesBaseName", "AndroidJSCore-$versionName")
     }
     buildTypes {
@@ -16,8 +17,6 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    productFlavors {
-    }
 }
 
 dependencies {
@@ -25,3 +24,24 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.1.1'
 }
+
+task hemroidBuild(type: Exec) {
+    def rootDir = project.rootDir
+    def localProperties = new File(rootDir, "local.properties")
+    def ndkDir = ''
+    def sdkDir = ''
+    def hemroidDir = ''
+    if (localProperties.exists()) {
+        Properties properties = new Properties()
+        localProperties.withInputStream { instr ->
+            properties.load(instr)
+        }
+        ndkDir = properties.getProperty('ndk.dir')
+        sdkDir = properties.getProperty('sdk.dir')
+        hemroidDir = properties.getProperty('hemroid.dir')
+    }
+    executable "sh"
+    args "-c", "NDK_MODULE_PATH=$hemroidDir/packages ANDROID_SDK=$sdkDir ANDROID_NDK=$ndkDir $ndkDir/ndk-build"
+}
+
+preBuild.dependsOn hemroidBuild

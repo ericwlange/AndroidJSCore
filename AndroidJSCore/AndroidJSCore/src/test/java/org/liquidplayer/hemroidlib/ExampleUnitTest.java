@@ -1,4 +1,4 @@
-package org.liquidplayer.webkit.javascriptcore;
+package org.liquidplayer.hemroidlib;
 
 import org.junit.Test;
 

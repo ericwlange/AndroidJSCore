@@ -32,7 +32,7 @@ task hemroidBuild(type: Exec) {
     def localProperties = new File(rootDir, "local.properties")
     def ndkDir = ''
     def sdkDir = ''
-    def hemroidDir = ''
+    def hemroidDir = 'foo'
     if (localProperties.exists()) {
         Properties properties = new Properties()
         localProperties.withInputStream { instr ->
@@ -40,16 +40,25 @@ task hemroidBuild(type: Exec) {
         }
         ndkDir = properties.getProperty('ndk.dir')
         sdkDir = properties.getProperty('sdk.dir')
-        def stdout = new ByteArrayOutputStream()
-        def result = exec {
-            executable = "which"
-            args = ["hemroid"]
-            standardOutput = stdout;
+        try {
+            def stdout = new ByteArrayOutputStream()
+            def result = exec {
+                executable = "which"
+                args = ["hemroid"]
+                standardOutput = stdout;
+            }
+            hemroidDir = FilenameUtils.getFullPathNoEndSeparator(stdout.toString())
+        } catch (Throwable e) {
+            hemroidDir = ''
         }
-        hemroidDir = FilenameUtils.getFullPathNoEndSeparator(stdout.toString())
     }
-    executable "sh"
-    args "-c", "NDK_MODULE_PATH=$hemroidDir/packages ANDROID_SDK=$sdkDir ANDROID_NDK=$ndkDir $ndkDir/ndk-build"
+    if (hemroidDir != '') {
+        executable "sh"
+        args "-c", "NDK_MODULE_PATH=$hemroidDir/packages ANDROID_SDK=$sdkDir ANDROID_NDK=$ndkDir $ndkDir/ndk-build"
+    } else {
+        executable "echo"
+        args "'hemroid' not in the path.  Make sure you add it to the PATH variable and run gradle explicitly."
+    }
 }
 
 preBuild.dependsOn hemroidBuild

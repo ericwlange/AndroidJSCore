@@ -82,6 +82,7 @@ Instance::~Instance() {
 	jvm->AttachCurrentThread(&env, NULL);
 	env->DeleteGlobalRef(thiz);
 	objMap[objRef] = NULL;
+	jvm->DetachCurrentThread();
 }
 std::map<JSObjectRef,Instance *> Instance::objMap = std::map<JSObjectRef,Instance *>();
 void Instance::StaticFinalizeCallback(JSObjectRef object)
@@ -107,8 +108,8 @@ void Instance::FinalizeCallback(JSObjectRef object)
 			return;
 		}
 	} while (true);
-
 	env->CallVoidMethod(thiz, mid, (jlong)object);
+	jvm->DetachCurrentThread();
 }
 NATIVE(JSObject,jlong,makeWithFinalizeCallback) (PARAMS, jlong ctx) {
 	Instance *instance = new Instance(env, thiz, (JSContextWrapper *)ctx);
@@ -168,6 +169,7 @@ Function::~Function() {
 	JNIEnv *env;
 	jvm->AttachCurrentThread(&env, NULL);
 	env->DeleteGlobalRef(thiz);
+	jvm->DetachCurrentThread();
 }
 void Function::release(__attribute__((unused))JSContextRef ctx, JSObjectRef function) {
 	Function *f = objMap[function];
@@ -222,6 +224,7 @@ JSValueRef Function::FunctionCallback(JSContextRef ctx, JSObjectRef function, JS
 			argsArr, (jlong)exception);
 
 	delete args;
+	jvm->DetachCurrentThread();
 	return (JSObjectRef)objret;
 }
 JSObjectRef Function::ConstructorCallback(JSContextRef ctx, JSObjectRef constructor,
@@ -251,6 +254,7 @@ JSObjectRef Function::ConstructorCallback(JSContextRef ctx, JSObjectRef construc
 			argsArr, (jlong)exception);
 
 	delete args;
+	jvm->DetachCurrentThread();
 	return (JSObjectRef)objret;
 }
 

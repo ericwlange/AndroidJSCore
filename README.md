@@ -140,11 +140,7 @@ Then download `AndroidJSCore-2.1-release.aar` from the [latest release] and
 copy it into `~/AndroidJSCore/lib`.  Now you can open `~/AndroidJSCore/examples/AndroidJSCoreExample`
 in Android Studio and run it.
 
-# Note: The instructions below are valid only for 2.1 and below, and will not work on HEAD
-
-I am moving to a completely new build process which has a number of advantages.  Documentation to be updated shortly.
-
-Building AndroidJSCore-2.1 library
+Building AndroidJSCore-2.2 library
 -------------------------------
 
 If you are interested in building the library directly and possibly contributing, you must
@@ -152,19 +148,28 @@ do the following:
 
 #### TL;DR - do this
 
-Set `ANDROID_HOME` and `ANDROID_NDK_ROOT` environment variables
+##### Step 1: Get `hemroid` package manager and build JavaScriptCore
 
-    % git clone --recursive https://github.com/ericwlange/AndroidJSCore.git
-    % mkdir build
-    % cd build
-    % ../AndroidJSCore/scripts/build
+    % git clone https://github.com/ericwlange/hemroid.git
+    % export PATH=$PATH:$PWD/hemroid
+    % export ANDROID_NDK=/path/to/ndk
+    % export ANDROID_SDK=/path/to/sdk
+    % hemroid install javascriptcore
 
 Note that this requires [GIT LFS](https://git-lfs.github.com/).  If you don't already have it installed,
 you will need to install it.
 
-Note the `--recursive` option in `git clone`.  This is required for building the
-library, but not if you are just downloading the released library as with the example app above.
-Your library now sits in `lib/AndroidJSCore-2.1-release.aar`.  To use it, simply
+##### Step 2: Build AndroidJSCore
+
+    git clone https://github.com/ericwlange/AndroidJSCore.git
+    cd AndroidJSCore/AndroidJSCore
+    echo ndk.dir=$ANDROID_NDK > local.properties
+    echo sdk.dir=$ANDROID_SDK >> local.properties
+    ./gradlew assembleRelease
+    mkdir -p ../lib
+    cp AndroidJSCore/build/outputs/aar/* ../lib
+
+Your library now sits in `lib/AndroidJSCore-2.2-pre1-release.aar`.  To use it, simply
 add the following to your app's `build.gradle`:
 
     repositories {
@@ -174,86 +179,11 @@ add the following to your app's `build.gradle`:
     }
 
     dependencies {
-        compile(name:'AndroidJSCore-2.1-release', ext:'aar')
+        compile(name:'AndroidJSCore-2.2-pre1-release', ext:'aar')
     }
     
-If something goes wrong or you want to understand what's going on, read on.
 
-#### Step 1 - Set up required tools
-
-This has all been verified to work on Mac OSX (specifically 10.11.2 El Capitan)
-and Linux (Ubuntu 14.04 LTS).  If anyone else is married to that OS from Seattle, 
-please feel free to get it working and contribute!
-
-1. Download and install the latest version of [Android Studio], including the [NDK]
-2. Set two environment variables: `ANDROID_HOME` and `ANDROID_NDK_ROOT` to point to the SDK and NDK directories, respectively
-3. Clone the repo: `git clone --recursive https://github.com/ericwlange/AndroidJSCore.git`
-
-This last step will grab both the AndroidJSCore repo, as well as my fork of the
-[webkit] repo.  The latter part is huge, like 6 GBs or something, so settle in.  Note that
-the recursive clone is required for building the lib, but is not if you just want to
-build the example app.
-
-The build process requires a bunch of other standard UNIX tools, too.  The below script will
-complain if it can't find something, but you should expect to have the command-line
-tools (OSX), `gcc`, `make`, `cmake`, `python`, `perl`, `gperf`, `bison`, `ruby` and
-a smattering of other standard developer tools installed.
-
-#### Step 2 - Create a build directory
-
-This directory can be anywhere, but an out-of-source build is always recommended, as
-you can blow the whole thing away and start over if something goes awry.
-
-    % mkdir build
-    % cd build
-    
-#### Step 3 - Build AndroidJSCore-2.1-release.aar
-
-From the `build` (or whatever you named it) directory, run the `build` script in `scripts/`:
-
-    % ../AndroidJSCore/scripts/build
-
-Note, the above assumes that your build directory is at the same level as the `AndroidJSCore`
-project.  Salt to taste.
-
-This can take an hour, as it does a lot.  Roughly, it will:
- 1. Download the `iconv`, `ffi`, `gettext`, `glib-2.0`, and `icu` library sources
- 2. Patch the sources to make them build on Android
- 3. Build the `icu` library for your host OS
-
-And then for each architecture (`armeabi`, `armeabi-v7a`, `arm64-v8a`, `x86`, `x86_64`, `mips`, and `mips64`), it will:
- 1. Install the prebuilt toolchain for the ABI
- 2. Build the five libraries downloaded above
- 3. Build the appropriate sections of WebKit required for `JavaScriptCore`
-
-Finally, it will pull it all together by building the `AndroidJSCore-2.1-release.aar`
-library.  That file will be installed in the `lib/` directory of the `AndroidJSCore`
-source tree.
-
-The `build` script has some options:
-
-`--link-icu-data` will force the ICU data library to be linked to the source.  By default,
-this library is stubbed out.  The ICU data library adds a whopping 15MB or so to each
-arch (uncompressed).  This library is used for unicode strings, and it isn't clear whether
-it is truly required for JavaScriptCore to function or not.  It is definitely required for
-WebKit as a whole, but it doesn't seem to impact JavaScript to leave it out.  If for some
-reason your project isn't working because of this, you can link the lib back in with this
-option.
-
-`--disable-jit` will disable just-in-time compilation for all architectures.  Currently, it
-is disabled by default for `armeabi` and `mips` because they will not even compile, and it
-is turned off for `armeabi-v7a` because it causes the app to crash on load.  In subsequent
-releases, I will try to get `armeabi-v7a` to work.  This should theoretically significantly improve
-the speed of JavaScript execution, and is currently enabled by default for `x86` and the
-64-bit arches.
-
-`--force-jit` will force enable just-in-time compilation even for arches that don't work.
-Don't use this option unless you are trying to debug JIT.  This option overrides `--disable-jit`
-if used together.
-
-You may also specify target architectures explicitly.  By default, all architectures 
-(`armeabi`, `armeabi-v7a`, `x86`, `mips`, `arm64-v8a`, `x86_64`, and `mips64`) will build,
-but if you only want to build a subset, just specify them on the command line.
+More details to come ...
 
 Work in Progress
 ----------------

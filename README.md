@@ -19,8 +19,7 @@ Design Goals
 
 Version
 -------
-~~2.1~~
-Recommend using version 2.0.  There is a bug in version 2.1 that causes the app to hang.  Working on a patch.
+2.2-pre1 - Please help test this version
 
 Working With AndroidJSCore
 --------------------------
@@ -109,7 +108,7 @@ just about everything.
 
 Use AndroidJSCore in your project
 ---------------------------------
-The easy way is to simply download the file `AndroidJSCore-2.1-release.aar` from
+The easy way is to simply download the file `AndroidJSCore-2.2-pre1-release.aar` from
 the [latest release] and drop it somewhere in your project (`libs/` is meant just for this). Then
 add the following to your app-level `build.gradle`:
 
@@ -120,7 +119,7 @@ add the following to your app-level `build.gradle`:
     }
 
     dependencies {
-        compile(name:'AndroidJSCore-2.1-release', ext:'aar')
+        compile(name:'AndroidJSCore-2.2-pre1-release', ext:'aar')
     }
 
 Building the AndroidJSCoreExample app
@@ -130,13 +129,12 @@ If you want to see AndroidJSCore in action, you can run the example app:
 
     git clone https://github.com/ericwlange/AndroidJSCore.git ~/AndroidJSCore
     cd ~/AndroidJSCore
-    git checkout tags/2.1
     mkdir ~/AndroidJSCore/lib
 
 Note that this requires [GIT LFS](https://git-lfs.github.com/).  If you don't already have it installed,
 you will need to install it.
 
-Then download `AndroidJSCore-2.1-release.aar` from the [latest release] and
+Then download `AndroidJSCore-2.2-pre1-release.aar` from the [latest release] and
 copy it into `~/AndroidJSCore/lib`.  Now you can open `~/AndroidJSCore/examples/AndroidJSCoreExample`
 in Android Studio and run it.
 

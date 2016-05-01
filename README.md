@@ -141,12 +141,10 @@ copy it into `~/AndroidJSCore/lib`.  Now you can open `~/AndroidJSCore/examples/
 in Android Studio and run it.
 
 Building AndroidJSCore-2.2 library
--------------------------------
+----------------------------------
 
 If you are interested in building the library directly and possibly contributing, you must
 do the following:
-
-#### TL;DR - do this
 
 ##### Step 1: Get `hemroid` package manager and build JavaScriptCore
 
@@ -156,20 +154,25 @@ do the following:
     % export ANDROID_SDK=/path/to/sdk
     % hemroid install javascriptcore
 
-Note that this requires [GIT LFS](https://git-lfs.github.com/).  If you don't already have it installed,
+Note that `hemroid` requires [GIT LFS](https://git-lfs.github.com/).  If you don't already have it installed,
 you will need to install it.
+
+[`hemroid`](https://github.com/ericwlange/hemroid) is a package manager for Android, similar in intent
+to Homebrew on OSX or `apt` on Linux.  The JavaScriptCore library is part of WebKit.  `hemroid` manages the tweaks
+required to get it to build on Android.  Building JavaScriptCore takes a long time, upwards of an hour or more, 
+depending on your hardware.  If the process fails for any reason it will dump the build log in `/tmp/hemroid.burst`.
+Most likely some tool or another needs to be installed that is not installed on your system.  Fix the dependency
+and then re-run `hemroid install javascriptcore`.
 
 ##### Step 2: Build AndroidJSCore
 
-    git clone https://github.com/ericwlange/AndroidJSCore.git
-    cd AndroidJSCore/AndroidJSCore
-    echo ndk.dir=$ANDROID_NDK > local.properties
-    echo sdk.dir=$ANDROID_SDK >> local.properties
-    ./gradlew assembleRelease
-    mkdir -p ../lib
-    cp AndroidJSCore/build/outputs/aar/* ../lib
+    % git clone https://github.com/ericwlange/AndroidJSCore.git
+    % cd AndroidJSCore/AndroidJSCore
+    % echo ndk.dir=$ANDROID_NDK > local.properties
+    % echo sdk.dir=$ANDROID_SDK >> local.properties
+    % ./gradlew assembleRelease
 
-Your library now sits in `lib/AndroidJSCore-2.2-pre1-release.aar`.  To use it, simply
+Your library now sits in `AndroidJSCore/build/outputs/aar/AndroidJSCore-2.2-pre1-release.aar`.  To use it, simply
 add the following to your app's `build.gradle`:
 
     repositories {
@@ -182,13 +185,6 @@ add the following to your app's `build.gradle`:
         compile(name:'AndroidJSCore-2.2-pre1-release', ext:'aar')
     }
     
-
-More details to come ...
-
-Work in Progress
-----------------
-
-  - Test framework
 
 License
 -------

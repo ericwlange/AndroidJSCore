@@ -38,6 +38,8 @@ import org.liquidplayer.webkit.javascriptcore.JSObject;
 import org.liquidplayer.webkit.javascriptcore.JSValue;
 
 import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Looper;
 
 public class AsyncExample implements IExample {
 	public AsyncExample(ExampleContext ctx) {
@@ -60,12 +62,20 @@ public class AsyncExample implements IExample {
 	public class AsyncObj extends JSObject implements IAsyncObj {
 		public AsyncObj(JSContext ctx) throws JSException { super(ctx,IAsyncObj.class); }
 		@Override
-		public void callMeMaybe(Integer ms, JSValue callback) throws JSException {
-			new CallMeLater(ms).execute(callback.toObject());
-		}
-		
-		private class CallMeLater extends AsyncTask<JSObject, Void, JSObject> {
-			public CallMeLater(Integer ms) {
+		public void callMeMaybe(final Integer ms, final JSValue callback) throws JSException {
+            Handler handler = new Handler(Looper.getMainLooper());
+            handler.post(
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            new CallMeLater(ms).execute(callback.toObject());
+                        }
+                    }
+            );
+        }
+
+        private class CallMeLater extends AsyncTask<JSObject, Void, JSObject> {
+            public CallMeLater(Integer ms) {
 				this.ms = ms;
 			}
 			private final Integer ms;

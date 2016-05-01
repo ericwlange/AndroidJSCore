@@ -19,7 +19,7 @@ Design Goals
 
 Version
 -------
-2.2-pre1 - Please help test this version
+[2.2-pre1](https://github.com/ericwlange/AndroidJSCore/releases/tag/2.2-pre1) - Please help test this version
 
 Working With AndroidJSCore
 --------------------------

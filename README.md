@@ -131,9 +131,6 @@ If you want to see AndroidJSCore in action, you can run the example app:
     cd ~/AndroidJSCore
     mkdir ~/AndroidJSCore/lib
 
-Note that this requires [GIT LFS](https://git-lfs.github.com/).  If you don't already have it installed,
-you will need to install it.
-
 Then download `AndroidJSCore-2.2-pre1-release.aar` from the [latest release] and
 copy it into `~/AndroidJSCore/lib`.  Now you can open `~/AndroidJSCore/examples/AndroidJSCoreExample`
 in Android Studio and run it.

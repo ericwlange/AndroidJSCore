@@ -228,7 +228,7 @@ public class JSContext extends JSObject {
 	 * @param obj  The object with which to associate with this context
 	 * @since 1.0
 	 */
-	public void persistObject(JSObject obj) {
+	public synchronized  void persistObject(JSObject obj) {
 		objects.put(obj.valueRef(), obj);
 	}
 	/**
@@ -237,7 +237,7 @@ public class JSContext extends JSObject {
 	 * @param obj the JSObject to dereference
 	 * @since 1.0
 	 */
-	public void finalizeObject(JSObject obj) {
+	public synchronized void finalizeObject(JSObject obj) {
         objects.remove(obj.valueRef());
 	}
 	/**
@@ -247,7 +247,7 @@ public class JSContext extends JSObject {
 	 * @since 1.0
 	 * @return The JSObject representing the reference
 	 */
-	public JSObject getObjectFromRef(long objRef) {
+	public synchronized JSObject getObjectFromRef(long objRef) {
 		JSObject obj = objects.get(objRef);
 		if (obj==null) {
 			obj = new JSObject(objRef, this);

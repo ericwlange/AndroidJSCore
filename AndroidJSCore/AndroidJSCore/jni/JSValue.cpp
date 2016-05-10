@@ -79,6 +79,16 @@ NATIVE(JSValue,jboolean,isObject) (PARAMS, jlong ctxRef, jlong valueRef)
 	SYNCHRONIZE(ctxRef,valueRef,bool,JSValueIsObject);
 }
 
+NATIVE(JSValue,jboolean,isArray) (PARAMS, jlong ctxRef, jlong valueRef)
+{
+	SYNCHRONIZE(ctxRef,valueRef,bool,JSValueIsArray);
+}
+
+NATIVE(JSValue,jboolean,isDate) (PARAMS, jlong ctxRef, jlong valueRef)
+{
+	SYNCHRONIZE(ctxRef,valueRef,bool,JSValueIsDate);
+}
+
 /* Comparing values */
 
 NATIVE(JSValue,jobject,isEqual) (PARAMS, jlong ctxRef, jlong a, jlong b)

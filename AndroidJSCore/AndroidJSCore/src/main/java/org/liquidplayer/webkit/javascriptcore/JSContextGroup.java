@@ -57,7 +57,7 @@ public class JSContextGroup {
 	 */
 	public JSContextGroup(Long groupRef)
 	{
-		group = retain(group);
+		group = retain(groupRef);
 	}
 
 	@Override
@@ -73,6 +73,25 @@ public class JSContextGroup {
 	 */
 	public Long groupRef() {
 		return group;
+	}
+
+    /**
+     * Checks if two JSContextGroups refer to the same JS context group
+     * @param other the other object to compare
+     * @return true if refer to same context group, false otherwise
+     * @since 2.2
+     */
+	@Override
+	public boolean equals(Object other) {
+		if (other==null)
+            return false;
+        if (this == other)
+            return true;
+		if (!(other instanceof JSContextGroup))
+            return false;
+		if (groupRef() == null || groupRef() == 0)
+            return false;
+        return groupRef().equals(((JSContextGroup)other).groupRef());
 	}
 	
 	protected native long create();

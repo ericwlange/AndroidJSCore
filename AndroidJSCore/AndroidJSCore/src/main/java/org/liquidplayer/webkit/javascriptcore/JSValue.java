@@ -74,11 +74,14 @@ public class JSValue {
 	 */
 	public JSValue(JSContext ctx, Object val) {
 		context = ctx;
-		if (val == null) valueRef = makeNull(context.ctxRef());
-		if (val instanceof Boolean) {
+		if (val == null) {
+            valueRef = makeNull(context.ctxRef());
+        } else if (val instanceof Boolean) {
 			valueRef = makeBoolean(context.ctxRef(), (Boolean)val);
 		} else if (val instanceof Double) {
 			valueRef = makeNumber(context.ctxRef(), (Double)val);
+		} else if (val instanceof Float) {
+			valueRef = makeNumber(context.ctxRef(), ((Float)val).doubleValue());
 		} else if (val instanceof Integer) {
 			valueRef = makeNumber(context.ctxRef(), ((Integer)val).doubleValue());
 		} else if (val instanceof Long) {
@@ -188,13 +191,29 @@ public class JSValue {
 		return isString(context.ctxRef(), valueRef);
 	}
 	/**
-	 * Tests whether the value is an object
-	 * @return  true if an object, false otherwise
-	 * @since 1.0
+	 * Tests whether the value is an array
+	 * @return  true if an array, false otherwise
+	 * @since 2.2
 	 */
-	public Boolean isObject() {
-		return isObject(context.ctxRef(), valueRef);
+	public Boolean isArray() {
+		return isArray(context.ctxRef(), valueRef);
 	}
+    /**
+     * Tests whether the value is a date object
+     * @return  true if a date object, false otherwise
+     * @since 2.2
+     */
+    public Boolean isDate() {
+        return isDate(context.ctxRef(), valueRef);
+    }
+    /**
+     * Tests whether the value is an object
+     * @return  true if an object, false otherwise
+     * @since 1.0
+     */
+    public Boolean isObject() {
+        return isObject(context.ctxRef(), valueRef);
+    }
 	/**
 	 * Tests whether a value in an instance of a constructor object
 	 * @param constructor  The constructor object to test
@@ -215,24 +234,12 @@ public class JSValue {
 	@Override
 	public boolean equals(Object other) {
 		if (other == this) return true;
-		JSValue otherJSValue;
-		if (other == null) {
-			otherJSValue = new JSValue(context,(Long)null);
-		} else if (other instanceof JSValue) {
-			otherJSValue = (JSValue)other;
-		} else if (other instanceof Long) {
-			otherJSValue = new JSValue(context,(Long)other);
-		} else if (other instanceof Integer) {
-			otherJSValue = new JSValue(context,(Integer)other);
-		} else if (other instanceof Double) {
-			otherJSValue = new JSValue(context,(Double)other);
-		} else if (other instanceof String) {
-			otherJSValue = new JSValue(context,(String)other);
-		} else if (other instanceof Boolean) {
-			otherJSValue = new JSValue(context,(Boolean)other);
-		} else {
-			return false;
-		}
+        JSValue otherJSValue;
+		if (other instanceof JSValue) {
+            otherJSValue = (JSValue)other;
+        } else {
+            otherJSValue = new JSValue(context, other);
+        }
 		JNIReturnObject jni = isEqual(context.ctxRef(), valueRef, otherJSValue.valueRef);
 		if (jni.exception!=0) {
 			return false;
@@ -241,15 +248,20 @@ public class JSValue {
 	}
 	
 	/**
-	 * Tests whether two values are strict equal.  In JavaScript, equivalent to '==' operator.  
-	 * @param otherJSValue  The value to test against
+	 * Tests whether two values are strict equal.  In JavaScript, equivalent to '===' operator.
+	 * @param other  The value to test against
 	 * @return  true if values are strict equal, false otherwise
 	 * @since 1.0
 	 */
-	public boolean isStrictEqual(JSValue otherJSValue) {
-		if (otherJSValue == null) return false;
-		if (otherJSValue == this) return true;
-		return isStrictEqual(context.ctxRef(), valueRef, otherJSValue.valueRef);
+	public boolean isStrictEqual(Object other) {
+        if (other == this) return true;
+        JSValue otherJSValue;
+        if (other instanceof JSValue) {
+            otherJSValue = (JSValue)other;
+        } else {
+            otherJSValue = new JSValue(context, other);
+        }
+        return isStrictEqual(context.ctxRef(), valueRef, otherJSValue.valueRef);
 	}
 	
 	/* Getters */
@@ -363,6 +375,8 @@ public class JSValue {
 	protected native boolean isNumber(long ctxRef, long valueRef );
 	protected native boolean isString(long ctxRef, long valueRef );
 	protected native boolean isObject(long ctxRef, long valueRef );
+    protected native boolean isArray(long ctxRef, long valueRef );
+    protected native boolean isDate(long ctxRef, long valueRef );
 	protected native JNIReturnObject isEqual(long ctxRef, long a, long b );
 	protected native boolean isStrictEqual(long ctxRef, long a, long b );
 	protected native JNIReturnObject isInstanceOfConstructor(long ctxRef, long valueRef, long constructor);

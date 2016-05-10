@@ -607,6 +607,9 @@ public class JSObject extends JSValue {
 	 * @throws JSException
 	 */
 	public JSValue callAsFunction(JSObject thiz, JSValue [] args) throws JSException {
+		if (args == null) {
+			args = new JSValue[] {};
+		}
 		long [] valueRefs = new long[args.length];
 		for (int i=0; i<args.length; i++) {
 			valueRefs[i] = args[i].valueRef();
@@ -618,8 +621,37 @@ public class JSObject extends JSValue {
 		}
 		return new JSValue(jni.reference,context);
 	}
-	
-	protected native long make(long ctx, long data);
+	/**
+	 * Calls object as a JavaScript function
+	 * @param args  An array of JSValues to pass as arguments to the function
+	 * @return The JSValue returned by the function
+	 * @since 2.2
+	 * @throws JSException
+	 */
+	public JSValue callAsFunction(JSValue [] args) throws JSException {
+		return callAsFunction(null, args);
+	}
+    /**
+     * Calls object as a JavaScript function
+     * @param thiz  The 'this' object on which the function operates, null if not on a constructor object
+     * @return The JSValue returned by the function
+     * @since 2.2
+     * @throws JSException
+     */
+    public JSValue callAsFunction(JSObject thiz) throws JSException {
+        return callAsFunction(thiz, null);
+    }
+    /**
+     * Calls object as a JavaScript function
+     * @return The JSValue returned by the function
+     * @since 2.2
+     * @throws JSException
+     */
+    public JSValue callAsFunction() throws JSException {
+        return callAsFunction(null, null);
+    }
+
+    protected native long make(long ctx, long data);
 	protected native long makeWithFinalizeCallback(long ctx);
 	protected native JNIReturnObject makeArray(long ctx, long [] args);
 	protected native JNIReturnObject makeDate(long ctx, long [] args);

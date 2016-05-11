@@ -215,7 +215,33 @@ public class JSValueTest extends JSTest {
         tAssert(context.evaluateScript("[1,2,3]").toString().equals("1,2,3"),
                 "[1,2,3].toString() == '1,2,3'");
         tAssert(date.toString().startsWith("Mon Nov 30 1970"), "date.toString() = <date string>");
-
+        final String script2 =
+                "var jsUndefined = JSON.stringify(undefined); \n" +
+                "var jsNULL = JSON.stringify(NULL); \n" +
+                "var jsBool = JSON.stringify(bool); \n" +
+                "var jsNumber = JSON.stringify(number); \n" +
+                "var jsString = JSON.stringify(string); \n" +
+                "var jsObject = JSON.stringify(object); \n" +
+                "var jsArray = JSON.stringify(array); \n" +
+                "var jsDate = JSON.stringify(date); \n" +
+                "";
+        context.evaluateScript(script2);
+        tAssert(bool.toJSON().equals(context.property("jsBool").toString()),
+                "<boolean>.toJSON() -> " + bool.toJSON());
+        tAssert(number.toJSON().equals(context.property("jsNumber").toString()),
+                "<number>.toJSON() -> " + number.toJSON());
+        tAssert(string.toJSON().equals(context.property("jsString").toString()),
+                "<string>.toJSON() -> " + string.toJSON());
+        tAssert(object.toJSON().equals(context.property("jsObject").toString()),
+                "<object>.toJSON() -> " + object.toJSON());
+        tAssert(array.toJSON().equals(context.property("jsArray").toString()),
+                "<array>.toJSON() -> " + array.toJSON());
+        tAssert(date.toJSON().equals(context.property("jsDate").toString()),
+                "<date>.toJSON() -> " + date.toJSON());
+        tAssert(undefined.toJSON() == null,
+                "<undefined>.toJSON() -> null");
+        tAssert(NULL.toJSON().equals(context.property("jsNULL").toString()),
+                "<null>.toJSON() -> " + NULL.toJSON());
     }
 
     public void run() throws TestAssertException {

@@ -42,13 +42,3 @@
 	rt Java_org_liquidplayer_webkit_javascriptcore_##package##_##f
 #define PARAMS __attribute__((unused))JNIEnv* env, __attribute__((unused))jobject thiz
 
-class JSContextWrapper {
-public:
-    DispatchQueue *dispatch_q;
-    DispatchQueue *worker_q;
-    JSContextRef context;
-    JSContextWrapper() { dispatch_q = new DispatchQueue();
-    	worker_q = new DispatchQueue(1); }
-    virtual ~JSContextWrapper() { delete dispatch_q; delete worker_q; }
-};
-

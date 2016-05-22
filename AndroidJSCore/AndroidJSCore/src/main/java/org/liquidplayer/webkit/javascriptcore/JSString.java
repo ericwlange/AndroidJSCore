@@ -65,11 +65,12 @@ public class JSString {
 	public boolean equals(Object other) {
 		if (other == null) return false;
 		if (other == this) return true;
-		JSString otherJSString;
+		JSString otherJSString = null;
 		if (other instanceof JSString) { 
 			otherJSString = (JSString)other;
 		} else if (other instanceof String) {
-			return isEqualToUTF8CString(stringRef, (String)other);
+			String string = (String)other;
+            otherJSString = new JSString(string);
 		} else if (other instanceof JSValue) {
 			JSValue v = (JSValue)other;
 			if (v.isString()) {
@@ -84,8 +85,8 @@ public class JSString {
 		} else {
 			return false;
 		}
-		
-		return isEqual(stringRef, otherJSString.stringRef);
+        long foo = otherJSString.stringRef;
+		return isEqual(stringRef, foo);
 	}
 	@Override
 	public String toString() {

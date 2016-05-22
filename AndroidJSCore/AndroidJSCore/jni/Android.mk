@@ -3,17 +3,15 @@ LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
 LOCAL_MODULE    := android-js-core
-LOCAL_SRC_FILES := DispatchQueue.cpp \
-                   JSContext.cpp \
+LOCAL_SRC_FILES := JSContext.cpp \
                    JSObject.cpp \
                    JSString.cpp \
-                   JSValue.cpp \
-                   threadqueue.c
+                   JSValue.cpp
 
 HEMROID_MODULES        := javascriptcore_$(TARGET_ARCH_ABI) icustub_$(TARGET_ARCH_ABI)
 LOCAL_SHARED_LIBRARIES := $(HEMROID_MODULES)
 
-LOCAL_CPPFLAGS  := -std=c++11
+LOCAL_CPPFLAGS  := -std=c++11 -fexceptions
 LOCAL_LDFLAGS := -llog
 
 include $(BUILD_SHARED_LIBRARY)

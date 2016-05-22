@@ -1,7 +1,6 @@
 package org.liquidplayer.androidjscoretest;
 
 import org.liquidplayer.webkit.javascriptcore.JSContext;
-import org.liquidplayer.webkit.javascriptcore.JSException;
 import org.liquidplayer.webkit.javascriptcore.JSString;
 import org.liquidplayer.webkit.javascriptcore.JSValue;
 
@@ -239,7 +238,7 @@ public class JSValueTest extends JSTest {
         tAssert(date.toJSON().equals(context.property("jsDate").toString()),
                 "<date>.toJSON() -> " + date.toJSON());
         tAssert(undefined.toJSON() == null,
-                "<undefined>.toJSON() -> null");
+                "<undefined>.toJSON() -> <null>");
         tAssert(NULL.toJSON().equals(context.property("jsNULL").toString()),
                 "<null>.toJSON() -> " + NULL.toJSON());
     }

@@ -22,7 +22,7 @@ android {
 
 repositories {
     flatDir {
-        dirs '../../../AndroidJSCore/AndroidJSCore/build/outputs/aar/'
+        dirs '../../../AndroidJSCore/AndroidJSCore/build/outputs/aar/', '../../../lib'
     }
 }
 

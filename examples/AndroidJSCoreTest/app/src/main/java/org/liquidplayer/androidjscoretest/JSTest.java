@@ -8,14 +8,12 @@ import org.liquidplayer.webkit.javascriptcore.JSContext;
 public class JSTest {
     final MainActivity activity;
 
-    protected final JSContext mMainContext;
-
     public JSTest(MainActivity activity) {
         this.activity = activity;
-        mMainContext = activity.getMainJSContext();
     }
 
     public void println(String message) {
+        android.util.Log.d("console", message);
         activity.println(message);
     }
 

@@ -81,64 +81,37 @@ NATIVE(JSContextGroup,void,release) (PARAMS,jlong group) {
 }
 
 NATIVE(JSContext,void,finalizeContext) (PARAMS,jlong ctx) {
-	JSContextWrapper *wrapper = (JSContextWrapper *)ctx;
-	delete wrapper;	
+    // Nothing to do
 }
 
 NATIVE(JSContext,jlong,create) (PARAMS) {
-    JSContextWrapper *wrapper = new JSContextWrapper();
-
-	struct msg_t {
-		JSContextRef ref;
-	};
-	msg_t msg;
-	wrapper->dispatch_q->sync([](void *msg){
-		((msg_t*)msg)->ref = JSGlobalContextCreate((JSClassRef) NULL);
-	}, &msg);
-	wrapper->context = msg.ref;
-	return (long) wrapper;
+	return (jlong) JSGlobalContextCreate((JSClassRef) NULL);
 }
 
 NATIVE(JSContext,jlong,createInGroup) (PARAMS,jlong group) {
-	JSContextWrapper *wrapper = new JSContextWrapper();
-
-	struct msg_t {
-		JSContextGroupRef group;
-		JSContextRef ref;
-	};
-	msg_t msg = {(JSContextGroupRef)group, 0};
-	wrapper->dispatch_q->sync([](void *msg){
-		((msg_t*)msg)->ref = JSGlobalContextCreateInGroup(((msg_t*)msg)->group,
-			(JSClassRef) NULL);
-	}, &msg);
-	wrapper->context = msg.ref;
-	return (long) wrapper;
+	return (jlong) JSGlobalContextCreateInGroup((JSContextGroupRef)group,
+                   			(JSClassRef) NULL);
 }
 
 NATIVE(JSContext,jlong,retain) (PARAMS,jlong ctx) {
-	JSContextWrapper *wrapper = (JSContextWrapper *)ctx;
-	return (long) JSGlobalContextRetain((JSGlobalContextRef) wrapper->context);
+	return (jlong) JSGlobalContextRetain((JSGlobalContextRef) ctx);
 }
 
 NATIVE(JSContext,void,release) (PARAMS,jlong ctx) {
-	JSContextWrapper *wrapper = (JSContextWrapper *)ctx;
-	JSGlobalContextRelease((JSGlobalContextRef) wrapper->context);
+	JSGlobalContextRelease((JSGlobalContextRef) ctx);
 }
 
 NATIVE(JSContext,jlong,getGlobalObject) (PARAMS, jlong ctx) {
-	JSContextWrapper *wrapper = (JSContextWrapper *)ctx;
-	return (long) JSContextGetGlobalObject((JSContextRef) wrapper->context);
+	return (jlong) JSContextGetGlobalObject((JSContextRef) ctx);
 }
 
 NATIVE(JSContext,jlong,getGroup) (PARAMS, jlong ctx) {
-	JSContextWrapper *wrapper = (JSContextWrapper *)ctx;
-	return (long)JSContextGetGroup((JSContextRef) wrapper->context);
+	return (jlong)JSContextGetGroup((JSContextRef) ctx);
 }
 
 NATIVE(JSContext,jobject,evaluateScript) (PARAMS, jlong ctx, jlong script,
 	jlong thisObject, jlong sourceURL, int startingLineNumber) {
 
-	JSContextWrapper *wrapper = (JSContextWrapper *)ctx;
 	JSValueRef exception = NULL;
 
 	jclass ret = env->FindClass("org/liquidplayer/webkit/javascriptcore/JNIReturnObject");
@@ -147,42 +120,25 @@ NATIVE(JSContext,jobject,evaluateScript) (PARAMS, jlong ctx, jlong script,
 
 	jfieldID fid = env->GetFieldID(ret , "reference", "J");
 
-	struct msg_t {
-		JSContextRef ctx;
-		JSStringRef  script;
-		JSObjectRef  thisObject;
-		JSStringRef  sourceURL;
-		int          startingLineNumber;
-		JSValueRef*  exception;
-		long         lval;
-	};
-	msg_t msg = {
-		wrapper->context,
-		(JSStringRef)script,
-		(JSObjectRef)thisObject,
-		(JSStringRef)sourceURL,
-		startingLineNumber,
-		&exception,
-		0L
-        };
-	wrapper->dispatch_q->sync([](void *msg){
-		msg_t *m = (msg_t *)msg;
-		m->lval = (long) JSEvaluateScript(m->ctx, m->script,
-			m->thisObject, m->sourceURL, m->startingLineNumber, m->exception);
-	}, &msg);
+	jlong lval = (jlong) JSEvaluateScript(
+	    (JSContextRef)ctx,
+    	(JSStringRef)script,
+        (JSObjectRef)thisObject,
+        (JSStringRef)sourceURL,
+        startingLineNumber,
+        &exception);
 
-	env->SetLongField( out, fid, msg.lval);
+	env->SetLongField( out, fid, lval);
 
 	fid = env->GetFieldID(ret , "exception", "J");
-	env->SetLongField( out, fid, (long) exception);
+	env->SetLongField( out, fid, (jlong) exception);
 
 	return out;
 }
 
 NATIVE(JSContext,jobject,checkScriptSyntax) (PARAMS, jlong ctx, jlong script,
-		jlong sourceURL, int startingLineNumber) {
+		jlong sourceURL, jint startingLineNumber) {
 
-	JSContextWrapper *wrapper = (JSContextWrapper *)ctx;
 	JSValueRef exception = NULL;
 
 	jclass ret = env->FindClass("org/liquidplayer/webkit/javascriptcore/JNIReturnObject");
@@ -190,45 +146,21 @@ NATIVE(JSContext,jobject,checkScriptSyntax) (PARAMS, jlong ctx, jlong script,
 	jobject out = env->NewObject(ret, cid);
 
 	jfieldID fid = env->GetFieldID(ret , "reference", "J");
-	struct msg_t {
-		JSContextRef ctx;
-		JSStringRef  script;
-		JSStringRef  sourceURL;
-		int          startingLineNumber;
-		JSValueRef*  exception;
-		long         lval;
-	};
-	msg_t msg = {
-		wrapper->context,
+    jlong lval = (jlong) JSCheckScriptSyntax(
+		(JSContextRef)ctx,
 		(JSStringRef)script,
 		(JSStringRef)sourceURL,
 		startingLineNumber,
-		&exception,
-		0L
-        };
-	wrapper->worker_q->sync([](void *msg){
-		msg_t *m = (msg_t *)msg;
-		m->lval = (long) JSCheckScriptSyntax(m->ctx, m->script,
-			m->sourceURL, m->startingLineNumber, m->exception);
-	}, &msg);
-	env->SetLongField( out, fid, (long) msg.lval );
+		&exception);
+	env->SetLongField( out, fid, (jlong) lval );
 
 	fid = env->GetFieldID(ret , "exception", "J");
-	env->SetLongField( out, fid, (long) exception);
+	env->SetLongField( out, fid, (jlong) exception);
 
 	return out;
 }
 
 NATIVE(JSContext,void,garbageCollect) (PARAMS, jlong ctx) {
-	JSContextWrapper *wrapper = (JSContextWrapper *)ctx;
-	struct msg_t {
-		JSContextRef ctx;
-	};
-	msg_t *msg = new msg_t;
-        msg->ctx = wrapper->context;
-	wrapper->worker_q->async([](void *msg){
-		JSGarbageCollect(((msg_t*)msg)->ctx);
-		delete (msg_t*)msg;
-	}, msg);
+    JSGarbageCollect((JSContextRef)ctx);
 }
 

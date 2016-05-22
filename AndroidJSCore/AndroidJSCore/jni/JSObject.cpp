@@ -35,14 +35,7 @@
 #include <map>
 
 NATIVE(JSObject,jlong,make) (PARAMS, jlong ctx, jlong data) {
-	JSContextWrapper *wrapper = (JSContextWrapper *)ctx;
-	struct msg_t { JSContextRef ctx; void *data; JSObjectRef ret; };
-	msg_t msg = { wrapper->context, (void *)data, NULL };
-	wrapper->worker_q->sync([](void *msg) {
-		msg_t *m = (msg_t *)msg;
-		m->ret = JSObjectMake(m->ctx, (JSClassRef) NULL, m->data);
-	}, &msg);
-	return (long)msg.ret;
+    return (jlong) JSObjectMake((JSContextRef)ctx, (JSClassRef) NULL, (void*)data);
 }
 
 class Instance {
@@ -56,33 +49,31 @@ private:
 	static void StaticFinalizeCallback(JSObjectRef object);
 	void FinalizeCallback(JSObjectRef object);
 public:
-	Instance(JNIEnv *env, jobject thiz, JSContextWrapper *wrapper);
+	Instance(JNIEnv *env, jobject thiz, JSContextRef ctx);
 	virtual ~Instance();
 	long getObjRef() { return (long) objRef; }
 };
-Instance::Instance(JNIEnv *env, jobject thiz, JSContextWrapper *wrapper) {
+Instance::Instance(JNIEnv *env, jobject thiz, JSContextRef ctx) {
 	env->GetJavaVM(&jvm);
-	struct msg_t { JSContextRef ctx; JSClassRef classRef; JSObjectRef objRef; };
-	msg_t msg = { wrapper->context, (JSClassRef) NULL, (JSObjectRef) NULL };
-	wrapper->worker_q->sync([](void *msg) {
-		msg_t *m = (msg_t *)msg;
-		JSClassDefinition definition = kJSClassDefinitionEmpty;
-		definition.finalize = StaticFinalizeCallback;
-		m->classRef = JSClassCreate(&definition);
-		m->objRef = JSObjectMake(m->ctx, m->classRef, NULL);
-	}, &msg);
+    JSClassDefinition definition = kJSClassDefinitionEmpty;
+    definition.finalize = StaticFinalizeCallback;
+    classRef = JSClassCreate(&definition);
+    objRef = JSObjectMake(ctx, classRef, NULL);
 	this->thiz = env->NewGlobalRef(thiz);
-	classRef = msg.classRef;
-	objRef = msg.objRef;
 	objMap[objRef] = this;
 }
 Instance::~Instance() {
 	JSClassRelease(classRef);
 	JNIEnv *env;
-	jvm->AttachCurrentThread(&env, NULL);
+    int getEnvStat = jvm->GetEnv((void**)&env, JNI_VERSION_1_6);
+    if (getEnvStat == JNI_EDETACHED) {
+    	jvm->AttachCurrentThread(&env, NULL);
+    }
 	env->DeleteGlobalRef(thiz);
 	objMap[objRef] = NULL;
-	jvm->DetachCurrentThread();
+    if (getEnvStat == JNI_EDETACHED) {
+    	jvm->DetachCurrentThread();
+    }
 }
 std::map<JSObjectRef,Instance *> Instance::objMap = std::map<JSObjectRef,Instance *>();
 void Instance::StaticFinalizeCallback(JSObjectRef object)
@@ -96,23 +87,33 @@ void Instance::StaticFinalizeCallback(JSObjectRef object)
 void Instance::FinalizeCallback(JSObjectRef object)
 {
 	JNIEnv *env;
-	jvm->AttachCurrentThread(&env, NULL);
+    int getEnvStat = jvm->GetEnv((void**)&env, JNI_VERSION_1_6);
+    if (getEnvStat == JNI_EDETACHED) {
+    	jvm->AttachCurrentThread(&env, NULL);
+    }
 	jclass cls = env->GetObjectClass(thiz);
 	jmethodID mid;
 	do {
 		mid = env->GetMethodID(cls,"finalizeCallback","(J)V");
 		if (!env->ExceptionCheck()) break;
 		env->ExceptionClear();
-		cls = env->GetSuperclass(env->GetObjectClass(thiz));
-		if (cls == NULL || env->ExceptionCheck()) {
+		jclass super = env->GetSuperclass(cls);
+		env->DeleteLocalRef(cls);
+		if (super == NULL || env->ExceptionCheck()) {
+    		if (super != NULL) env->DeleteLocalRef(super);
+        	jvm->DetachCurrentThread();
 			return;
 		}
+		cls = super;
 	} while (true);
+	env->DeleteLocalRef(cls);
 	env->CallVoidMethod(thiz, mid, (jlong)object);
-	jvm->DetachCurrentThread();
+    if (getEnvStat == JNI_EDETACHED) {
+    	jvm->DetachCurrentThread();
+    }
 }
 NATIVE(JSObject,jlong,makeWithFinalizeCallback) (PARAMS, jlong ctx) {
-	Instance *instance = new Instance(env, thiz, (JSContextWrapper *)ctx);
+	Instance *instance = new Instance(env, thiz, (JSContextRef)ctx);
 	return instance->getObjRef();
 }
 
@@ -132,44 +133,48 @@ class Function {
 		static JSObjectRef StaticConstructorCallback(JSContextRef ctx,
 				JSObjectRef constructor,size_t argumentCount,const JSValueRef arguments[],
 				JSValueRef* exception);
+		static bool StaticHasInstanceCallback(JSContextRef ctx, JSObjectRef constructor,
+		        JSValueRef possibleInstance, JSValueRef* exception);
 
 		JSObjectRef ConstructorCallback(JSContextRef ctx, JSObjectRef constructor,
 				size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception);
 		JSValueRef FunctionCallback(JSContextRef ctx, JSObjectRef function,
 				JSObjectRef thisObject, size_t argumentCount,const JSValueRef arguments[],
 				JSValueRef* exception);
+		bool HasInstanceCallback(JSContextRef ctx, JSObjectRef constructor,
+		        JSValueRef possibleInstance, JSValueRef* exception);
 
 	public:
-		Function(JNIEnv *env, jobject thiz, JSContextWrapper *wrapper, JSStringRef name);
+		Function(JNIEnv *env, jobject thiz, JSContextRef ctx, JSStringRef name);
 		virtual ~Function();
 		long getObjRef() { return (long) objRef; }
 		static void release(JSContextRef ctx, JSObjectRef function);
 };
-Function::Function(JNIEnv* env, jobject thiz, JSContextWrapper *wrapper,
+Function::Function(JNIEnv* env, jobject thiz, JSContextRef ctx,
 	__attribute__((unused))JSStringRef name) {
 	
 	env->GetJavaVM(&jvm);
 	definition = kJSClassDefinitionEmpty;
 	definition.callAsFunction = StaticFunctionCallback;
 	definition.callAsConstructor = StaticConstructorCallback;
+	definition.hasInstance = StaticHasInstanceCallback;
 	classRef = JSClassCreate(&definition);
 
 	this->thiz = env->NewGlobalRef(thiz);
-	struct msg_t { JSContextRef ctx; JSClassRef classRef; JSObjectRef objRef; };
-	msg_t msg = { wrapper->context, classRef, (JSObjectRef) NULL };
-	wrapper->worker_q->sync([](void *msg) {
-		msg_t *m = (msg_t *)msg;
-		m->objRef = JSObjectMake(m->ctx, m->classRef, NULL);
-	}, &msg);
-	objRef = msg.objRef;
+	objRef = JSObjectMake(ctx, classRef, NULL);
 	objMap[objRef] = this;
 }
 Function::~Function() {
 	JSClassRelease(classRef);
 	JNIEnv *env;
-	jvm->AttachCurrentThread(&env, NULL);
+    int getEnvStat = jvm->GetEnv((void**)&env, JNI_VERSION_1_6);
+    if (getEnvStat == JNI_EDETACHED) {
+    	jvm->AttachCurrentThread(&env, NULL);
+    }
 	env->DeleteGlobalRef(thiz);
-	jvm->DetachCurrentThread();
+    if (getEnvStat == JNI_EDETACHED) {
+    	jvm->DetachCurrentThread();
+    }
 }
 void Function::release(__attribute__((unused))JSContextRef ctx, JSObjectRef function) {
 	Function *f = objMap[function];
@@ -197,22 +202,41 @@ JSObjectRef Function::StaticConstructorCallback(JSContextRef ctx, JSObjectRef co
 	}
 	return NULL;
 }
+bool Function::StaticHasInstanceCallback(JSContextRef ctx, JSObjectRef constructor,
+        JSValueRef possibleInstance, JSValueRef* exception)
+{
+	Function *thiz = objMap[constructor];
+	if (thiz) {
+		return thiz->HasInstanceCallback(ctx,constructor,possibleInstance,exception);
+	}
+	return false;
+}
+
 JSValueRef Function::FunctionCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject,
 		size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception)
 {
 	JNIEnv *env;
-	jvm->AttachCurrentThread(&env, NULL);
+    int getEnvStat = jvm->GetEnv((void**)&env, JNI_VERSION_1_6);
+    if (getEnvStat == JNI_EDETACHED) {
+    	jvm->AttachCurrentThread(&env, NULL);
+    }
+
 	jclass cls = env->GetObjectClass(thiz);
 	jmethodID mid;
 	do {
 		mid = env->GetMethodID(cls,"functionCallback","(JJJ[JJ)J");
 		if (!env->ExceptionCheck()) break;
 		env->ExceptionClear();
-		cls = env->GetSuperclass(env->GetObjectClass(thiz));
-		if (cls == NULL || env->ExceptionCheck()) {
+		jclass super = env->GetSuperclass(cls);
+		env->DeleteLocalRef(cls);
+		if (super == NULL || env->ExceptionCheck()) {
+    		if (super != NULL) env->DeleteLocalRef(super);
+        	jvm->DetachCurrentThread();
 			return NULL;
 		}
+		cls = super;
 	} while (true);
+	env->DeleteLocalRef(cls);
 	jlongArray argsArr = env->NewLongArray(argumentCount);
 	jlong* args = new jlong[argumentCount];
 	for (size_t i=0; i<argumentCount; i++) {
@@ -224,25 +248,36 @@ JSValueRef Function::FunctionCallback(JSContextRef ctx, JSObjectRef function, JS
 			argsArr, (jlong)exception);
 
 	delete args;
-	jvm->DetachCurrentThread();
+	env->DeleteLocalRef(argsArr);
+    if (getEnvStat == JNI_EDETACHED) {
+    	jvm->DetachCurrentThread();
+    }
 	return (JSObjectRef)objret;
 }
 JSObjectRef Function::ConstructorCallback(JSContextRef ctx, JSObjectRef constructor,
 		size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception)
 {
 	JNIEnv *env;
-	jvm->AttachCurrentThread(&env, NULL);
+    int getEnvStat = jvm->GetEnv((void**)&env, JNI_VERSION_1_6);
+    if (getEnvStat == JNI_EDETACHED) {
+    	jvm->AttachCurrentThread(&env, NULL);
+    }
 	jclass cls = env->GetObjectClass(thiz);
 	jmethodID mid;
 	do {
 		mid = env->GetMethodID(cls,"constructorCallback","(JJ[JJ)J");
 		if (!env->ExceptionCheck()) break;
 		env->ExceptionClear();
-		cls = env->GetSuperclass(env->GetObjectClass(thiz));
-		if (cls == NULL || env->ExceptionCheck()) {
+		jclass super = env->GetSuperclass(cls);
+		env->DeleteLocalRef(cls);
+		if (super == NULL || env->ExceptionCheck()) {
+    		if (super != NULL) env->DeleteLocalRef(super);
+        	jvm->DetachCurrentThread();
 			return NULL;
 		}
+		cls = super;
 	} while (true);
+	env->DeleteLocalRef(cls);
 	jlongArray argsArr = env->NewLongArray(argumentCount);
 	jlong* args = new jlong[argumentCount];
 	for (size_t i=0; i<argumentCount; i++) {
@@ -254,17 +289,52 @@ JSObjectRef Function::ConstructorCallback(JSContextRef ctx, JSObjectRef construc
 			argsArr, (jlong)exception);
 
 	delete args;
-	jvm->DetachCurrentThread();
+	env->DeleteLocalRef(argsArr);
+    if (getEnvStat == JNI_EDETACHED) {
+    	jvm->DetachCurrentThread();
+    }
 	return (JSObjectRef)objret;
+}
+bool Function::HasInstanceCallback(JSContextRef ctx, JSObjectRef constructor,
+        JSValueRef possibleInstance, JSValueRef* exception)
+{
+	JNIEnv *env;
+    int getEnvStat = jvm->GetEnv((void**)&env, JNI_VERSION_1_6);
+    if (getEnvStat == JNI_EDETACHED) {
+    	jvm->AttachCurrentThread(&env, NULL);
+    }
+	jclass cls = env->GetObjectClass(thiz);
+	jmethodID mid;
+	do {
+		mid = env->GetMethodID(cls,"hasInstanceCallback","(JJJJ)Z");
+		if (!env->ExceptionCheck()) break;
+		env->ExceptionClear();
+		jclass super = env->GetSuperclass(cls);
+		env->DeleteLocalRef(cls);
+		if (super == NULL || env->ExceptionCheck()) {
+    		if (super != NULL) env->DeleteLocalRef(super);
+        	jvm->DetachCurrentThread();
+			return NULL;
+		}
+		cls = super;
+	} while (true);
+	env->DeleteLocalRef(cls);
+
+	bool ret = env->CallBooleanMethod(thiz, mid, (jlong)ctx, (jlong)constructor,
+			(jlong)possibleInstance, (jlong)exception);
+
+    if (getEnvStat == JNI_EDETACHED) {
+    	jvm->DetachCurrentThread();
+    }
+	return ret;
 }
 
 NATIVE(JSObject,jlong,makeFunctionWithCallback) (PARAMS, jlong ctx, jlong name) {
-	Function *function = new Function(env,thiz, (JSContextWrapper*)ctx,
+	Function *function = new Function(env,thiz, (JSContextRef)ctx,
 		(JSStringRef)name);
 	return function->getObjRef();
 }
 NATIVE(JSObject,void,releaseFunctionWithCallback) (PARAMS, jlong ctx, jlong function) {
-	ctx = (jlong) ((JSContextWrapper *)ctx)->context;
 	Function::release((JSContextRef)ctx, (JSObjectRef)function);
 }
 
@@ -286,20 +356,15 @@ NATIVE(JSObject,jobject,makeArray) (PARAMS, jlong ctx, jlongArray args) {
 
 	jfieldID fid = env->GetFieldID(ret , "reference", "J");
 
-	JSContextWrapper *wrapper = (JSContextWrapper *)ctx;
-	struct msg_t { JSContextRef ctx; size_t len; JSValueRef *elements;
-		JSValueRef *exception; JSObjectRef objRef; };
-	msg_t msg = { wrapper->context, (size_t)len, elements, &exception, (JSObjectRef)NULL};
-	wrapper->worker_q->sync([](void *msg) {
-		msg_t *m = (msg_t *)msg;
-		m->objRef = JSObjectMakeArray(m->ctx, m->len, (m->len==0)?NULL:m->elements,
-			m->exception);
-	}, &msg);
+	JSObjectRef objRef = JSObjectMakeArray((JSContextRef)ctx, (size_t)len, (len==0)?NULL:elements,
+			&exception);
 
-	env->SetLongField( out, fid, (long)msg.objRef );
+	env->SetLongField( out, fid, (jlong)objRef );
 
 	fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (long) exception);
+
+	env->DeleteLocalRef(ret);
 
 	delete [] elements;
 	return out;
@@ -323,19 +388,14 @@ NATIVE(JSObject,jobject,makeDate) (PARAMS, jlong ctx, jlongArray args) {
 
 	jfieldID fid = env->GetFieldID(ret , "reference", "J");
 
-	JSContextWrapper *wrapper = (JSContextWrapper *)ctx;
-	struct msg_t { JSContextRef ctx; size_t len; JSValueRef *elements;
-		JSValueRef *exception; JSObjectRef objRef; };
-	msg_t msg = { wrapper->context, (size_t)len, elements, &exception, (JSObjectRef)NULL};
-	wrapper->worker_q->sync([](void *msg) {
-		msg_t *m = (msg_t *)msg;
-		m->objRef = JSObjectMakeDate(m->ctx, m->len, (m->len==0)?NULL:m->elements,
-			m->exception);
-	}, &msg);
-	env->SetLongField( out, fid, (long) msg.objRef );
+	JSObjectRef objRef = JSObjectMakeDate((JSContextRef)ctx, (size_t)len, (len==0)?NULL:elements,
+			&exception);
+	env->SetLongField( out, fid, (jlong) objRef );
 
 	fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (long) exception);
+
+	env->DeleteLocalRef(ret);
 
 	delete [] elements;
 	return out;
@@ -359,21 +419,16 @@ NATIVE(JSObject,jobject,makeError) (PARAMS, jlong ctx, jlongArray args) {
 
 	jfieldID fid = env->GetFieldID(ret , "reference", "J");
 
-	JSContextWrapper *wrapper = (JSContextWrapper *)ctx;
-	struct msg_t { JSContextRef ctx; size_t len; JSValueRef* elements;
-		JSValueRef *exception; JSObjectRef objRef; };
-	msg_t msg = { wrapper->context, (size_t)len, elements, &exception, (JSObjectRef)NULL};
-	wrapper->worker_q->sync([](void *msg) {
-		msg_t *m = (msg_t *)msg;
-		m->objRef = JSObjectMakeError(m->ctx, m->len, (m->len==0)?NULL:m->elements,
-			m->exception);
-	}, &msg);
-	env->SetLongField( out, fid, (long) msg.objRef );
+	JSObjectRef objRef = JSObjectMakeError((JSContextRef)ctx, (size_t)len, (len==0)?NULL:elements,
+			&exception);
+	env->SetLongField( out, fid, (long) objRef );
 
 	fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (long) exception);
 
-	delete elements;
+	env->DeleteLocalRef(ret);
+
+	delete [] elements;
 	return out;
 }
 
@@ -395,27 +450,22 @@ NATIVE(JSObject,jobject,makeRegExp) (PARAMS, jlong ctx, jlongArray args) {
 
 	jfieldID fid = env->GetFieldID(ret , "reference", "J");
 
-	JSContextWrapper *wrapper = (JSContextWrapper *)ctx;
-	struct msg_t { JSContextRef ctx; size_t len; JSValueRef* elements;
-		JSValueRef *exception; JSObjectRef objRef; };
-	msg_t msg = { wrapper->context, (size_t)len, elements, &exception, (JSObjectRef)NULL};
-	wrapper->worker_q->sync([](void *msg) {
-		msg_t *m = (msg_t *)msg;
-		m->objRef = JSObjectMakeRegExp(m->ctx, m->len, (m->len==0)?NULL:m->elements,
-			m->exception);
-	}, &msg);
-	env->SetLongField( out, fid, (long) msg.objRef );
+	JSObjectRef objRef = JSObjectMakeRegExp((JSContextRef)ctx, (size_t)len, (len==0)?NULL:elements,
+              &exception);
+	env->SetLongField( out, fid, (long) objRef );
 
 	fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (long) exception);
 
-	delete elements;
+	env->DeleteLocalRef(ret);
+
+	delete [] elements;
 	return out;
 }
 
 NATIVE(JSObject,jobject,makeFunction) (PARAMS, jlong ctx, jlong name,
 		jlongArray parameterNames, jlong body, jlong sourceURL, jint startingLineNumber) {
-	JSContextWrapper *wrapper = (JSContextWrapper *)ctx;
+
 	JSValueRef exception = NULL;
 
 	int i;
@@ -433,75 +483,36 @@ NATIVE(JSObject,jobject,makeFunction) (PARAMS, jlong ctx, jlong name,
 
 	jfieldID fid = env->GetFieldID(ret , "reference", "J");
 
-	struct msg_t {
-		JSContextRef ctx;
-		JSStringRef  name;
-		unsigned     len;
-		JSStringRef* parameterNameArr;
-		JSStringRef  body;
-		JSStringRef  sourceURL;
-		int          startingLineNumber;
-		JSValueRef*  exception;
-		long         lval;
-	};
-	msg_t msg = {
-		wrapper->context,
+    long lval = (long) JSObjectMakeFunction(
+		(JSContextRef)ctx,
 		(JSStringRef)name,
 		(unsigned)len,
 		(len==0)?NULL:parameterNameArr,
 		(JSStringRef) body,
 		(JSStringRef) sourceURL,
 		(int)startingLineNumber,
-		&exception,
-		0L
-    };
-	wrapper->dispatch_q->sync([](void *msg){
-		msg_t *m = (msg_t *)msg;
-		m->lval = (long) JSObjectMakeFunction(
-			m->ctx, m->name, m->len, m->parameterNameArr,
-			m->body, m->sourceURL, m->startingLineNumber, m->exception);
-	}, &msg);
-	env->SetLongField( out, fid, msg.lval);
+		&exception);
+	env->SetLongField( out, fid, lval);
 
 	fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (long) exception);
 
-	delete parameterNameArr;
+	env->DeleteLocalRef(ret);
+
+	delete [] parameterNameArr;
 	return out;
 }
 
 NATIVE(JSObject,jlong,getPrototype) (PARAMS, jlong ctx, jlong object) {
-	JSContextWrapper *wrapper = (JSContextWrapper *)ctx;
-	struct msg_t { JSContextRef ctx; JSObjectRef object; JSValueRef ret; };
-	msg_t msg = { wrapper->context, (JSObjectRef)object, (JSValueRef) NULL};
-	wrapper->worker_q->sync([](void *msg) {
-		msg_t *m = (msg_t *)msg;
-		m->ret = JSObjectGetPrototype(m->ctx, m->object);
-	}, &msg);
-	return (long) msg.ret;
+	return (jlong) JSObjectGetPrototype((JSContextRef)ctx, (JSObjectRef)object);
 }
 
 NATIVE(JSObject,void,setPrototype) (PARAMS, jlong ctx, jlong object, jlong value) {
-	JSContextWrapper *wrapper = (JSContextWrapper *)ctx;
-	struct msg_t { JSContextRef ctx; JSObjectRef object; JSValueRef value; };
-    msg_t msg = { wrapper->context, (JSObjectRef) object, (JSValueRef)value };
-	wrapper->dispatch_q->sync([](void *msg){
-		msg_t *m = (msg_t *)msg;
-		JSObjectSetPrototype(m->ctx, m->object, m->value);
-	}, &msg);
+    JSObjectSetPrototype((JSContextRef)ctx, (JSObjectRef)object, (JSValueRef)value);
 }
 
 NATIVE(JSObject,jboolean,hasProperty) (PARAMS, jlong ctx, jlong object, jlong propertyName) {
-	JSContextWrapper *wrapper = (JSContextWrapper *)ctx;
-	struct msg_t { JSContextRef ctx; JSObjectRef object; JSStringRef propertyName;
-		bool ret; };
-    msg_t msg = { wrapper->context, (JSObjectRef) object, (JSStringRef)propertyName,
-    	false };
-	wrapper->worker_q->sync([](void *msg){
-		msg_t *m = (msg_t *)msg;
-		m->ret = JSObjectHasProperty(m->ctx, m->object, m->propertyName);
-	}, &msg);
-	return msg.ret;
+    return JSObjectHasProperty((JSContextRef)ctx, (JSObjectRef) object, (JSStringRef)propertyName);
 }
 
 NATIVE(JSObject,jobject,getProperty) (PARAMS, jlong ctx, jlong object,
@@ -515,20 +526,15 @@ NATIVE(JSObject,jobject,getProperty) (PARAMS, jlong ctx, jlong object,
 
 	jfieldID fid = env->GetFieldID(ret , "reference", "J");
 
-	JSContextWrapper *wrapper = (JSContextWrapper *)ctx;
-	struct msg_t { JSContextRef ctx; JSObjectRef object; JSStringRef propertyName;
-		JSValueRef *exception; JSValueRef ret; };
-    msg_t msg = { wrapper->context, (JSObjectRef) object, (JSStringRef)propertyName,
-    	&exception, (JSValueRef)NULL };
-	wrapper->worker_q->sync([](void *msg){
-		msg_t *m = (msg_t *)msg;
-		m->ret = JSObjectGetProperty(m->ctx, m->object, m->propertyName, m->exception);
-	}, &msg);
+	long lval = (long) JSObjectGetProperty((JSContextRef)ctx, (JSObjectRef)object, (JSStringRef)propertyName,
+	    &exception);
 
-	env->SetLongField( out, fid, (long) msg.ret);
+	env->SetLongField( out, fid, lval);
 
 	fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (long) exception);
+
+	env->DeleteLocalRef(ret);
 
 	return out;
 }
@@ -542,19 +548,13 @@ NATIVE(JSObject,jobject,setProperty) (PARAMS, jlong ctx, jlong object, jlong pro
 	jmethodID cid = env->GetMethodID(ret,"<init>","()V");
 	jobject out = env->NewObject(ret, cid);
 
-	JSContextWrapper *wrapper = (JSContextWrapper *)ctx;
-	struct msg_t { JSContextRef ctx; JSObjectRef object; JSStringRef propertyName;
-		JSValueRef value; JSPropertyAttributes attributes; JSValueRef* exception; };
-    msg_t msg = { wrapper->context, (JSObjectRef) object, (JSStringRef) propertyName,
-		(JSValueRef)value, (JSPropertyAttributes)attributes, &exception };
-	wrapper->dispatch_q->sync([](void *msg){
-		msg_t *m = (msg_t *)msg;
-		JSObjectSetProperty(m->ctx, m->object, m->propertyName,
-			m->value, m->attributes, m->exception);
-	}, &msg);
-	
+    JSObjectSetProperty((JSContextRef)ctx, (JSObjectRef) object, (JSStringRef) propertyName,
+            (JSValueRef)value, (JSPropertyAttributes)attributes, &exception);
+
 	jfieldID fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (long) exception);
+
+	env->DeleteLocalRef(ret);
 
 	return out;
 }
@@ -570,20 +570,15 @@ NATIVE(JSObject,jobject,deleteProperty) (PARAMS, jlong ctx, jlong object,
 
 	jfieldID fid = env->GetFieldID(ret ,"bool", "Z");
 
-	JSContextWrapper *wrapper = (JSContextWrapper *)ctx;
-	struct msg_t { JSContextRef ctx; JSObjectRef object; JSStringRef propertyName;
-		JSValueRef* exception; bool bval; };
-        msg_t msg = { wrapper->context, (JSObjectRef) object, (JSStringRef) propertyName,
-		&exception, false };
-	wrapper->dispatch_q->sync([](void *msg){
-		msg_t *m = (msg_t *)msg;
-		m->bval = (bool) JSObjectDeleteProperty(m->ctx, m->object,
-			m->propertyName, m->exception);
-	}, &msg);
-	env->SetBooleanField( out, fid, msg.bval);
+	bool bval = (bool) JSObjectDeleteProperty((JSContextRef)ctx, (JSObjectRef) object,
+		    (JSStringRef) propertyName, &exception);
+
+	env->SetBooleanField( out, fid, bval);
 
 	fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (long) exception);
+
+	env->DeleteLocalRef(ret);
 
 	return out;
 }
@@ -599,21 +594,15 @@ NATIVE(JSObject,jobject,getPropertyAtIndex) (PARAMS, jlong ctx, jlong object,
 
 	jfieldID fid = env->GetFieldID(ret , "reference", "J");
 	
-	JSContextWrapper *wrapper = (JSContextWrapper *)ctx;
-	struct msg_t { JSContextRef ctx; JSObjectRef object; unsigned propertyIndex;
-		JSValueRef *exception; JSValueRef ret; };
-    msg_t msg = { wrapper->context, (JSObjectRef) object, (unsigned)propertyIndex,
-    	&exception, (JSValueRef)NULL };
-	wrapper->worker_q->sync([](void *msg){
-		msg_t *m = (msg_t *)msg;
-		m->ret = JSObjectGetPropertyAtIndex(m->ctx, m->object, m->propertyIndex,
-			m->exception);
-	}, &msg);
+    long lval = (long) JSObjectGetPropertyAtIndex((JSContextRef)ctx, (JSObjectRef) object,
+            (unsigned)propertyIndex, &exception);
 
-	env->SetLongField( out, fid, (long) msg.ret );
+	env->SetLongField( out, fid, lval );
 
 	fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (long) exception);
+
+	env->DeleteLocalRef(ret);
 
 	return out;
 }
@@ -629,19 +618,13 @@ NATIVE(JSObject,jobject,setPropertyAtIndex) (PARAMS, jlong ctx, jlong object,
 
 	jfieldID fid = env->GetFieldID(ret , "reference", "J");
 
-	JSContextWrapper *wrapper = (JSContextWrapper *)ctx;
-	struct msg_t { JSContextRef ctx; JSObjectRef object; unsigned propertyIndex;
-		JSValueRef value; JSValueRef* exception; };
-    msg_t msg = { wrapper->context, (JSObjectRef) object, (unsigned) propertyIndex,
-		(JSValueRef)value, &exception };
-	wrapper->dispatch_q->sync([](void *msg){
-		msg_t *m = (msg_t *)msg;
-		JSObjectSetPropertyAtIndex(m->ctx, m->object, m->propertyIndex,
-			m->value, m->exception);
-	}, &msg);
+    JSObjectSetPropertyAtIndex((JSContextRef)ctx, (JSObjectRef) object, (unsigned) propertyIndex,
+            (JSValueRef)value, &exception);
 
 	fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (long) exception);
+
+	env->DeleteLocalRef(ret);
 
 	return out;
 }
@@ -655,14 +638,7 @@ NATIVE(JSObject,jboolean,setPrivate) (PARAMS, jlong object, jlong data) {
 }
 
 NATIVE(JSObject,jboolean,isFunction) (PARAMS, jlong ctx, jlong object) {
-	JSContextWrapper *wrapper = (JSContextWrapper *)ctx;
-	struct msg_t { JSContextRef ctx; JSObjectRef object; bool ret; };
-    msg_t msg = { wrapper->context, (JSObjectRef) object, false };
-	wrapper->worker_q->sync([](void *msg){
-		msg_t *m = (msg_t *)msg;
-		m->ret = JSObjectIsFunction(m->ctx, m->object);
-	}, &msg);
-	return msg.ret;
+    return (jboolean) JSObjectIsFunction((JSContextRef)ctx, (JSObjectRef) object);
 }
 
 NATIVE(JSObject,jobject,callAsFunction) (PARAMS, jlong ctx, jlong object,
@@ -684,34 +660,22 @@ NATIVE(JSObject,jobject,callAsFunction) (PARAMS, jlong ctx, jlong object,
 
 	jfieldID fid = env->GetFieldID(ret , "reference", "J");
 
-	JSContextWrapper *wrapper = (JSContextWrapper *)ctx;
-	struct msg_t{JSContextRef ctx; JSObjectRef object; JSObjectRef thisObject; size_t len;
-		JSValueRef* elements; JSValueRef* exception; long lval; };
-        msg_t msg = { wrapper->context, (JSObjectRef) object, (JSObjectRef) thisObject,
-		(size_t)len, (len==0)?NULL:elements, &exception, 0L };
-	wrapper->dispatch_q->sync([](void *msg){
-		msg_t *m = (msg_t *)msg;
-		m->lval = (long) JSObjectCallAsFunction(m->ctx, m->object,
-			m->thisObject, m->len, m->elements, m->exception);
-	}, &msg);
-	env->SetLongField( out, fid, msg.lval);
+    long lval = (long) JSObjectCallAsFunction((JSContextRef)ctx, (JSObjectRef) object, (JSObjectRef) thisObject,
+        (size_t)len, (len==0)?NULL:elements, &exception);
+
+	env->SetLongField( out, fid, lval);
 
 	fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (long) exception);
 
-	delete elements;
+	env->DeleteLocalRef(ret);
+
+	delete [] elements;
 	return out;
 }
 
 NATIVE(JSObject,jboolean,isConstructor) (PARAMS, jlong ctx, jlong object) {
-	JSContextWrapper *wrapper = (JSContextWrapper *)ctx;
-	struct msg_t { JSContextRef ctx; JSObjectRef object; bool ret; };
-    msg_t msg = { wrapper->context, (JSObjectRef) object, false };
-	wrapper->worker_q->sync([](void *msg){
-		msg_t *m = (msg_t *)msg;
-		m->ret = JSObjectIsConstructor(m->ctx, m->object);
-	}, &msg);
-	return msg.ret;
+	return (jboolean) JSObjectIsConstructor((JSContextRef)ctx, (JSObjectRef)object);
 }
 
 NATIVE(JSObject,jobject,callAsConstructor) (PARAMS, jlong ctx, jlong object,
@@ -734,34 +698,22 @@ NATIVE(JSObject,jobject,callAsConstructor) (PARAMS, jlong ctx, jlong object,
 
 	jfieldID fid = env->GetFieldID(ret , "reference", "J");
 
-	JSContextWrapper *wrapper = (JSContextWrapper *)ctx;
-	struct msg_t { JSContextRef ctx; JSObjectRef object; size_t len;
-		JSValueRef* elements; JSValueRef* exception; long lval; };
-        msg_t msg = { wrapper->context, (JSObjectRef) object,
-		(size_t)len, (len==0)?NULL:elements, &exception, 0L };
-	wrapper->dispatch_q->sync([](void *msg){
-		msg_t *m = (msg_t *)msg;
-		m->lval = (long) JSObjectCallAsConstructor(m->ctx, m->object,
-			m->len, m->elements, m->exception);
-	}, &msg);
-	env->SetLongField( out, fid, msg.lval);
+    long lval = (long) JSObjectCallAsConstructor((JSContextRef)ctx, (JSObjectRef) object,
+		(size_t)len, (len==0)?NULL:elements, &exception);
+
+	env->SetLongField( out, fid, lval);
 
 	fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (long) exception);
 
-	delete elements;
+	env->DeleteLocalRef(ret);
+
+	delete [] elements;
 	return out;
 }
 
 NATIVE(JSObject,jlong,copyPropertyNames) (PARAMS, jlong ctx, jlong object) {
-	JSContextWrapper *wrapper = (JSContextWrapper *)ctx;
-	struct msg_t { JSContextRef ctx; JSObjectRef object; JSPropertyNameArrayRef ret; };
-    msg_t msg = { wrapper->context, (JSObjectRef) object, (JSPropertyNameArrayRef)NULL };
-	wrapper->worker_q->sync([](void *msg){
-		msg_t *m = (msg_t *)msg;
-		m->ret = JSObjectCopyPropertyNames(m->ctx, m->object);
-	}, &msg);
-	return (jlong)msg.ret;
+    return (jlong) JSObjectCopyPropertyNames((JSContextRef)ctx, (JSObjectRef)object);
 }
 
 NATIVE(JSObject,jlongArray,getPropertyNames) (PARAMS,jlong propertyNameArray) {

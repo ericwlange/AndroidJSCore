@@ -32,6 +32,10 @@
 */
 package org.liquidplayer.webkit.javascriptcore;
 
+import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Looper;
+
 import org.liquidplayer.hemroid.JavaScriptCoreGTK;
 
 import java.util.HashMap;
@@ -42,6 +46,88 @@ import java.util.Map;
  * Wraps a JavaScriptCore context 
  */
 public class JSContext extends JSObject {
+
+	private class JSContextWorker extends Thread {
+
+		private Boolean mReady = false;
+        private int mThreadId;
+
+		@Override
+		public void run() {
+			Looper.prepare();
+			workerHandler = new Handler();
+            mThreadId = android.os.Process.myTid();
+            synchronized (mReady) {
+                mReady = true;
+            }
+			Looper.loop();
+		}
+
+		public Handler workerHandler;
+
+		public JSContextWorker() {
+			super();
+			start();
+			Boolean ready = false;
+			while (!ready) {
+				synchronized (mReady) {
+					ready = mReady;
+				}
+			}
+		}
+
+        private class SyncRunnable implements Runnable {
+            SyncRunnable(Runnable runnable) {
+                mRunnable = runnable;
+            }
+            private final Runnable mRunnable;
+            private Boolean mComplete = false;
+            private JSException exception = null;
+            @Override
+            public void run() {
+                try {
+                    mRunnable.run();
+                } catch (JSException e) {
+                    exception = e;
+                }
+                synchronized (mComplete) {
+                    mComplete = true;
+                }
+            }
+            public void block() throws JSException {
+                Boolean complete = false;
+                while (!complete) {
+                    synchronized (mComplete) {
+                        complete = mComplete;
+                    }
+                }
+                if (exception != null) throw exception;
+            }
+        }
+
+        public void sync(final Runnable runnable) throws JSException {
+            int currThreadId = android.os.Process.myTid();
+            if (currThreadId == mThreadId) {
+                runnable.run();
+            } else {
+                SyncRunnable syncr = new SyncRunnable(runnable);
+                workerHandler.post(syncr);
+                syncr.block();
+            }
+        }
+        public void async(final Runnable runnable) {
+            workerHandler.post(runnable);
+        }
+	};
+
+    private final JSContextWorker mWorker;
+
+    public void sync(Runnable runnable) {
+        mWorker.sync(runnable);
+    }
+    public void async(Runnable runnable) {
+        mWorker.async(runnable);
+    }
 
 	/**
 	 * Object interface for handling JSExceptions.
@@ -64,21 +150,31 @@ public class JSContext extends JSObject {
 	 * @since 1.0
 	 */
 	public JSContext() {
-		ctx = create();
-		context = this;
-		valueRef = getGlobalObject(ctx);
-		protect(context,valueRef);
+        mWorker = new JSContextWorker();
+        context = this;
+        sync(new Runnable() {
+            @Override public void run() {
+                ctx = create();
+                valueRef = getGlobalObject(ctx);
+                protect(context,valueRef);
+            }
+        });
 	}
 	/**
 	 * Creates a new JavaScript context in the context group 'inGroup'.
 	 * @param inGroup  The context group to create the context in
 	 * @since 1.0
 	 */
-	public JSContext(JSContextGroup inGroup) {
-		ctx = createInGroup(inGroup.groupRef());
-		context = this;
-		valueRef = getGlobalObject(ctx);
-		protect(context, valueRef);
+	public JSContext(final JSContextGroup inGroup) {
+        mWorker = new JSContextWorker();
+        context = this;
+        sync(new Runnable() {
+            @Override public void run() {
+                ctx = createInGroup(inGroup.groupRef());
+                valueRef = getGlobalObject(ctx);
+                protect(context, valueRef);
+            }
+        });
 	}
 	/**
 	 * Creates a JavaScript context, and defines the global object with interface 'iface'.  This
@@ -88,10 +184,15 @@ public class JSContext extends JSObject {
 	 * @throws JSException
 	 */
 	public JSContext(Class<?> iface) throws JSException {
-		ctx = create();
-		context = this;
-		valueRef = getGlobalObject(ctx);
-		this.initJSInterface(this, iface, null);
+        mWorker = new JSContextWorker();
+        context = this;
+        sync(new Runnable() {
+            @Override public void run() {
+                ctx = create();
+                valueRef = getGlobalObject(ctx);
+            }
+        });
+        initJSInterface(this, iface, null);
 	}
 	/**
 	 * Creates a JavaScript context in context group 'inGroup', and defines the global object
@@ -102,10 +203,15 @@ public class JSContext extends JSObject {
 	 * @since 1.0
 	 * @throws JSException
 	 */
-	public JSContext(JSContextGroup inGroup, Class<?> iface) throws JSException {
-		ctx = createInGroup(inGroup.groupRef());
-		context = this;
-		valueRef = getGlobalObject(ctx);
+	public JSContext(final JSContextGroup inGroup, Class<?> iface) throws JSException {
+        mWorker = new JSContextWorker();
+        context = this;
+        sync(new Runnable() {
+            @Override public void run() {
+                ctx = createInGroup(inGroup.groupRef());
+                valueRef = getGlobalObject(ctx);
+            }
+        });
 		this.initJSInterface(this, iface, null);
 	}
 	@Override
@@ -173,8 +279,14 @@ public class JSContext extends JSObject {
 	public Long ctxRef() {
 		return ctx;
 	}
-	
-	/**
+
+    private class JNIReturnClass implements Runnable {
+        @Override
+        public void run() {}
+        JNIReturnObject jni;
+    }
+
+    /**
 	 * Executes a the JavaScript code in 'script' in this context
 	 * @param script  The code to execute
 	 * @param thiz  The 'this' object
@@ -184,16 +296,23 @@ public class JSContext extends JSObject {
 	 * @since 1.0
 	 * @throws JSException
 	 */
-	public JSValue evaluateScript(String script, JSObject thiz,
-			String sourceURL, int startingLineNumber) throws JSException {
-		JNIReturnObject jni = evaluateScript(ctx, new JSString(script).stringRef(),
-				(thiz == null) ? 0L : thiz.valueRef(), (sourceURL == null) ? 0L : new JSString(sourceURL).stringRef(),
-				startingLineNumber);
-		if (jni.exception!=0) {
-			throwJSException(new JSException(new JSValue(jni.exception, context)));
+	public JSValue evaluateScript(final String script, final JSObject thiz,
+			final String sourceURL, final int startingLineNumber) throws JSException {
+
+        JNIReturnClass runnable = new JNIReturnClass() {
+            @Override public void run() {
+                jni = evaluateScript(ctx, new JSString(script).stringRef(),
+                        (thiz == null) ? 0L : thiz.valueRef(), (sourceURL == null) ? 0L : new JSString(sourceURL).stringRef(),
+                        startingLineNumber);
+            }
+        };
+        sync(runnable);
+
+		if (runnable.jni.exception!=0) {
+			throwJSException(new JSException(new JSValue(runnable.jni.exception, context)));
 			return new JSValue(this);
 		}
-		return new JSValue(jni.reference,this);
+		return new JSValue(runnable.jni.reference,this);
 	}
 	
 	/**
@@ -258,8 +377,14 @@ public class JSContext extends JSObject {
 	 * Forces JavaScript garbage collection on this context
 	 * @since 1.0
 	 */
-	public void garbageCollect() {
-		garbageCollect(ctx);
+	public void garbageCollect()
+    {
+        async(new Runnable() {
+            @Override
+            public void run() {
+                garbageCollect(ctx);
+            }
+        });
 	}
 	
 	protected static native void staticInit();

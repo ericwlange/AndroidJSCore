@@ -42,8 +42,14 @@ import java.util.HashMap;
  * @since 1.0
  */
 public class JSValue {
-	
-	protected Long valueRef = 0L;
+
+    private class JNIReturnClass implements Runnable {
+        @Override
+        public void run() {}
+        JNIReturnObject jni;
+    }
+
+    protected Long valueRef = 0L;
 	protected JSContext context = null;
 	
 	/* Constructors */
@@ -59,10 +65,15 @@ public class JSValue {
 	 * @param ctx  The context in which to create the value
 	 * @since 1.0
 	 */
-	public JSValue(JSContext ctx) {
+	public JSValue(final JSContext ctx) {
 		context = ctx;
-		valueRef = makeUndefined(context.ctxRef());
-		protect(ctx,valueRef);
+        context.sync(new Runnable() {
+            @Override
+            public void run() {
+                valueRef = makeUndefined(context.ctxRef());
+                protect(ctx,valueRef);
+            }
+        });
 	}
 	/**
 	 * Creates a new JavaScript value from a Java value.  Classes supported are:
@@ -72,29 +83,34 @@ public class JSValue {
 	 * @param val  The Java value
 	 * @since 1.0
 	 */
-	public JSValue(JSContext ctx, Object val) {
+	public JSValue(JSContext ctx, final Object val) {
 		context = ctx;
-		if (val == null) {
-            valueRef = makeNull(context.ctxRef());
-        } else if (val instanceof Boolean) {
-			valueRef = makeBoolean(context.ctxRef(), (Boolean)val);
-		} else if (val instanceof Double) {
-			valueRef = makeNumber(context.ctxRef(), (Double)val);
-		} else if (val instanceof Float) {
-			valueRef = makeNumber(context.ctxRef(), ((Float)val).doubleValue());
-		} else if (val instanceof Integer) {
-			valueRef = makeNumber(context.ctxRef(), ((Integer)val).doubleValue());
-		} else if (val instanceof Long) {
-			valueRef = makeNumber(context.ctxRef(), ((Long)val).doubleValue());
-		} else if (val instanceof String) {
-			JSString s = new JSString((String)val);
-			valueRef = makeString(context.ctxRef(), s.stringRef);
-		} else if (val instanceof JSString) {
-			valueRef = makeString(context.ctxRef(), ((JSString)val).stringRef);
-		} else {
-			valueRef = makeUndefined(context.ctxRef());
-		}
-		protect(ctx,valueRef);
+        context.sync(new Runnable() {
+            @Override
+            public void run() {
+                if (val == null) {
+                    valueRef = makeNull(context.ctxRef());
+                } else if (val instanceof Boolean) {
+                    valueRef = makeBoolean(context.ctxRef(), (Boolean)val);
+                } else if (val instanceof Double) {
+                    valueRef = makeNumber(context.ctxRef(), (Double)val);
+                } else if (val instanceof Float) {
+                    valueRef = makeNumber(context.ctxRef(), new Double(((Float)val).toString()));
+                } else if (val instanceof Integer ) {
+                    valueRef = makeNumber(context.ctxRef(), ((Integer)val).doubleValue());
+                } else if (val instanceof Long) {
+                    valueRef = makeNumber(context.ctxRef(), ((Long)val).doubleValue());
+                } else if (val instanceof String) {
+                    JSString s = new JSString((String)val);
+                    valueRef = makeString(context.ctxRef(), s.stringRef);
+                } else if (val instanceof JSString) {
+                    valueRef = makeString(context.ctxRef(), ((JSString) val).stringRef);
+                } else {
+                    valueRef = makeUndefined(context.ctxRef());
+                }
+                protect(context,valueRef);
+            }
+        });
 	}
 	/*
 	 * JavaScript values held by the Java environment must be protected from garbage collection
@@ -122,8 +138,13 @@ public class JSValue {
 		Reference<? extends JSValue> p;
 		HashMap<JSContext,Boolean> collect = new HashMap<JSContext,Boolean>();
 		while ((p = rq.poll()) != null) {
-			ValRef vr = whm.get(p);
-			unprotect(vr.ctx.ctxRef(),vr.valueRef);
+			final ValRef vr = whm.get(p);
+            context.async(new Runnable() {
+                @Override
+                public void run() {
+                    unprotect(vr.ctx.ctxRef(),vr.valueRef);
+                }
+            });
 			whm.remove(p);
 			collect.put(vr.ctx, true);
 		}
@@ -138,10 +159,16 @@ public class JSValue {
 	 * @param ctx  The context in which the value exists
 	 * @since 1.0
 	 */
-	public JSValue(long valueRef, JSContext ctx) {
+	public JSValue(final long valueRef, JSContext ctx) {
 		context = ctx;
-		this.valueRef = valueRef;
-		protect(ctx,valueRef);
+        context.sync(new Runnable() {
+            @Override
+            public void run() {
+                if (valueRef == 0) JSValue.this.valueRef = makeUndefined(context.ctxRef());
+                JSValue.this.valueRef = valueRef;
+                protect(context,valueRef);
+            }
+        });
 	}
 	@Override
 	protected void finalize() throws Throwable {
@@ -156,7 +183,15 @@ public class JSValue {
 	 * @since 1.0
 	 */
 	public Boolean isUndefined() {
-		return isUndefined(context.ctxRef(), valueRef);
+        JNIReturnClass runnable = new JNIReturnClass() {
+            @Override
+            public void run() {
+                jni = new JNIReturnObject();
+                jni.bool = isUndefined(context.ctxRef(), valueRef);
+            }
+        };
+        context.sync(runnable);
+		return runnable.jni.bool;
 	}
 	/**
 	 * Tests whether the value is null
@@ -164,7 +199,15 @@ public class JSValue {
 	 * @since 1.0
 	 */
 	public Boolean isNull() {
-		return isNull(context.ctxRef(), valueRef);
+        JNIReturnClass runnable = new JNIReturnClass() {
+            @Override
+            public void run() {
+                jni = new JNIReturnObject();
+                jni.bool = isNull(context.ctxRef(), valueRef);
+            }
+        };
+        context.sync(runnable);
+        return runnable.jni.bool;
 	}
 	/**
 	 * Tests whether the value is boolean
@@ -172,7 +215,15 @@ public class JSValue {
 	 * @since 1.0
 	 */
 	public Boolean isBoolean() {
-		return isBoolean(context.ctxRef(), valueRef);		
+        JNIReturnClass runnable = new JNIReturnClass() {
+            @Override
+            public void run() {
+                jni = new JNIReturnObject();
+                jni.bool = isBoolean(context.ctxRef(), valueRef);
+            }
+        };
+        context.sync(runnable);
+        return runnable.jni.bool;
 	}
 	/**
 	 * Tests whether the value is a number
@@ -180,7 +231,15 @@ public class JSValue {
 	 * @since 1.0
 	 */
 	public Boolean isNumber() {
-		return isNumber(context.ctxRef(), valueRef);
+        JNIReturnClass runnable = new JNIReturnClass() {
+            @Override
+            public void run() {
+                jni = new JNIReturnObject();
+                jni.bool = isNumber(context.ctxRef(), valueRef);
+            }
+        };
+        context.sync(runnable);
+        return runnable.jni.bool;
 	}
 	/**
 	 * Tests whether the value is a string
@@ -188,7 +247,15 @@ public class JSValue {
 	 * @since 1.0
 	 */
 	public Boolean isString() {
-		return isString(context.ctxRef(), valueRef);
+        JNIReturnClass runnable = new JNIReturnClass() {
+            @Override
+            public void run() {
+                jni = new JNIReturnObject();
+                jni.bool = isString(context.ctxRef(), valueRef);
+            }
+        };
+        context.sync(runnable);
+        return runnable.jni.bool;
 	}
 	/**
 	 * Tests whether the value is an array
@@ -196,7 +263,15 @@ public class JSValue {
 	 * @since 2.2
 	 */
 	public Boolean isArray() {
-		return isArray(context.ctxRef(), valueRef);
+        JNIReturnClass runnable = new JNIReturnClass() {
+            @Override
+            public void run() {
+                jni = new JNIReturnObject();
+                jni.bool = isArray(context.ctxRef(), valueRef);
+            }
+        };
+        context.sync(runnable);
+        return runnable.jni.bool;
 	}
     /**
      * Tests whether the value is a date object
@@ -204,7 +279,15 @@ public class JSValue {
      * @since 2.2
      */
     public Boolean isDate() {
-        return isDate(context.ctxRef(), valueRef);
+        JNIReturnClass runnable = new JNIReturnClass() {
+            @Override
+            public void run() {
+                jni = new JNIReturnObject();
+                jni.bool = isDate(context.ctxRef(), valueRef);
+            }
+        };
+        context.sync(runnable);
+        return runnable.jni.bool;
     }
     /**
      * Tests whether the value is an object
@@ -221,13 +304,19 @@ public class JSValue {
 	 * @since 1.0
 	 * @throws JSException
 	 */
-	public Boolean isInstanceOfConstructor(JSObject constructor) throws JSException {
-		JNIReturnObject jni = this.isInstanceOfConstructor(context.ctxRef(), valueRef, constructor.valueRef());
-		if (jni.exception!=0) {
-			context.throwJSException(new JSException(new JSValue(jni.exception, context)));
-			return false;
-		}
-		return jni.bool;
+	public Boolean isInstanceOfConstructor(final JSObject constructor) throws JSException {
+        JNIReturnClass runnable = new JNIReturnClass() {
+            @Override
+            public void run() {
+                jni = isInstanceOfConstructor(context.ctxRef(), valueRef, constructor.valueRef());
+            }
+        };
+        context.sync(runnable);
+        if (runnable.jni.exception!=0) {
+            context.throwJSException(new JSException(new JSValue(runnable.jni.exception, context)));
+            runnable.jni.bool = false;
+        }
+        return runnable.jni.bool;
 	}
 	
 	/* Comparators */
@@ -240,11 +329,18 @@ public class JSValue {
         } else {
             otherJSValue = new JSValue(context, other);
         }
-		JNIReturnObject jni = isEqual(context.ctxRef(), valueRef, otherJSValue.valueRef);
-		if (jni.exception!=0) {
+        final JSValue ojsv = otherJSValue;
+        JNIReturnClass runnable = new JNIReturnClass() {
+            @Override
+            public void run() {
+                jni = isEqual(context.ctxRef(), valueRef, ojsv.valueRef);
+            }
+        };
+        context.sync(runnable);
+		if (runnable.jni.exception!=0) {
 			return false;
 		}
-		return jni.bool;
+		return runnable.jni.bool;
 	}
 	
 	/**
@@ -261,7 +357,16 @@ public class JSValue {
         } else {
             otherJSValue = new JSValue(context, other);
         }
-        return isStrictEqual(context.ctxRef(), valueRef, otherJSValue.valueRef);
+        final JSValue ojsv = otherJSValue;
+        JNIReturnClass runnable = new JNIReturnClass() {
+            @Override
+            public void run() {
+                jni = new JNIReturnObject();
+                jni.bool = isStrictEqual(context.ctxRef(), valueRef, ojsv.valueRef);
+            }
+        };
+        context.sync(runnable);
+        return runnable.jni.bool;
 	}
 	
 	/* Getters */
@@ -271,7 +376,15 @@ public class JSValue {
 	 * @since 1.0
 	 */
 	public Boolean toBoolean() {
-		return toBoolean(context.ctxRef(), valueRef);
+        JNIReturnClass runnable = new JNIReturnClass() {
+            @Override
+            public void run() {
+                jni = new JNIReturnObject();
+                jni.bool = toBoolean(context.ctxRef(), valueRef);
+            }
+        };
+        context.sync(runnable);
+		return runnable.jni.bool;
 	}
 	/**
 	 * Gets the numeric value of this JS value
@@ -280,12 +393,18 @@ public class JSValue {
 	 * @throws JSException
 	 */
 	public Double toNumber() throws JSException {
-		JNIReturnObject jni = toNumber(context.ctxRef(), valueRef);
-		if (jni.exception!=0) {
-			context.throwJSException(new JSException(new JSValue(jni.exception, context)));
+        JNIReturnClass runnable = new JNIReturnClass() {
+            @Override
+            public void run() {
+                jni = toNumber(context.ctxRef(), valueRef);
+            }
+        };
+        context.sync(runnable);
+		if (runnable.jni.exception!=0) {
+			context.throwJSException(new JSException(new JSValue(runnable.jni.exception, context)));
             return 0.0;
 		}
-		return jni.number;
+		return runnable.jni.number;
 	}
 	@Override
 	public String toString() {
@@ -302,12 +421,18 @@ public class JSValue {
 	 * @throws JSException
 	 */
 	public JSString toJSString() throws JSException {
-		JNIReturnObject jni = toStringCopy(context.ctxRef(), valueRef);
-		if (jni.exception!=0) {
-			context.throwJSException(new JSException(new JSValue(jni.exception, context)));
+        JNIReturnClass runnable = new JNIReturnClass() {
+            @Override
+            public void run() {
+                jni = toStringCopy(context.ctxRef(), valueRef);
+            }
+        };
+        context.sync(runnable);
+		if (runnable.jni.exception!=0) {
+			context.throwJSException(new JSException(new JSValue(runnable.jni.exception, context)));
             return null;
 		}
-		return new JSString(jni.reference);
+		return new JSString(runnable.jni.reference);
 	}
 	/**
 	 * If the JS value is an object, gets the JSObject
@@ -316,30 +441,42 @@ public class JSValue {
 	 * @throws JSException  if not an object
 	 */
 	public JSObject toObject() throws JSException {
-		JNIReturnObject jni = toObject(context.ctxRef(), valueRef);
-		if (jni.exception!=0) {
-			context.throwJSException(new JSException(new JSValue(jni.exception, context)));
+        JNIReturnClass runnable = new JNIReturnClass() {
+            @Override
+            public void run() {
+                jni = toObject(context.ctxRef(), valueRef);
+            }
+        };
+        context.sync(runnable);
+		if (runnable.jni.exception!=0) {
+			context.throwJSException(new JSException(new JSValue(runnable.jni.exception, context)));
             return new JSObject(context);
 		}
-		return context.getObjectFromRef(jni.reference);
+		return context.getObjectFromRef(runnable.jni.reference);
 	}
 	/**
 	 * Gets the JSON of this JS value
 	 * @param indent  number of spaces to indent
-	 * @return  the JSON representing this value
+	 * @return  the JSON representing this value, or null if value is undefined
 	 * @since 1.0
 	 * @throws JSException
 	 */
-	public String toJSON(int indent) throws JSException {
-		JNIReturnObject jni = createJSONString(context.ctxRef(), valueRef, indent);
-		if (jni.exception!=0) {
-			context.throwJSException(new JSException(new JSValue(jni.exception, context)));
+	public String toJSON(final int indent) throws JSException {
+        JNIReturnClass runnable = new JNIReturnClass() {
+            @Override
+            public void run() {
+                jni = createJSONString(context.ctxRef(), valueRef, indent);
+            }
+        };
+        context.sync(runnable);
+		if (runnable.jni.exception!=0) {
+			context.throwJSException(new JSException(new JSValue(runnable.jni.exception, context)));
             return null;
 		}
-		if (jni.reference==0) {
+		if (runnable.jni.reference==0) {
 			return null;
 		}
-		return new JSString(jni.reference).toString();
+		return new JSString(runnable.jni.reference).toString();
 	}
 	/**
 	 * Gets the JSON of this JS value

@@ -35,106 +35,59 @@
 
 // Create a set of worker threads for managing strings.  Two threads
 // should be enough
-static DispatchQueue string_q(2);
+static DispatchQueue string_q(2,"string");
 
 NATIVE(JSString,jlong,createWithCharacters) (PARAMS, jstring str)
 {
-	jboolean isCopy;
-	struct msg_t { const jchar* chars; long len; long ret; };
-	msg_t msg = { env->GetStringChars(str, &isCopy), env->GetStringLength(str), 0L };
-	string_q.sync([](void *msg) {
-		msg_t *m = (msg_t *)msg;
-		m->ret = (long) JSStringCreateWithCharacters(m->chars, m->len );
-	},&msg);
-	env->ReleaseStringChars(str,msg.chars);
-	return msg.ret;
+	const jchar *chars = env->GetStringChars(str, NULL);
+	jlong ret = (jlong) JSStringCreateWithCharacters(chars,
+	    env->GetStringLength(str));
+	env->ReleaseStringChars(str,chars);
+	return ret;
 }
 
 NATIVE(JSString,jlong,createWithUTF8CString) (PARAMS, jstring str)
 {
-	struct msg_t { const char* string; long ret; };
-	msg_t msg = { env->GetStringUTFChars(str, NULL), 0L };
-	string_q.sync([](void *msg) {
-		msg_t *m = (msg_t *)msg;
-		m->ret = (long) JSStringCreateWithUTF8CString(m->string);
-	},&msg);
-	env->ReleaseStringUTFChars(str, msg.string);
-	return msg.ret;
-}
-
-NATIVE(JSString,jlong,retain) (PARAMS, long strRef) {
-	struct msg_t { JSStringRef strRef; long ret; };
-	msg_t msg = { (JSStringRef) strRef, 0L };
-	string_q.sync([](void *msg) {
-		msg_t *m = (msg_t *)msg;
-		m->ret = (long) JSStringRetain(m->strRef);
-	},&msg);
-	return msg.ret;
-}
-
-NATIVE(JSString,void,release) (PARAMS, long stringRef) {
-	JSStringRef *msg = new JSStringRef((JSStringRef)stringRef);
-	string_q.async([](void *msg) {
-		JSStringRef *stringRef = (JSStringRef *)msg;
-		JSStringRelease(*stringRef);
-		delete stringRef;
-	},msg);
-}
-
-NATIVE(JSString,jint,getLength) (PARAMS, long stringRef) {
-	struct msg_t { JSStringRef strRef; int ret; };
-	msg_t msg = { (JSStringRef) stringRef, 0 };
-	string_q.sync([](void *msg) {
-		msg_t *m = (msg_t *)msg;
-		m->ret = (int) JSStringGetLength(m->strRef);
-	},&msg);
-	return msg.ret;
-}
-
-NATIVE(JSString,jstring,toString) (PARAMS, long stringRef) {
-	struct msg_t { JSStringRef stringRef; char *buffer; jstring ret; };
-	msg_t msg = { (JSStringRef) stringRef, NULL, 0 };
-	string_q.sync([](void *msg) {
-		msg_t *m = (msg_t *)msg;
-		m->buffer = new char[JSStringGetMaximumUTF8CStringSize(m->stringRef)+1];
-		JSStringGetUTF8CString(m->stringRef, m->buffer,
-			JSStringGetMaximumUTF8CStringSize(m->stringRef)+1);
-	},&msg);
-	jstring ret = env->NewStringUTF(msg.buffer);
-	delete msg.buffer;
+    const char *string = env->GetStringUTFChars(str, NULL);
+	jlong ret = (jlong) JSStringCreateWithUTF8CString(string);
+	env->ReleaseStringUTFChars(str, string);
 	return ret;
 }
 
-NATIVE(JSString,jint,getMaximumUTF8CStringSize) (PARAMS, long stringRef) {
-	struct msg_t { JSStringRef stringRef; int ret; };
-	msg_t msg = { (JSStringRef) stringRef, 0 };
-	string_q.sync([](void *msg) {
-		msg_t *m = (msg_t *)msg;
-		m->ret = (int) JSStringGetMaximumUTF8CStringSize(m->stringRef);
-	},&msg);
-	return msg.ret;
+NATIVE(JSString,jlong,retain) (PARAMS, jlong strRef) {
+	return (jlong) JSStringRetain((JSStringRef)strRef);
 }
 
-NATIVE(JSString,jboolean,isEqual) (PARAMS, long a, long b) {
-	struct msg_t { JSStringRef a; JSStringRef b; bool ret; };
-	msg_t msg = { (JSStringRef) a, (JSStringRef) b, false };
-	string_q.sync([](void *msg) {
-		msg_t *m = (msg_t *)msg;
-		m->ret = JSStringIsEqual(m->a, m->b);
-	}, &msg);
-	return msg.ret;
+NATIVE(JSString,void,release) (PARAMS, jlong stringRef) {
+    JSStringRelease((JSStringRef)stringRef);
 }
 
-NATIVE(JSString,jboolean,isEqualToUTF8CString) (PARAMS, long a, jstring b) {
-	jboolean isCopy;
-	struct msg_t { JSStringRef a; const char *string; bool ret; };
-	msg_t msg = { (JSStringRef) a, env->GetStringUTFChars(b, &isCopy), false };
-	string_q.sync([](void *msg) {
-		msg_t *m = (msg_t *)msg;
-		m->ret = JSStringIsEqualToUTF8CString(m->a, m->string);
-	}, &msg);
-	env->ReleaseStringUTFChars(b, msg.string);
-	return msg.ret;
+NATIVE(JSString,jint,getLength) (PARAMS, jlong stringRef) {
+	return (jint) JSStringGetLength((JSStringRef)stringRef);
+}
+
+NATIVE(JSString,jstring,toString) (PARAMS, jlong stringRef) {
+    char *buffer = new char[JSStringGetMaximumUTF8CStringSize((JSStringRef)stringRef)+1];
+    JSStringGetUTF8CString((JSStringRef)stringRef, buffer,
+        JSStringGetMaximumUTF8CStringSize((JSStringRef)stringRef)+1);
+	jstring ret = env->NewStringUTF(buffer);
+	delete buffer;
+	return ret;
+}
+
+NATIVE(JSString,jint,getMaximumUTF8CStringSize) (PARAMS, jlong stringRef) {
+    return (jint) JSStringGetMaximumUTF8CStringSize((JSStringRef)stringRef);
+}
+
+NATIVE(JSString,jboolean,isEqual) (PARAMS, jlong a, jlong b) {
+    return (jboolean) JSStringIsEqual((JSStringRef)a, (JSStringRef)b);
+}
+
+NATIVE(JSString,jboolean,isEqualToUTF8CString) (PARAMS, jlong a, jstring b) {
+	const char *string = env->GetStringUTFChars(b, NULL);
+	jboolean ret = JSStringIsEqualToUTF8CString((JSStringRef)a, string);
+	env->ReleaseStringUTFChars(b, string);
+	return ret;
 }
 
 

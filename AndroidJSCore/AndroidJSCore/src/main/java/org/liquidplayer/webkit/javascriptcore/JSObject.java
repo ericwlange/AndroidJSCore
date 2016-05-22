@@ -32,6 +32,8 @@
 */
 package org.liquidplayer.webkit.javascriptcore;
 
+import org.json.JSONObject;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -44,7 +46,13 @@ import java.util.ArrayList;
  */
 public class JSObject extends JSValue {
 
-	/**
+    private class JNIReturnClass implements Runnable {
+        @Override
+        public void run() {}
+        JNIReturnObject jni;
+    }
+
+    /**
 	 * Specifies that a property has no special attributes.
 	 */
 	public static int JSPropertyAttributeNone = 0;
@@ -75,8 +83,12 @@ public class JSObject extends JSValue {
 	 */
 	public JSObject(JSContext ctx) {
 		context = ctx;
-		valueRef = make(context.ctxRef(), 0L);
-		protect(ctx,valueRef);
+        context.sync(new Runnable() {
+            @Override public void run() {
+                valueRef = make(context.ctxRef(), 0L);
+                protect(context,valueRef);
+            }
+        });
 	}
 	/**
  	 * Called only by convenience subclasses.  If you use
@@ -92,10 +104,14 @@ public class JSObject extends JSValue {
 	 * @param ctx     The JSContext of the reference
 	 * @since 1.0
 	 */
-	protected JSObject(long objRef, JSContext ctx) {
+	protected JSObject(final long objRef, JSContext ctx) {
 		context = ctx;
-		valueRef = objRef;
-		protect(ctx,valueRef);
+        context.sync(new Runnable() {
+            @Override public void run() {
+                valueRef = objRef;
+                protect(context,valueRef);
+            }
+        });
 	}
 	/**
 	 * Creates a new object with function properties set for each method
@@ -173,49 +189,54 @@ public class JSObject extends JSValue {
 	 * @since 1.0
 	 * @throws JSException
 	 */
-	public JSObject(JSContext ctx, Class<?> iface, Class<?> subclass) throws JSException {
+	public JSObject(JSContext ctx, Class<?> iface, Class<? extends JSObject> subclass) throws JSException {
 		initJSInterface(ctx, iface, subclass);
 	}
-	protected void initJSInterface(JSContext ctx, Class<?> iface, Class<?> subclass) throws JSException {
+	protected void initJSInterface(JSContext ctx, final Class<?> iface, final Class<? extends JSObject> subclass) throws JSException {
 		context = ctx;
-		Method[] methods = iface.getDeclaredMethods();
-		String name = new String("_").concat(iface.getSimpleName());
-		JSObject protoObj = null;
-		for (int i=0; i<methods.length; i++) {
-			if (methods[i].getName().compareTo(name) == 0) {
-				// This is a constructor
-				this.subclass = subclass;
-				if (subclass == null) {
-					context.throwJSException(new JSException(context,"Constructor function must specify subclass"));
-                    valueRef = make(context.ctxRef(), 0L);
-					return;
-				}
-				isConstructor = true;
-				method = methods[i];
-				this.invokeObject = this;
-				valueRef = makeFunctionWithCallback(context.ctxRef(),new JSString(method.getName()).stringRef());
-				hasCallback = true;
-				protoObj = new JSObject(context);
-				break;
-			}
-		}
-		if (protoObj == null) {
-			if (valueRef==null || valueRef==0)
-				valueRef = make(context.ctxRef(), 0L);
-			protoObj = this;
-		}
-		for (int i=0; i<methods.length; i++) {
-			if (methods[i].getName().compareTo(name) != 0) {
-				JSObject f = new JSObject(context, this, methods[i]);
-				f.subclass = this.subclass;
-				functions.add(f);
-				protoObj.property(methods[i].getName(), f);
-			}
-		}
-		if (protoObj != this) {
-			this.property("prototype", protoObj);
-		}
-		protect(context,valueRef);
+        context.sync(new Runnable() {
+            @Override
+            public void run() {
+                Method[] methods = iface.getDeclaredMethods();
+                String name = new String("_").concat(iface.getSimpleName());
+                JSObject protoObj = null;
+                for (int i=0; i<methods.length; i++) {
+                    if (methods[i].getName().compareTo(name) == 0) {
+                        // This is a constructor
+                        JSObject.this.subclass = subclass;
+                        if (subclass == null) {
+                            context.throwJSException(new JSException(context,"Constructor function must specify subclass"));
+                            valueRef = make(context.ctxRef(), 0L);
+                            return;
+                        }
+                        isConstructor = true;
+                        method = methods[i];
+                        JSObject.this.invokeObject = JSObject.this;
+                        valueRef = makeFunctionWithCallback(context.ctxRef(),new JSString(method.getName()).stringRef());
+                        hasCallback = true;
+                        protoObj = new JSObject(context);
+                        break;
+                    }
+                }
+                if (protoObj == null) {
+                    if (valueRef==null || valueRef==0)
+                        valueRef = make(context.ctxRef(), 0L);
+                    protoObj = JSObject.this;
+                }
+                for (int i=0; i<methods.length; i++) {
+                    if (methods[i].getName().compareTo(name) != 0) {
+                        JSObject f = new JSObject(context, JSObject.this, methods[i]);
+                        f.subclass = JSObject.this.subclass;
+                        functions.add(f);
+                        protoObj.property(methods[i].getName(), f);
+                    }
+                }
+                if (protoObj != JSObject.this) {
+                    JSObject.this.property("prototype", protoObj);
+                }
+                protect(context,valueRef);
+            }
+        });
 	}
 	/**
 	 * Creates a new function object which calls method 'method' on Java object 'invoke'.
@@ -231,13 +252,18 @@ public class JSObject extends JSValue {
 	 * @since 1.0
 	 * @throws JSException
 	 */
-	public JSObject(JSContext ctx, JSObject invoke, Method method) throws JSException {
+	public JSObject(JSContext ctx, JSObject invoke, final Method method) throws JSException {
 		context = ctx;
 		this.method = method;
 		this.invokeObject = invoke;
-		valueRef = makeFunctionWithCallback(context.ctxRef(),new JSString(method.getName()).stringRef());
-		hasCallback = true;
-		protect(ctx,valueRef);
+        context.sync(new Runnable() {
+            @Override
+            public void run() {
+                valueRef = makeFunctionWithCallback(context.ctxRef(),new JSString(method.getName()).stringRef());
+                hasCallback = true;
+                protect(context,valueRef);
+            }
+        });
 	}
 	/**
 	 * Creates a JavaScript function that takes parameters 'parameterNames' and executes the
@@ -252,34 +278,45 @@ public class JSObject extends JSValue {
 	 * @since 1.0
 	 * @throws JSException
 	 */
-	public JSObject(JSContext ctx, String name, String [] parameterNames,
-			String body, String sourceURL, int startingLineNumber) throws JSException {
+	public JSObject(JSContext ctx, final String name, final String [] parameterNames,
+			final String body, final String sourceURL, final int startingLineNumber) throws JSException {
 		super(ctx);
-		hasCallback = false;
-		long [] names = new long[parameterNames.length];
-		for (int i=0; i<parameterNames.length; i++) {
-			names[i] = new JSString(parameterNames[i]).stringRef();
-		}
-		JNIReturnObject jni = makeFunction(
-				context.ctxRef(),
-				new JSString(name).stringRef(),
-				names,
-				new JSString(body).stringRef(),
-				(sourceURL==null)?0L:new JSString(sourceURL).stringRef(),
-				startingLineNumber);
-		if (jni.exception!=0) {
-			context.throwJSException(new JSException(new JSValue(jni.exception, context)));
-            jni.reference = make(context.ctxRef(), 0L);
-		}
-		valueRef = jni.reference;
-		protect(ctx,valueRef);
+        context = ctx;
+        context.sync(new Runnable() {
+            @Override
+            public void run() {
+                hasCallback = false;
+                long [] names = new long[parameterNames.length];
+                for (int i=0; i<parameterNames.length; i++) {
+                    names[i] = new JSString(parameterNames[i]).stringRef();
+                }
+                JNIReturnObject jni = makeFunction(
+                        context.ctxRef(),
+                        new JSString(name).stringRef(),
+                        names,
+                        new JSString(body).stringRef(),
+                        (sourceURL==null)?0L:new JSString(sourceURL).stringRef(),
+                        startingLineNumber);
+                if (jni.exception!=0) {
+                    context.throwJSException(new JSException(new JSValue(jni.exception, context)));
+                    jni.reference = make(context.ctxRef(), 0L);
+                }
+                valueRef = jni.reference;
+                protect(context,valueRef);
+            }
+        });
 	}
 
 	@Override
 	protected void finalize() throws Throwable {
-		if (hasCallback) {
-			releaseFunctionWithCallback(context.ctxRef(), valueRef);
-		}
+        context.sync(new Runnable() {
+            @Override
+            public void run() {
+                if (hasCallback) {
+                    releaseFunctionWithCallback(context.ctxRef(), valueRef);
+                }
+            }
+        });
 		super.finalize();
 	}
 
@@ -289,7 +326,8 @@ public class JSObject extends JSValue {
 	private Method method = null;
 	private JSObject invokeObject = null;
 	protected JSObject thiz = null;
-	private Class<?> subclass = null;
+	private Class<? extends JSObject> subclass = null;
+    private JSObject isInstanceOf = null;
 	
 	private long functionCallback(long ctxRef, long functionRef, long thisObjectRef,
 			long argumentsValueRef[], long exceptionRefRef) {
@@ -311,7 +349,7 @@ public class JSObject extends JSValue {
 			invokeObject.thiz = context.getObjectFromRef(thisObjectRef);
 			JSValue value = thizz.function(args);
 			setException(0L, exceptionRefRef);
-			return (value==null)?0L:value.valueRef();
+			return value.valueRef();
 		} catch (JSException e) {
 			e.printStackTrace();
 			setException(e.getError().valueRef(), exceptionRefRef);
@@ -336,6 +374,22 @@ public class JSObject extends JSValue {
 			return 0L;
 		}
 	}
+    private boolean hasInstanceCallback(long ctxRef, long constructorRef,
+            long possibleInstanceRef, long exceptionRefRef) {
+        assert(ctxRef == context.ctxRef());
+        assert(constructorRef == this.valueRef);
+
+        setException(0L, exceptionRefRef);
+
+        if (isConstructor) {
+            JSValue instance = new JSValue(possibleInstanceRef, context);
+            if (instance.isObject()) {
+                return (instance.toObject()).isInstanceOf == this;
+            }
+        }
+
+        return false;
+    }
 	private void finalizeCallback(long objectRef) {
 		assert(objectRef == this.valueRef);
 		context.finalizeObject(this);
@@ -350,6 +404,7 @@ public class JSObject extends JSValue {
 				if (args[i]==null) passArgs[i] = null;
 				else if (pType[i] == String.class) passArgs[i] = args[i].toString();
 				else if (pType[i] == Double.class) passArgs[i] = args[i].toNumber();
+                else if (pType[i] == Float.class) passArgs[i] = args[i].toNumber().floatValue();
 				else if (pType[i] == Integer.class) passArgs[i] = args[i].toNumber().intValue();
 				else if (pType[i] == Long.class) passArgs[i] = args[i].toNumber().longValue();
 				else if (pType[i] == Boolean.class) passArgs[i] = args[i].toBoolean();
@@ -374,6 +429,8 @@ public class JSObject extends JSValue {
 								objList.add(arr.propertyAtIndex(j).toNumber().longValue());
 							else if (pType[i] == Double[].class)
 								objList.add(arr.propertyAtIndex(j).toNumber());
+                            else if (pType[i] == Float[].class)
+                                objList.add(arr.propertyAtIndex(j).toNumber());
 							else if (pType[i] == JSValue[].class)
 								objList.add(arr.propertyAtIndex(j));
 							else if (pType[i] == JSObject[].class)
@@ -392,6 +449,8 @@ public class JSObject extends JSValue {
 							passArgs[i] = objList.toArray(new Long[objList.size()]);
 						else if (pType[i] == Double[].class)
 							passArgs[i] = objList.toArray(new Double[objList.size()]);
+                        else if (pType[i] == Float[].class)
+                            passArgs[i] = objList.toArray(new Float[objList.size()]);
 						else if (pType[i] == JSValue[].class)
 							passArgs[i] = objList.toArray(new JSValue[objList.size()]);
 						else if (pType[i] == JSObject[].class)
@@ -409,8 +468,11 @@ public class JSObject extends JSValue {
 		}
 		try {
 			Object ret = method.invoke(invokeObject, passArgs);
-			if (method.getReturnType() == Void.class) return null;
+			if (method.getReturnType() == Void.class || ret == null) return new JSValue(context);
 			if (ret instanceof JSValue) return (JSValue)ret;
+            if (ret instanceof Object[]) {
+                return new JSArray(context, (Object[])ret);
+            }
 			return new JSValue(context,ret);
 		} catch (InvocationTargetException e) {
 			e.printStackTrace();
@@ -421,29 +483,51 @@ public class JSObject extends JSValue {
         return new JSValue(context);
 	}
 
-	protected JSObject constructor(JSValue [] args) throws JSException {
-		JSValue proto = new JSValue(this.property("prototype").valueRef(),context);
-		try {
-			Constructor<?> constructor = subclass.getConstructor(long.class, JSContext.class);
-			JSObject thiz = (JSObject) constructor.newInstance(makeWithFinalizeCallback(context.ctxRef()),context);
-			context.persistObject(thiz);
-			thiz.invokeObject = thiz;
-			thiz.prototype(proto);
-			thiz.method = method;
-			if (method!=null) {
-				thiz.function(args);
-			}
-			return thiz;
-		} catch (NoSuchMethodException e) {
-			context.throwJSException(new JSException(context, e.toString()));
-		} catch (InvocationTargetException e) {
-			context.throwJSException(new JSException(context, e.toString()));
-		} catch (IllegalAccessException e) {
-			context.throwJSException(new JSException(context, e.toString()));
-		} catch (InstantiationException e) {
-			context.throwJSException(new JSException(context, e.toString()));
-		}
-        return new JSObject(context);
+    private interface IJSObjectReturnClass {
+        public JSObject execute();
+    }
+    private class JSObjectReturnClass implements Runnable, IJSObjectReturnClass {
+        public JSObject object;
+        @Override
+        public void run() {
+            object = execute();
+        }
+        @Override
+        public JSObject execute() { return null; }
+    }
+
+	protected JSObject constructor(final JSValue [] args) throws JSException {
+        JSObjectReturnClass runnable = new JSObjectReturnClass() {
+            @Override
+            public JSObject execute() {
+                JSValue proto = property("prototype");
+                try {
+                    Constructor<?> constructor = subclass.getConstructor(long.class, JSContext.class);
+                    JSObject thiz;
+                    thiz = (JSObject) constructor.newInstance(makeWithFinalizeCallback(context.ctxRef()),context);
+                    thiz.isInstanceOf = JSObject.this;
+                    context.persistObject(thiz);
+                    thiz.invokeObject = thiz;
+                    thiz.prototype(proto);
+                    thiz.method = method;
+                    if (method!=null) {
+                        thiz.function(args);
+                    }
+                    return thiz;
+                } catch (NoSuchMethodException e) {
+                    context.throwJSException(new JSException(context, e.toString()));
+                } catch (InvocationTargetException e) {
+                    context.throwJSException(new JSException(context, e.toString()));
+                } catch (IllegalAccessException e) {
+                    context.throwJSException(new JSException(context, e.toString()));
+                } catch (InstantiationException e) {
+                    context.throwJSException(new JSException(context, e.toString()));
+                }
+                return new JSObject(context);
+            }
+        };
+        context.sync(runnable);
+        return runnable.object;
 	}
 
 	/**
@@ -452,17 +536,29 @@ public class JSObject extends JSValue {
 	 * @since 1.0
 	 */
 	public JSValue prototype() {
-		long proto = getPrototype(context.ctxRef(), valueRef);
-		if (proto==0) return null;
-		return new JSValue(proto,context);
+        JNIReturnClass runnable = new JNIReturnClass() {
+            @Override
+            public void run() {
+                jni = new JNIReturnObject();
+                jni.reference = getPrototype(context.ctxRef(), valueRef);
+            }
+        };
+        context.sync(runnable);
+        if (runnable.jni.reference==0) return null;
+		return new JSValue(runnable.jni.reference,context);
 	}
 	/**
 	 * Sets the prototype object
 	 * @param proto The object defining the function prototypes
 	 * @since 1.0
 	 */
-	public void prototype(JSValue proto) {
-		setPrototype(context.ctxRef(), valueRef, proto.valueRef());
+	public void prototype(final JSValue proto) {
+        context.sync(new Runnable() {
+            @Override
+            public void run() {
+                setPrototype(context.ctxRef(), valueRef, proto.valueRef());
+            }
+        });
 	}
 	/**
 	 * Determines if the object contains a given property
@@ -470,8 +566,16 @@ public class JSObject extends JSValue {
 	 * @return true if the property exists on the object, false otherwise
 	 * @since 1.0
 	 */
-	public boolean hasProperty(String prop) {
-		return hasProperty(context.ctxRef(), valueRef, new JSString(prop).stringRef());
+	public boolean hasProperty(final String prop) {
+        JNIReturnClass runnable = new JNIReturnClass() {
+            @Override
+            public void run() {
+                jni = new JNIReturnObject();
+                jni.bool = hasProperty(context.ctxRef(), valueRef, new JSString(prop).stringRef());
+            }
+        };
+        context.sync(runnable);
+		return runnable.jni.bool;
 	}
 	/**
 	 * Gets the property named 'prop'
@@ -480,13 +584,19 @@ public class JSObject extends JSValue {
 	 * @since 1.0
 	 * @throws JSException
 	 */
-	public JSValue property(String prop) throws JSException {
-		JNIReturnObject jni = getProperty(context.ctxRef(), valueRef, new JSString(prop).stringRef());
-        if (jni.exception!=0) {
-            context.throwJSException(new JSException(new JSValue(jni.exception, context)));
+	public JSValue property(final String prop) throws JSException {
+        JNIReturnClass runnable = new JNIReturnClass() {
+            @Override
+            public void run() {
+                jni = getProperty(context.ctxRef(), valueRef, new JSString(prop).stringRef());
+            }
+        };
+        context.sync(runnable);
+        if (runnable.jni.exception!=0) {
+            context.throwJSException(new JSException(new JSValue(runnable.jni.exception, context)));
             return new JSValue(context);
         }
-		return new JSValue(jni.reference,context);
+		return new JSValue(runnable.jni.reference,context);
 	}
 	/**
 	 * Sets the value of property 'prop'
@@ -497,16 +607,22 @@ public class JSObject extends JSValue {
 	 * @since 1.0
 	 * @throws JSException
 	 */
-	public void property(String prop, Object value, int attributes) throws JSException {
-		JSString name = new JSString(prop);
-		JNIReturnObject jni = setProperty(
-				context.ctxRef(),
-				valueRef,
-				name.stringRef,
-				(value instanceof JSValue)?((JSValue)value).valueRef():new JSValue(context,value).valueRef(),
-				attributes);
-        if (jni.exception!=0) {
-            context.throwJSException(new JSException(new JSValue(jni.exception, context)));
+	public void property(final String prop, final Object value, final int attributes) throws JSException {
+        JNIReturnClass runnable = new JNIReturnClass() {
+            @Override
+            public void run() {
+                JSString name = new JSString(prop);
+                jni = setProperty(
+                        context.ctxRef(),
+                        valueRef,
+                        name.stringRef,
+                        (value instanceof JSValue)?((JSValue)value).valueRef():new JSValue(context,value).valueRef(),
+                        attributes);
+            }
+        };
+        context.sync(runnable);
+        if (runnable.jni.exception!=0) {
+            context.throwJSException(new JSException(new JSValue(runnable.jni.exception, context)));
         }
 	}
 	/**
@@ -527,14 +643,20 @@ public class JSObject extends JSValue {
 	 * @since 1.0
 	 * @throws JSException
 	 */
-	public boolean deleteProperty(String prop) throws JSException {
-		JSString name = new JSString(prop);
-		JNIReturnObject jni = deleteProperty(context.ctxRef(), valueRef, name.stringRef());
-        if (jni.exception!=0) {
-            context.throwJSException(new JSException(new JSValue(jni.exception, context)));
+	public boolean deleteProperty(final String prop) throws JSException {
+        JNIReturnClass runnable = new JNIReturnClass() {
+            @Override
+            public void run() {
+                JSString name = new JSString(prop);
+                jni = deleteProperty(context.ctxRef(), valueRef, name.stringRef());
+            }
+        };
+        context.sync(runnable);
+        if (runnable.jni.exception!=0) {
+            context.throwJSException(new JSException(new JSValue(runnable.jni.exception, context)));
             return false;
         }
-		return jni.bool;
+		return runnable.jni.bool;
 	}
 	/**
 	 * Returns the property at index 'index'.  Used for arrays.
@@ -543,13 +665,19 @@ public class JSObject extends JSValue {
 	 * @since 1.0
 	 * @throws JSException
 	 */
-	public JSValue propertyAtIndex(int index) throws JSException {
-		JNIReturnObject jni = getPropertyAtIndex(context.ctxRef(), valueRef, index);
-		if (jni.exception!=0) {
-			context.throwJSException(new JSException(new JSValue(jni.exception,context)));
+	public JSValue propertyAtIndex(final int index) throws JSException {
+        JNIReturnClass runnable = new JNIReturnClass() {
+            @Override
+            public void run() {
+                jni = getPropertyAtIndex(context.ctxRef(), valueRef, index);
+            }
+        };
+        context.sync(runnable);
+		if (runnable.jni.exception!=0) {
+			context.throwJSException(new JSException(new JSValue(runnable.jni.exception,context)));
             return new JSValue(context);
 		}
-		return new JSValue(jni.reference,context);
+		return new JSValue(runnable.jni.reference,context);
 	}
 	/**
 	 * Sets the property at index 'index'.  Used for arrays.
@@ -558,28 +686,49 @@ public class JSObject extends JSValue {
 	 * @since 1.0
 	 * @throws JSException
 	 */
-	public void propertyAtIndex(int index, Object value) throws JSException {
-		JNIReturnObject jni = setPropertyAtIndex(context.ctxRef(), valueRef,
-				index, (value instanceof JSValue)?((JSValue)value).valueRef():new JSValue(context,value).valueRef());
-		if (jni.exception != 0) {
-            context.throwJSException(new JSException(new JSValue(jni.exception,context)));
+	public void propertyAtIndex(final int index, final Object value) throws JSException {
+        JNIReturnClass runnable = new JNIReturnClass() {
+            @Override
+            public void run() {
+                jni = setPropertyAtIndex(context.ctxRef(), valueRef, index,
+                        (value instanceof JSValue)?((JSValue)value).valueRef():new JSValue(context,value).valueRef());
+            }
+        };
+        context.sync(runnable);
+		if (runnable.jni.exception != 0) {
+            context.throwJSException(new JSException(new JSValue(runnable.jni.exception,context)));
 		}		
 	}
-	/**
+
+    private class StringArrayReturnClass implements Runnable {
+        public String[] sArray;
+        @Override
+        public void run() {
+        }
+    }
+
+    /**
 	 * Gets the list of set property names on the object
 	 * @return  A string array containing the property names
 	 * @since 1.0
 	 */
 	public String [] propertyNames() {
-		long propertyNameArray = copyPropertyNames(context.ctxRef(), valueRef);
-		long [] refs = getPropertyNames(propertyNameArray);
-		String [] names = new String[refs.length];
-		for (int i=0; i<refs.length; i++) {
-			JSString name = new JSString(refs[i]);
-			names[i] = name.toString();
-		}
-		releasePropertyNames(propertyNameArray);
-		return names;
+        StringArrayReturnClass runnable = new StringArrayReturnClass() {
+            @Override
+            public void run() {
+                long propertyNameArray = copyPropertyNames(context.ctxRef(), valueRef);
+                long [] refs = getPropertyNames(propertyNameArray);
+                String [] names = new String[refs.length];
+                for (int i=0; i<refs.length; i++) {
+                    JSString name = new JSString(refs[i]);
+                    names[i] = name.toString();
+                }
+                releasePropertyNames(propertyNameArray);
+                sArray = names;
+            }
+        };
+        context.sync(runnable);
+		return runnable.sArray;
 	}
 	
 	/**
@@ -588,7 +737,15 @@ public class JSObject extends JSValue {
 	 * @since 1.0
 	 */
 	public boolean isFunction() {
-		return isFunction(context.ctxRef(), valueRef);
+        JNIReturnClass runnable = new JNIReturnClass() {
+            @Override
+            public void run() {
+                jni = new JNIReturnObject();
+                jni.bool = isFunction(context.ctxRef(), valueRef);
+            }
+        };
+        context.sync(runnable);
+        return runnable.jni.bool;
 	}
 	/**
 	 * Determines if the object is a constructor
@@ -596,7 +753,15 @@ public class JSObject extends JSValue {
 	 * @since 1.0
 	 */
 	public boolean isConstructor() {
-		return isConstructor(context.ctxRef(), valueRef);
+        JNIReturnClass runnable = new JNIReturnClass() {
+            @Override
+            public void run() {
+                jni = new JNIReturnObject();
+                jni.bool = isConstructor(context.ctxRef(), valueRef);
+            }
+        };
+        context.sync(runnable);
+        return runnable.jni.bool;
 	}
 	/**
 	 * Calls object as a JavaScript function
@@ -606,20 +771,27 @@ public class JSObject extends JSValue {
 	 * @since 1.0
 	 * @throws JSException
 	 */
-	public JSValue callAsFunction(JSObject thiz, JSValue [] args) throws JSException {
-		if (args == null) {
-			args = new JSValue[] {};
-		}
-		long [] valueRefs = new long[args.length];
-		for (int i=0; i<args.length; i++) {
-			valueRefs[i] = args[i].valueRef();
-		}
-		JNIReturnObject jni = callAsFunction(context.ctxRef(), valueRef, (thiz==null)?0L:thiz.valueRef(), valueRefs);
-		if (jni.exception!=0) {
-			context.throwJSException(new JSException(new JSValue(jni.exception,context)));
+	public JSValue callAsFunction(final JSObject thiz, final JSValue [] args) throws JSException {
+        JNIReturnClass runnable = new JNIReturnClass() {
+            @Override
+            public void run() {
+                JSValue [] largs = args;
+                if (largs == null) {
+                    largs = new JSValue[] {};
+                }
+                long [] valueRefs = new long[largs.length];
+                for (int i=0; i<largs.length; i++) {
+                    valueRefs[i] = largs[i].valueRef();
+                }
+                jni = callAsFunction(context.ctxRef(), valueRef, (thiz==null)?0L:thiz.valueRef(), valueRefs);
+            }
+        };
+        context.sync(runnable);
+		if (runnable.jni.exception!=0) {
+			context.throwJSException(new JSException(new JSValue(runnable.jni.exception,context)));
             return new JSValue(context);
 		}
-		return new JSValue(jni.reference,context);
+		return new JSValue(runnable.jni.reference,context);
 	}
 	/**
 	 * Calls object as a JavaScript function

@@ -36,7 +36,6 @@
 #include <android/log.h>
 
 #include "JavaScriptCore/JavaScript.h"
-#include "DispatchQueue.h"
 
 #define NATIVE(package,rt,f) extern "C" \
 	rt Java_org_liquidplayer_webkit_javascriptcore_##package##_##f

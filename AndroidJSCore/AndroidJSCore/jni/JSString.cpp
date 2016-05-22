@@ -33,10 +33,6 @@
 
 #include "JSJNI.h"
 
-// Create a set of worker threads for managing strings.  Two threads
-// should be enough
-static DispatchQueue string_q(2,"string");
-
 NATIVE(JSString,jlong,createWithCharacters) (PARAMS, jstring str)
 {
 	const jchar *chars = env->GetStringChars(str, NULL);

@@ -10,7 +10,7 @@ android {
         minSdkVersion 9
         targetSdkVersion 23
         versionCode 2
-        versionName "2.2-pre1"
+        versionName "2.2-pre2"
         setProperty("archivesBaseName", "AndroidJSCore-$versionName")
     }
     buildTypes {

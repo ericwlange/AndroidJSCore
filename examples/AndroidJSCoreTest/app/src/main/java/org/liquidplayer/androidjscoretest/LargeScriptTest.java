@@ -56,11 +56,7 @@ public class LargeScriptTest extends JSTest {
             workerContext.setExceptionHandler(new JSExeceptionHandler());
 
             workerContext.evaluateScript(text);
-
-
-            //JSValue mydata = workerContext.property("mydata");
-
-            //System.out.println(mydata.toNumber());
+            tAssert(true,"Large JS execution");
 
             println("------------");
 

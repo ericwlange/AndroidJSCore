@@ -38,6 +38,7 @@ import android.os.Looper;
 
 import org.liquidplayer.hemroid.JavaScriptCoreGTK;
 
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -183,16 +184,20 @@ public class JSContext extends JSObject {
 	 * @since 1.0
 	 * @throws JSException
 	 */
-	public JSContext(Class<?> iface) throws JSException {
+	public JSContext(final Class<?> iface) throws JSException {
         mWorker = new JSContextWorker();
         context = this;
         sync(new Runnable() {
             @Override public void run() {
                 ctx = create();
                 valueRef = getGlobalObject(ctx);
+                Method[] methods = iface.getDeclaredMethods();
+                for (int i=0; i<methods.length; i++) {
+                    JSObject f = new JSFunction(context, methods[i], JSObject.class, context);
+                    property(methods[i].getName(),f);
+                }
             }
         });
-        initJSInterface(this, iface, null);
 	}
 	/**
 	 * Creates a JavaScript context in context group 'inGroup', and defines the global object
@@ -203,16 +208,20 @@ public class JSContext extends JSObject {
 	 * @since 1.0
 	 * @throws JSException
 	 */
-	public JSContext(final JSContextGroup inGroup, Class<?> iface) throws JSException {
+	public JSContext(final JSContextGroup inGroup, final Class<?> iface) throws JSException {
         mWorker = new JSContextWorker();
         context = this;
         sync(new Runnable() {
             @Override public void run() {
                 ctx = createInGroup(inGroup.groupRef());
                 valueRef = getGlobalObject(ctx);
+                Method[] methods = iface.getDeclaredMethods();
+                for (int i=0; i<methods.length; i++) {
+                    JSObject f = new JSFunction(context, methods[i], JSObject.class, context);
+                    property(methods[i].getName(),f);
+                }
             }
         });
-		this.initJSInterface(this, iface, null);
 	}
 	@Override
 	protected void finalize() throws Throwable {
@@ -246,7 +255,7 @@ public class JSContext extends JSObject {
 	 * If an exception handler is set, calls the exception handler, otherwise throws
 	 * the JSException.
 	 * @param exception The JSException to be thrown
-	 * @since 1.0
+	 * @since 2.1
 	 */
 	public void throwJSException(JSException exception) throws JSException {
 		if (exceptionHandler == null) {
@@ -302,7 +311,8 @@ public class JSContext extends JSObject {
         JNIReturnClass runnable = new JNIReturnClass() {
             @Override public void run() {
                 jni = evaluateScript(ctx, new JSString(script).stringRef(),
-                        (thiz == null) ? 0L : thiz.valueRef(), (sourceURL == null) ? 0L : new JSString(sourceURL).stringRef(),
+                        (thiz == null) ? 0L : thiz.valueRef(), (sourceURL == null) ? 0L :
+                                new JSString(sourceURL).stringRef(),
                         startingLineNumber);
             }
         };
@@ -366,13 +376,19 @@ public class JSContext extends JSObject {
 	 * @since 1.0
 	 * @return The JSObject representing the reference
 	 */
-	public synchronized JSObject getObjectFromRef(long objRef) {
+	public synchronized JSObject getObjectFromRef(long objRef,boolean create) {
 		JSObject obj = objects.get(objRef);
-		if (obj==null) {
-			obj = new JSObject(objRef, this);
+		if (obj==null && create) {
+            if (isFunction(ctxRef(),objRef))
+                obj = new JSFunction(objRef,this);
+            else
+			    obj = new JSObject(objRef, this);
 		}
 		return obj;
 	}
+    public synchronized JSObject getObjectFromRef(long objRef) {
+        return getObjectFromRef(objRef,true);
+    }
 	/**
 	 * Forces JavaScript garbage collection on this context
 	 * @since 1.0

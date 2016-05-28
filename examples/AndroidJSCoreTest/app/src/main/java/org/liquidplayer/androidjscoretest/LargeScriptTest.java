@@ -8,19 +8,16 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.liquidplayer.webkit.javascriptcore.JSContext;
 import org.liquidplayer.webkit.javascriptcore.JSException;
+import org.liquidplayer.webkit.javascriptcore.JSFunction;
 import org.liquidplayer.webkit.javascriptcore.JSObject;
 import org.liquidplayer.webkit.javascriptcore.JSString;
 import org.liquidplayer.webkit.javascriptcore.JSValue;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Iterator;
 
-/**
- * Created by Eric on 5/17/16.
- */
 public class LargeScriptTest extends JSTest {
     public LargeScriptTest(MainActivity activity) {
         super(activity);
@@ -69,24 +66,67 @@ public class LargeScriptTest extends JSTest {
 
     public void patchContext(JSContext pContext) throws TestAssertException
     {
-        try {
+        pContext.property("postMessage", new JSFunction(pContext,"postMessage") {
+            public void postMessage(String message)
+            {
+                JSValue workerID = context.property("workerID");
 
-            Method postMessage = PatchContext.class.getMethod("postMessage", String.class);
-            Method importScripts = PatchContext.class.getMethod("importScripts", String.class);
-            Method setTimeout = PatchContext.class.getMethod("setTimeout", JSValue.class, JSValue.class);
+                HashMap<String, Object> map = new HashMap<String, Object>();
+                JSONObject jObject = null;
+                try {
+                    jObject = new JSONObject(message);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                Iterator<?> keys = jObject.keys();
 
-            PatchContext contextPatcher = new PatchContext(pContext);
-            pContext.property("postMessage", new JSObject(pContext,contextPatcher,postMessage));
-            pContext.property("importScripts",new JSObject(pContext,contextPatcher,importScripts));
-            pContext.property("setTimeout", new JSObject(pContext, contextPatcher, setTimeout));
+                while( keys.hasNext() ) {
+                    String key = (String) keys.next();
+                    Object value = null;
+                    try {
+                        value = jObject.get(key);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
 
-            pContext.property("console", new Console(pContext));
+                    map.put(key, value);
 
-        } catch (NoSuchMethodException e) {
+                }
 
-            e.printStackTrace();
-            throw new TestAssertException();
-        }
+                if(!workerID.toString().equalsIgnoreCase("undefined")) {
+
+                    map.put("workerID",workerID.toNumber().intValue());
+                    //webWorker.sendToCallback(map.toString());
+
+                }
+            }
+        });
+        pContext.property("importScripts",new JSFunction(pContext,"importScripts") {
+            public void importScripts(String file)
+            {
+
+            }
+        });
+        pContext.property("setTimeout", new JSFunction(pContext, "setTimeout") {
+            public void setTimeout(JSValue jFunction , JSValue timeout) throws InterruptedException {
+                Long mTimeout = timeout.toNumber().longValue();
+                JSValue [] args = {};
+                Thread.sleep(mTimeout);
+
+                jFunction.toFunction().apply(null,args);
+
+//      new android.os.Handler().postDelayed(
+//        new Runnable() {
+//          public void run() {
+//            jFunction.toObject().
+//              callAsFunction(null,null);
+//          }
+//        },
+//        timeout.toNumber().longValue());
+            }
+        });
+
+        pContext.property("console", new Console(pContext));
     }
 
 
@@ -121,72 +161,4 @@ public class LargeScriptTest extends JSTest {
         }
 
     }
-
-    public  class PatchContext extends JSObject
-    {
-        private JSContext mContext;
-        public PatchContext(JSContext context)
-        {
-            super(context);
-            mContext = context;
-        }
-
-        public void postMessage(String message)
-        {
-            JSValue workerID = mContext.property("workerID");
-
-            HashMap<String, Object> map = new HashMap<String, Object>();
-            JSONObject jObject = null;
-            try {
-                jObject = new JSONObject(message);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            Iterator<?> keys = jObject.keys();
-
-            while( keys.hasNext() ) {
-                String key = (String) keys.next();
-                Object value = null;
-                try {
-                    value = jObject.get(key);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-                map.put(key, value);
-
-            }
-
-            if(!workerID.toString().equalsIgnoreCase("undefined")) {
-
-                map.put("workerID",workerID.toNumber().intValue());
-                //webWorker.sendToCallback(map.toString());
-
-            }
-        }
-
-        public void importScripts(String file)
-        {
-
-        }
-
-        public void setTimeout(JSValue jFunction , JSValue timeout) throws InterruptedException {
-            Long mTimeout = timeout.toNumber().longValue();
-            JSValue [] args = {};
-            Thread.sleep(mTimeout);
-
-            jFunction.toObject().callAsFunction(null,args);
-
-//      new android.os.Handler().postDelayed(
-//        new Runnable() {
-//          public void run() {
-//            jFunction.toObject().
-//              callAsFunction(null,null);
-//          }
-//        },
-//        timeout.toNumber().longValue());
-        }
-
-    }
-
 }

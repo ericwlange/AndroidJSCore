@@ -454,6 +454,17 @@ public class JSValue {
 		}
 		return context.getObjectFromRef(runnable.jni.reference);
 	}
+	public JSFunction toFunction() throws JSException {
+		if (isObject() && toObject() instanceof JSFunction) {
+			return (JSFunction)toObject();
+		} else if (!isObject()) {
+			toObject();
+			return null;
+		} else {
+            context.throwJSException(new JSException(context, "JSObject not a function"));
+            return null;
+        }
+	}
 	/**
 	 * Gets the JSON of this JS value
 	 * @param indent  number of spaces to indent

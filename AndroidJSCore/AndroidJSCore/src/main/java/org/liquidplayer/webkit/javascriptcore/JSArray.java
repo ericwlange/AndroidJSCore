@@ -32,6 +32,8 @@
 */
 package org.liquidplayer.webkit.javascriptcore;
 
+import java.util.List;
+
 /**
  * A convenience class for handling JavaScript arrays
  *

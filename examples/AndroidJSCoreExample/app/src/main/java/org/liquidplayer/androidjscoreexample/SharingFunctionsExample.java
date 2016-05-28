@@ -34,6 +34,7 @@ package org.liquidplayer.androidjscoreexample;
 
 import org.liquidplayer.webkit.javascriptcore.JSContext;
 import org.liquidplayer.webkit.javascriptcore.JSException;
+import org.liquidplayer.webkit.javascriptcore.JSFunction;
 import org.liquidplayer.webkit.javascriptcore.JSObject;
 
 public class SharingFunctionsExample implements IExample {
@@ -96,20 +97,14 @@ public class SharingFunctionsExample implements IExample {
 	// In the second example, we are creating a JavaScript constructor function with a set of
 	// prototype functions:
 	// function my_class(a,b,c) {
-	//     this.prototype = {
-	//         func1 : function(x,y) { ... },
-	//         func2 : function() { ... },
-	//         ...
-	//     }
-	//     < constructor code > ...
+    //    <<< constructor code >>>
+    // }
+	// my_class.prototype = {
+	//     func1 : function(x,y) { ... },
+	//     func2 : function() { ... },
+	//     ...
 	// }
-	public interface IConstructorWithPrototype {
-		// Constructor function.  Always the name of the interface with an underscore (_) in front.
-		// If you want to define an object as a constructor function with function prototypes, you must
-		// include this in your interface.  Otherwise, it will be created as a static object with
-		// the functions as properties as in ObjectExample above.
-		public void _IConstructorWithPrototype(Integer number) throws JSException;
-		
+	public interface IPrototype {
 		// Prototype functions
 		public Integer incr() throws JSException;
 		public Integer decr() throws JSException;
@@ -120,52 +115,104 @@ public class SharingFunctionsExample implements IExample {
 		public void setLocalJava(String msg);
 		public String getLocalJava();
 	}
-	// Note: We are using a static class here because JSObject depends on being able to
-	// instantiate new instances of this class with a constructor that takes just an object
-	// reference and a JSContext.  Embeddeding a dynamic class requires passing the enclosing
-	// objects.  Set it as static to allow it to be created outside this parent class.
-	public static class ConstructorExample extends JSObject implements IConstructorWithPrototype {
+
+    // We will set up our prototype exactly as in the function object example
+    // above, because all a prototype is is an object with a collection of functions
+    public class Prototype extends JSObject implements IPrototype {
+        public Prototype(JSContext ctx) {
+            super(ctx, IPrototype.class);
+        }
+        @Override
+        public Integer incr() throws JSException {
+            // IMPORTANT: To access the instance of our constructor, you must use the
+            // getThis() method.  Failing to do this will access properties of the
+            // prototype object, not the 'this' instance!
+            Integer numbah = getThis().property("numbah").toNumber().intValue() + 1;
+            getThis().property("numbah",numbah);
+            return numbah;
+        }
+        @Override
+        public Integer decr() throws JSException {
+            Integer numbah = getThis().property("numbah").toNumber().intValue() - 1;
+            getThis().property("numbah",numbah);
+            return numbah;
+        }
+        @Override
+        public void setLocalJava(String value) {
+            // Notice here that it is not guaranteed that 'this' points to an instance that
+            // we created.  Take this example in JavaScript:
+            // <code>
+            //     function constructor(foo) {
+            //         this.bar = foo;
+            //     }
+            //     constructor.prototype = {
+            //         foobar: function() { return this.bar; }
+            //     }
+            //    var instance = new constructor(5);
+            //    console.log(instance.foobar())        // <---- prints 5 like we would expect
+            //    console.log(instance.foobar.call({})) // <---- prints 'undefined' because 'this'
+            //                                          // object is not correct instance
+            // </code>
+            // The same thing can happen on the Java side if the JavaScript caller explicitly
+            // sets 'this' to something other than an instance created by 'new'.
+            // So to be safe, we must make sure that 'this' is an instance we created before
+            // blindly casting it to 'Instance'.  The only thing we can guarantee is that
+            // it is a JSObject of some kind (unless of course you have written all of the code
+            // and never do this)
+            if (getThis() instanceof Instance) {
+                ((Instance)getThis()).setLocalJava(value);
+            }
+        }
+        @Override
+        public String getLocalJava() {
+            if (getThis() instanceof Instance) {
+                return ((Instance)getThis()).getLocalJava();
+            }
+            return null;
+        }
+        @Override
+        public void setLocal(String value) {
+            getThis().property("local_val", value);
+        }
+        @Override
+        public String getLocal() {
+            return getThis().property("local_val").toString();
+        }
+
+    }
+    // This is our instance class.  Whenever 'new' is called on our constructor function,
+    // one of these gets created.  Note that the class is declared as 'static'.  This is because
+    // it will get instantiated outside this example class.  It is not necessary to create an
+    // instance class.  Only do so if you want to use local Java functionality on the instance.
+    // Otherwise, a blank JSObject is created.  This class only needs the default constructor.
+    public static class Instance extends JSObject {
+        public void setLocalJava(String value) {
+            myLocalString = value;
+        }
+        public String getLocalJava() {
+            return myLocalString;
+        }
+        private String myLocalString;
+    }
+
+	public class ConstructorExample extends JSFunction {
 		public ConstructorExample(JSContext ctx) throws JSException {
-			// Notice that now we are including a third parameter to our super constructor: the
-			// class of this object.  This will be used when JavaScript wants to instantiate a new
-			// instance of our constructor function.
-			super(ctx,IConstructorWithPrototype.class,ConstructorExample.class);
+			// Now we create our constructor function.  When 'new' is called on us in JavaScript,
+            // a new 'Instance' class will be created, and our function 'constructorFunc' will
+            // be called with that instance referenced by 'getThis()'
+			super(ctx,"constructorFunc",Instance.class);
+
+            // Don't forget to set our prototype
+            prototype(new Prototype(ctx));
 		}
-		public ConstructorExample(long objRef, JSContext ctx) {
-			// We must also include this constructor.  These objects will be instantiated
-			// at runtime by callbacks, and this is the constructor it will use.  If you omit this,
-			// you will get a NoSuchMethodException upon an attempt to call the constructor
-			super(objRef, ctx);
-		}
-		
-		@Override
-		public void _IConstructorWithPrototype(Integer number) throws JSException {
-			// Here's where you would implement any constructor code
-			property("numbah",number);
-		}
-		@Override
-		public Integer incr() throws JSException {
-			Integer numbah = property("numbah").toNumber().intValue() + 1;
-			property("numbah",numbah);
-			return numbah;
-		}
-		@Override
-		public Integer decr() throws JSException {
-			Integer numbah = property("numbah").toNumber().intValue() - 1;
-			property("numbah",numbah);
-			return numbah;
-		}
-		
-		private String myLocalString;
-		@Override
-		public void setLocalJava(String value) { myLocalString = value; }
-		@Override
-		public String getLocalJava() { return myLocalString; }
-		@Override
-		public void setLocal(String value) throws JSException { property("local_val", value); }
-		@Override
-		public String getLocal() throws JSException { return property("local_val").toString(); }
-		
+
+        // This function will get called when the new 'Instance' is created.  Reference the
+        // instance using 'getThis()'.  Neglecting to use 'getThis()' will modify this constructor
+        // function itself!
+        public void constructorFunc(int number) {
+            getThis().property("numbah", number);
+        }
+
 		// This is functionally equivalent to what the ConstructorExample object will create
 		// in JavaScript.
 		public final String script = 

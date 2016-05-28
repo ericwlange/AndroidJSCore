@@ -37,6 +37,7 @@ import java.text.DecimalFormat;
 
 import org.liquidplayer.webkit.javascriptcore.JSContext;
 import org.liquidplayer.webkit.javascriptcore.JSException;
+import org.liquidplayer.webkit.javascriptcore.JSFunction;
 import org.liquidplayer.webkit.javascriptcore.JSObject;
 import org.liquidplayer.webkit.javascriptcore.JSValue;
 
@@ -44,29 +45,9 @@ public class OwenMatthewsExample implements IExample {
 
     public OwenMatthewsExample(ExampleContext ctx) {
         context = ctx;
-        f_obj = new FactorialObject(ctx);
     }
     private final ExampleContext context;
 
-    // JavaScriptCore is written in C.  Since Objective-C is a strict superset of C, some things
-    // are just easier to deal with than in Java.  Wrapping C functions is one of those things.
-    // We can still do it in Java, it just requires a bit more work.  We need to use the Reflections
-    // capability of Java.  The 'Functional Execution' example below shows how to wrap the function
-    // 'factorial' and make it available to JavaScript.  I've also created some convenience
-    // constructors in JSObject to make this a bit easier.  See 'SharingFunctionsExample' for more
-    // detailed information.
-    public class FactorialObject extends JSObject {
-        public FactorialObject(JSContext ctx) { super(ctx); } 
-        public Integer factorial(Integer x) {
-            int factorial = 1;
-            for (; x > 1; x--) {
-            	factorial *= x;
-            }
-            return factorial;
-        }
-    }
-    private final FactorialObject f_obj;
-	
     // In Owen's section "Wrapping Up", he describes how to expose and control properties and functions
     // between Objective C and JavaScript.  We can do the same between Java and JavaScript, but the setup
     // is a bit more complicated.  The following two code snippets do the same thing.  They create an
@@ -157,22 +138,23 @@ public class OwenMatthewsExample implements IExample {
                 "var square = function(x) {return x*x;}");  //     @"var square = function(x) {return x*x;}"];
         JSValue squareFunction = context.property("square");// JSValue *squareFunction = context[@"square"];
         context.log(squareFunction.toString());             // NSLog(@"%@", squareFunction);
-        JSValue [] args = {context.property("a")};          // JSValue *aSquared = [squareFunction
-        JSValue aSquared = squareFunction.toObject().       //     callWithArguments:@[context[@"a"]]]; 
-                callAsFunction(null, args);
+        JSValue aSquared = squareFunction.toFunction().     // JSValue *aSquared = [squareFunction
+                call(null, context.property("a"));          //     callWithArguments:@[context[@"a"]]];
         context.log("a^2: ".concat(aSquared.toString()));   // NSLog(@"a^2: %@", aSquared);
-        args[0] =  new JSValue(context,9);                  // JSValue *nineSquared = [squareFunction
-        JSValue nineSquared = squareFunction.toObject().    //     callWithArguments:@[@9]];
-                callAsFunction(null, args);                 //
+        JSValue nineSquared = squareFunction.toFunction().  // JSValue *nineSquared = [squareFunction
+                call(null, 9);                              //     callWithArguments:@[@9]];
         context.log("9^2: ".concat(nineSquared.toString()));// NSLog(@"9^2: %@", nineSquared);
 		
-        try {                                               // context[@"factorial"] = ^(int x) {
-            Method factorial = FactorialObject.class.       //     int factorial = 1;
-                    getMethod("factorial", Integer.class);  //     for (; x > 1; x--) {
-            context.property("factorial",                   //         factorial *= x;
-                    new JSObject(context,f_obj,factorial)); //     }
-        } catch (NoSuchMethodException e) {}                //     return factorial;
-                                                            // };
+        context.property("factorial",                       // context[@"factorial"] = ^(int x) {
+            new JSFunction(context,"factorial") {           //
+                public Integer factorial(Integer x) {       //
+                    int factorial = 1;                      //     int factorial = 1;
+                    for (; x > 1; x--) {                    //     for (; x > 1; x--) {
+                        factorial *= x;                     //         factorial *= x;
+                    }                                       //     }
+                    return factorial;                       //     return factorial;
+                }                                           // };
+        });
         context.evaluateScript(                             // [context evaluateScript:
                 "var fiveFactorial = factorial(5);");       //     @"var fiveFactorial = factorial(5);"];
         JSValue fiveFactorial =                             // JSValue *fiveFactorial = context[@"fiveFactorial"];

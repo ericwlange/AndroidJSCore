@@ -34,6 +34,7 @@ package org.liquidplayer.androidjscoreexample;
 
 import org.liquidplayer.webkit.javascriptcore.JSContext;
 import org.liquidplayer.webkit.javascriptcore.JSException;
+import org.liquidplayer.webkit.javascriptcore.JSFunction;
 import org.liquidplayer.webkit.javascriptcore.JSObject;
 import org.liquidplayer.webkit.javascriptcore.JSValue;
 
@@ -68,19 +69,19 @@ public class AsyncExample implements IExample {
                     new Runnable() {
                         @Override
                         public void run() {
-                            new CallMeLater(ms).execute(callback.toObject());
+                            new CallMeLater(ms).execute(callback.toFunction());
                         }
                     }
             );
         }
 
-        private class CallMeLater extends AsyncTask<JSObject, Void, JSObject> {
+        private class CallMeLater extends AsyncTask<JSFunction, Void, JSFunction> {
             public CallMeLater(Integer ms) {
 				this.ms = ms;
 			}
 			private final Integer ms;
 			@Override
-			protected JSObject doInBackground(JSObject... params) {
+			protected JSFunction doInBackground(JSFunction... params) {
 				try {
 					Thread.sleep(ms);
 				} catch (InterruptedException e) {
@@ -90,10 +91,9 @@ public class AsyncExample implements IExample {
 			}
 
 			@Override
-			protected void onPostExecute(JSObject callback) {
-				JSValue args [] = { new JSValue(context,"This is a delayed message from Java!") };
+			protected void onPostExecute(JSFunction callback) {
 				try {
-					callback.callAsFunction(null, args);
+					callback.call(null, "This is a delayed message from Java!");
 				} catch (JSException e) {
 					System.out.println(e);
 				}

@@ -30,7 +30,7 @@ public class JSContextTest extends JSTest {
         }
         @Override
         public int func1() {
-            return property("testObject").toObject().callAsFunction().toNumber().intValue();
+            return property("testObject").toFunction().call().toNumber().intValue();
         }
     }
 
@@ -75,7 +75,7 @@ public class JSContextTest extends JSTest {
         println("Test IJSContextExceptionHandler()");
         JSContext context = new JSContext();
         try {
-            context.property("does_not_exist").toObject().callAsFunction();
+            context.property("does_not_exist").toFunction();
             tAssert(false,"Catch exception in try/catch block");
         } catch (JSException e) {
             tAssert(true,"Catch exception in try/catch block");
@@ -86,11 +86,12 @@ public class JSContextTest extends JSTest {
         context.setExceptionHandler(new JSContext.IJSExceptionHandler() {
             @Override
             public void handle(JSException e) {
+                println("Exception caught " + e);
                 excp = !excp;
             }
         });
         try {
-            context.property("does_not_exist").toObject().callAsFunction();
+            context.property("does_not_exist").toFunction();
             tAssert(excp,"Catch exception in exception handler");
         } catch (JSException e) {
             tAssert(false,"Catch exception in exception handler[2]");
@@ -99,7 +100,7 @@ public class JSContextTest extends JSTest {
         println("Test JSContext.clearExceptionHandler()");
         context.clearExceptionHandler();
         try {
-            context.property("does_not_exist").toObject().callAsFunction();
+            context.property("does_not_exist").toFunction();
             tAssert(false,"Catch exception in try/catch block");
         } catch (JSException e) {
             // excp should still be true
@@ -114,11 +115,11 @@ public class JSContextTest extends JSTest {
             public void handle(JSException e) {
                 excp = !excp;
                 // Raise another exception.  Should throw JSException
-                context2.property("does_not_exist").toObject().callAsFunction();
+                context2.property("does_not_exist").toFunction();
             }
         });
         try {
-            context2.property("does_not_exist").toObject().callAsFunction();
+            context2.property("does_not_exist").toFunction();
             tAssert(false,"Exception inside of exception handler[2]");
         } catch (JSException e) {
             tAssert(excp,"Exception inside of exception handler");

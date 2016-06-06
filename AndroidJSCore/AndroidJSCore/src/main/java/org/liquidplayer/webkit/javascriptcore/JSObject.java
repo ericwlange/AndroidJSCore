@@ -537,7 +537,7 @@ public class JSObject extends JSValue {
      * @return
      */
     @Deprecated
-    public JSValue prototype(JSValue proto) {
+    public void prototype(JSValue proto) {
         throw new UnsupportedOperationException();
     }
 }

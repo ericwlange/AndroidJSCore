@@ -1,5 +1,5 @@
 //
-// JSException.java
+// Instance.cpp
 // AndroidJSCore project
 //
 // https://github.com/ericwlange/AndroidJSCore/
@@ -30,60 +30,61 @@
  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-package org.liquidplayer.webkit.javascriptcore;
 
-/**
- *  A JSException is thrown for a number of different reasons, mostly by the JavaScriptCore
- *  library.  The description of the exception is given in the message. 
- * @since 1.0
- *
- */
-public class JSException extends RuntimeException {
-	private static final long serialVersionUID = 1L;
+#include "Instance.h"
 
-	private JSValue error;
-	
-	/**
-	 * Creates a Java exception from a thrown JavaScript exception
-	 * @param error  The JSValue thrown by the JavaScriptCore engine
-	 * @since 1.0
-	 */
-	public JSException(JSValue error) {
-		this.error = error;
-	}
-	/**
-	 * Creates a JavaScriptCore exception from a string message
-	 * @param ctx  The JSContext in which to create the exception
-	 * @param message  The exception meessage
-	 * @since 1.0
-	 */
-	public JSException(JSContext ctx, String message) {
-		try {
-			this.error = new JSError(ctx,message);
-		} catch (JSException e) {
-			// We are having an Exception Inception. Stop the madness
-			this.error = null;
-		}
-	}
-	/**
-	 * Gets the JSValue of the thrown exception
-	 * @return  the JSValue of the JavaScriptCore exception
-	 * @since 1.0
-	 */
-	public JSValue getError() {
-		return error;
-	}
-	
-	@Override
-	public String toString() {
-		if (error!=null) {
-			try {
-				JSString msg = error.toJSString();
-				return msg.toString();
-			} catch (JSException e) {
-				return "Unknown Error";
-			}
-		}
-		return "Unknown Error";
-	}
+Instance::Instance(JNIEnv *env, jobject thiz, JSContextRef ctx,
+        JSClassDefinition def, JSStringRef name)
+{
+    env->GetJavaVM(&jvm);
+    definition = def;
+    definition.finalize = StaticFinalizeCallback;
+    classRef = JSClassCreate(&definition);
+    objRef = JSObjectMake(ctx, classRef, name);
+    JSValueProtect(ctx, objRef);
+    this->thiz = env->NewWeakGlobalRef(thiz);
+
+    mutex.lock();
+    objMap[objRef] = this;
+    mutex.unlock();
+}
+
+Instance::~Instance()
+{
+    JSClassRelease(classRef);
+    JNIEnv *env;
+    int getEnvStat = jvm->GetEnv((void**)&env, JNI_VERSION_1_6);
+    if (getEnvStat == JNI_EDETACHED) {
+        jvm->AttachCurrentThread(&env, NULL);
+    }
+    env->DeleteWeakGlobalRef(thiz);
+
+    mutex.lock();
+    objMap.erase(objRef);
+    mutex.unlock();
+
+    if (getEnvStat == JNI_EDETACHED) {
+        jvm->DetachCurrentThread();
+    }
+}
+
+Instance* Instance::getInstance(JSObjectRef objref)
+{
+    Instance *inst = NULL;
+    mutex.lock();
+    inst = objMap[objref];
+    mutex.unlock();
+    return inst;
+}
+
+std::map<JSObjectRef,Instance *> Instance::objMap = std::map<JSObjectRef,Instance *>();
+std::mutex Instance::mutex;
+
+void Instance::StaticFinalizeCallback(JSObjectRef object)
+{
+    Instance *thiz = getInstance(object);
+
+    if (thiz) {
+        delete thiz;
+    }
 }

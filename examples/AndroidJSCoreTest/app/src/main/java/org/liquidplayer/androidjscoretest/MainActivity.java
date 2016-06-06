@@ -25,9 +25,31 @@ public class MainActivity extends AppCompatActivity {
                 new JSValueTest(MainActivity.this).run();
                 new JSObjectTest(MainActivity.this).run();
                 new LargeScriptTest(MainActivity.this).run();
+
+                new JSTest(MainActivity.this) {
+                    @Override public void run() throws TestAssertException {
+                        Runtime.getRuntime().gc();
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                        } finally {
+                            String [] zombies = JSTest.check();
+                            String list = "";
+                            for (String zombie : zombies) {
+                                if (!list.equals("")) list += ", ";
+                                list += zombie;
+                            }
+                            println("There are " + zombies.length + " contexts still alive [" + list + "]");
+                            tAssert(zombies.length == 0, "Check for memory leaks");
+                        }
+                    }
+                }.run();
+
             } catch (TestAssertException e) {
 
             }
+
 
             return true;
         }

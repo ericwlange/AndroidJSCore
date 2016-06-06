@@ -28,7 +28,7 @@ public class LargeScriptTest extends JSTest {
 
         println("Long js file");
         println("------------");
-        JSContext workerContext = new JSContext();
+        JSContext workerContext = track(new JSContext(),"LargeScriptTest:workerContext");
         patchContext(workerContext);
         try {
             AssetManager assetManager = activity.getAssets();
@@ -61,6 +61,8 @@ public class LargeScriptTest extends JSTest {
             e.printStackTrace();
             throw new TestAssertException();
         }
+
+        workerContext.garbageCollect();
 
     }
 

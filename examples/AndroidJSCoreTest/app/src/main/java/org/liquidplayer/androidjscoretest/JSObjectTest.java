@@ -301,7 +301,7 @@ public class JSObjectTest extends JSTest {
     }
 
     public void testJSObjectConstructors() throws TestAssertException {
-        JSContext context = new JSContext();
+        JSContext context = track(new JSContext(),"testJSObjectConstructors:context");
         context.evaluateScript(script);
         JSObject empty = new JSObject(context);
         tAssert(empty.toJSON().equals(context.property("empty").toJSON()),
@@ -374,10 +374,11 @@ public class JSObjectTest extends JSTest {
                     "JSObject(<context>, [<params>], <body>, <url>, <lineno>) stack trace");
         }
 
+        context.garbageCollect();
     }
 
     public void testJSObjectFunctionCallback() throws TestAssertException {
-        JSContext context = new JSContext();
+        JSContext context = track(new JSContext(),"testJSObjectFunctionCallback:context");
         context.evaluateScript(script);
         JSObject functionObject = new FunctionObject(context);
         JSObject functionObjectJS = context.property("functionObject").toObject();

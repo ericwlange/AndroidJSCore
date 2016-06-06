@@ -69,7 +69,9 @@ NATIVE(JSContext,void,staticInit) (PARAMS) {
 }
 
 NATIVE(JSContextGroup,jlong,create) (PARAMS) {
-	return (long) JSContextGroupCreate();
+	JSContextGroupRef group = JSContextGroupCreate();
+	JSContextGroupRetain(group);
+	return (long)group;
 }
 
 NATIVE(JSContextGroup,jlong,retain) (PARAMS,jlong group) {
@@ -80,17 +82,17 @@ NATIVE(JSContextGroup,void,release) (PARAMS,jlong group) {
 	JSContextGroupRelease((JSContextGroupRef) group);
 }
 
-NATIVE(JSContext,void,finalizeContext) (PARAMS,jlong ctx) {
-    // Nothing to do
-}
-
 NATIVE(JSContext,jlong,create) (PARAMS) {
-	return (jlong) JSGlobalContextCreate((JSClassRef) NULL);
+	JSGlobalContextRef ref = JSGlobalContextCreate((JSClassRef) NULL);
+	//JSGlobalContextRetain(ref);
+	return (long)ref;
 }
 
 NATIVE(JSContext,jlong,createInGroup) (PARAMS,jlong group) {
-	return (jlong) JSGlobalContextCreateInGroup((JSContextGroupRef)group,
+	JSGlobalContextRef ref = JSGlobalContextCreateInGroup((JSContextGroupRef)group,
                    			(JSClassRef) NULL);
+    //JSGlobalContextRetain(ref);
+    return (long)ref;
 }
 
 NATIVE(JSContext,jlong,retain) (PARAMS,jlong ctx) {
@@ -102,11 +104,15 @@ NATIVE(JSContext,void,release) (PARAMS,jlong ctx) {
 }
 
 NATIVE(JSContext,jlong,getGlobalObject) (PARAMS, jlong ctx) {
-	return (jlong) JSContextGetGlobalObject((JSContextRef) ctx);
+	JSObjectRef ref = JSContextGetGlobalObject((JSContextRef) ctx);
+	JSValueProtect((JSContextRef)ctx,ref);
+	return (long)ref;
 }
 
 NATIVE(JSContext,jlong,getGroup) (PARAMS, jlong ctx) {
-	return (jlong)JSContextGetGroup((JSContextRef) ctx);
+	JSContextGroupRef group = JSContextGetGroup((JSContextRef) ctx);
+	JSContextGroupRetain(group);
+	return (long)group;
 }
 
 NATIVE(JSContext,jobject,evaluateScript) (PARAMS, jlong ctx, jlong script,
@@ -120,18 +126,21 @@ NATIVE(JSContext,jobject,evaluateScript) (PARAMS, jlong ctx, jlong script,
 
 	jfieldID fid = env->GetFieldID(ret , "reference", "J");
 
-	jlong lval = (jlong) JSEvaluateScript(
+	JSValueRef value = JSEvaluateScript(
 	    (JSContextRef)ctx,
     	(JSStringRef)script,
         (JSObjectRef)thisObject,
         (JSStringRef)sourceURL,
         startingLineNumber,
         &exception);
+    JSValueProtect((JSContextRef)ctx, value);
 
-	env->SetLongField( out, fid, lval);
+	env->SetLongField( out, fid, (long)value);
 
 	fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (jlong) exception);
+
+    env->DeleteLocalRef(ret);
 
 	return out;
 }
@@ -146,16 +155,18 @@ NATIVE(JSContext,jobject,checkScriptSyntax) (PARAMS, jlong ctx, jlong script,
 	jobject out = env->NewObject(ret, cid);
 
 	jfieldID fid = env->GetFieldID(ret , "reference", "J");
-    jlong lval = (jlong) JSCheckScriptSyntax(
+    bool value = JSCheckScriptSyntax(
 		(JSContextRef)ctx,
 		(JSStringRef)script,
 		(JSStringRef)sourceURL,
 		startingLineNumber,
 		&exception);
-	env->SetLongField( out, fid, (jlong) lval );
+	env->SetBooleanField( out, fid, value );
 
 	fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (jlong) exception);
+
+    env->DeleteLocalRef(ret);
 
 	return out;
 }

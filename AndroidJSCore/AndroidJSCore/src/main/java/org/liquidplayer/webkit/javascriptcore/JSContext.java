@@ -7,7 +7,7 @@
 // Created by Eric Lange
 //
 /*
- Copyright (c) 2014 Eric Lange. All rights reserved.
+ Copyright (c) 2014-2016 Eric Lange. All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -32,12 +32,12 @@
 */
 package org.liquidplayer.webkit.javascriptcore;
 
-import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
 
 import org.liquidplayer.hemroid.JavaScriptCoreGTK;
 
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -48,80 +48,7 @@ import java.util.Map;
  */
 public class JSContext extends JSObject {
 
-	private class JSContextWorker extends Thread {
-
-		private Boolean mReady = false;
-        private int mThreadId;
-
-		@Override
-		public void run() {
-			Looper.prepare();
-			workerHandler = new Handler();
-            mThreadId = android.os.Process.myTid();
-            synchronized (mReady) {
-                mReady = true;
-            }
-			Looper.loop();
-		}
-
-		public Handler workerHandler;
-
-		public JSContextWorker() {
-			super();
-			start();
-			Boolean ready = false;
-			while (!ready) {
-				synchronized (mReady) {
-					ready = mReady;
-				}
-			}
-		}
-
-        private class SyncRunnable implements Runnable {
-            SyncRunnable(Runnable runnable) {
-                mRunnable = runnable;
-            }
-            private final Runnable mRunnable;
-            private Boolean mComplete = false;
-            private JSException exception = null;
-            @Override
-            public void run() {
-                try {
-                    mRunnable.run();
-                } catch (JSException e) {
-                    exception = e;
-                }
-                synchronized (mComplete) {
-                    mComplete = true;
-                }
-            }
-            public void block() throws JSException {
-                Boolean complete = false;
-                while (!complete) {
-                    synchronized (mComplete) {
-                        complete = mComplete;
-                    }
-                }
-                if (exception != null) throw exception;
-            }
-        }
-
-        public void sync(final Runnable runnable) throws JSException {
-            int currThreadId = android.os.Process.myTid();
-            if (currThreadId == mThreadId) {
-                runnable.run();
-            } else {
-                SyncRunnable syncr = new SyncRunnable(runnable);
-                workerHandler.post(syncr);
-                syncr.block();
-            }
-        }
-        public void async(final Runnable runnable) {
-            workerHandler.post(runnable);
-        }
-	};
-
-    private final JSContextWorker mWorker;
+    private final JSWorkerQueue mWorker = new JSWorkerQueue();
 
     public void sync(Runnable runnable) {
         mWorker.sync(runnable);
@@ -151,13 +78,11 @@ public class JSContext extends JSObject {
 	 * @since 1.0
 	 */
 	public JSContext() {
-        mWorker = new JSContextWorker();
         context = this;
         sync(new Runnable() {
             @Override public void run() {
                 ctx = create();
                 valueRef = getGlobalObject(ctx);
-                protect(context,valueRef);
             }
         });
 	}
@@ -167,13 +92,11 @@ public class JSContext extends JSObject {
 	 * @since 1.0
 	 */
 	public JSContext(final JSContextGroup inGroup) {
-        mWorker = new JSContextWorker();
         context = this;
         sync(new Runnable() {
             @Override public void run() {
                 ctx = createInGroup(inGroup.groupRef());
                 valueRef = getGlobalObject(ctx);
-                protect(context, valueRef);
             }
         });
 	}
@@ -185,7 +108,6 @@ public class JSContext extends JSObject {
 	 * @throws JSException
 	 */
 	public JSContext(final Class<?> iface) throws JSException {
-        mWorker = new JSContextWorker();
         context = this;
         sync(new Runnable() {
             @Override public void run() {
@@ -209,7 +131,6 @@ public class JSContext extends JSObject {
 	 * @throws JSException
 	 */
 	public JSContext(final JSContextGroup inGroup, final Class<?> iface) throws JSException {
-        mWorker = new JSContextWorker();
         context = this;
         sync(new Runnable() {
             @Override public void run() {
@@ -225,11 +146,12 @@ public class JSContext extends JSObject {
 	}
 	@Override
 	protected void finalize() throws Throwable {
-		if (ctx!=null) {
-            release(ctx);
-            finalizeContext(ctx);
-		}
-		super.finalize();
+        super.finalize();
+        isDefunct = true;
+        release(ctx);
+        if (mWorker != null) {
+            mWorker.quit();
+        }
 	}
 
 	/**
@@ -310,9 +232,11 @@ public class JSContext extends JSObject {
 
         JNIReturnClass runnable = new JNIReturnClass() {
             @Override public void run() {
-                jni = evaluateScript(ctx, new JSString(script).stringRef(),
-                        (thiz == null) ? 0L : thiz.valueRef(), (sourceURL == null) ? 0L :
-                                new JSString(sourceURL).stringRef(),
+                JSString jsscript = new JSString(script);
+                JSString jssourceURL = new JSString(sourceURL);
+                jni = evaluateScript(ctx, jsscript.stringRef(),
+                        (thiz == null) ? 0L : thiz.valueRef(),
+                        jssourceURL.stringRef(),
                         startingLineNumber);
             }
         };
@@ -347,7 +271,7 @@ public class JSContext extends JSObject {
 		return evaluateScript(script,null,null,0);
 	}
 	
-	private Map<Long,JSObject> objects = new HashMap<Long,JSObject>();
+	private Map<Long,WeakReference<JSObject>> objects = new HashMap<Long,WeakReference<JSObject>>();
 
 	/**
 	 * Keeps a reference to an object in this context.  This is used so that only one
@@ -358,7 +282,7 @@ public class JSContext extends JSObject {
 	 * @since 1.0
 	 */
 	public synchronized  void persistObject(JSObject obj) {
-		objects.put(obj.valueRef(), obj);
+		objects.put(obj.valueRef(), new WeakReference<JSObject>(obj));
 	}
 	/**
 	 * Removes a reference to an object in this context.  Should only be used from the 'finalize'
@@ -368,7 +292,7 @@ public class JSContext extends JSObject {
 	 */
 	public synchronized void finalizeObject(JSObject obj) {
         objects.remove(obj.valueRef());
-	}
+    }
 	/**
 	 * Reuses a stored reference to a JavaScript object if it exists, otherwise, it creates the
 	 * reference.
@@ -377,7 +301,14 @@ public class JSContext extends JSObject {
 	 * @return The JSObject representing the reference
 	 */
 	public synchronized JSObject getObjectFromRef(long objRef,boolean create) {
-		JSObject obj = objects.get(objRef);
+        if (objRef == valueRef()) return this;
+        WeakReference<JSObject> wr = objects.get(objRef);
+        JSObject obj = null;
+        if (wr != null) {
+            obj = wr.get();
+            if (obj != null)
+                obj.unprotect(ctxRef(),obj.valueRef());
+        }
 		if (obj==null && create) {
             if (isFunction(ctxRef(),objRef))
                 obj = new JSFunction(objRef,this);
@@ -402,7 +333,7 @@ public class JSContext extends JSObject {
             }
         });
 	}
-	
+
 	protected static native void staticInit();
     protected native long create();
 	protected native long createInGroup(long group);
@@ -413,8 +344,7 @@ public class JSContext extends JSObject {
 	protected native JNIReturnObject evaluateScript(long ctx, long script, long thisObject, long sourceURL, int startingLineNumber);
 	protected native JNIReturnObject checkScriptSyntax(long ctx, long script, long sourceURL, int startingLineNumber);
 	protected native void garbageCollect(long ctx);
-    protected native void finalizeContext(long ctx);
-	
+
 	static {
 		new JavaScriptCoreGTK(null);
 		System.loadLibrary("android-js-core");

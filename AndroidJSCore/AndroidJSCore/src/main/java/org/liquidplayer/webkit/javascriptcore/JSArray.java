@@ -7,7 +7,7 @@
 // Created by Eric Lange
 //
 /*
- Copyright (c) 2014 Eric Lange. All rights reserved.
+ Copyright (c) 2014-2016 Eric Lange. All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -31,8 +31,6 @@
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 package org.liquidplayer.webkit.javascriptcore;
-
-import java.util.List;
 
 /**
  * A convenience class for handling JavaScript arrays
@@ -58,7 +56,7 @@ public class JSArray extends JSObject {
             jni.reference = make(context.ctxRef(), 0L);
 		}
 		valueRef = jni.reference;
-		protect(ctx,valueRef);
+        context.persistObject(this);
 	}
 	/**
 	 * Creates an empty JavaScript array object
@@ -75,7 +73,7 @@ public class JSArray extends JSObject {
             jni.reference = make(context.ctxRef(), 0L);
 		}
 		valueRef = jni.reference;
-		protect(ctx,valueRef);
+        context.persistObject(this);
 	}
 	/**
 	 * Creates a JavaScript array object, initialized with 'array' Java values
@@ -98,8 +96,8 @@ public class JSArray extends JSObject {
             jni.reference = make(context.ctxRef(), 0L);
         }
 		valueRef = jni.reference;
-		protect(ctx,valueRef);
-	}
+        context.persistObject(this);
+    }
 
 	/**
 	 * Wraps an existing JavaScript object and treats it as an array.

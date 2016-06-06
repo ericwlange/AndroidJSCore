@@ -1,3 +1,35 @@
+//
+// JSFunction.java
+// AndroidJSCore project
+//
+// https://github.com/ericwlange/AndroidJSCore/
+//
+// Created by Eric Lange
+//
+/*
+ Copyright (c) 2014-2016 Eric Lange. All rights reserved.
+
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+
+ - Redistributions of source code must retain the above copyright notice, this
+ list of conditions and the following disclaimer.
+
+ - Redistributions in binary form must reproduce the above copyright notice,
+ this list of conditions and the following disclaimer in the documentation
+ and/or other materials provided with the distribution.
+
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 package org.liquidplayer.webkit.javascriptcore;
 
 import java.lang.reflect.Constructor;
@@ -54,7 +86,6 @@ public class JSFunction extends JSObject {
                     jni.reference = make(context.ctxRef(), 0L);
                 }
                 valueRef = jni.reference;
-                protect(context, valueRef);
             }
         });
         context.persistObject(this);
@@ -110,12 +141,12 @@ public class JSFunction extends JSObject {
             public void run() {
                 valueRef = makeFunctionWithCallback(context.ctxRef(),
                         new JSString(method.getName()).stringRef());
-                protect(context,valueRef);
                 subclass = instanceClass;
             }
         });
 
         context.persistObject(this);
+        context.zombies.add(this);
     }
     /**
      * Creates a new function object which calls method 'method' on this Java object.
@@ -280,12 +311,12 @@ public class JSFunction extends JSObject {
             public void run() {
                 valueRef = makeFunctionWithCallback(context.ctxRef(),
                         new JSString(method.getName()).stringRef());
-                protect(context,valueRef);
                 subclass = instanceClass;
             }
         });
 
         context.persistObject(this);
+        context.zombies.add(this);
     }
     /**
      * Creates a new function object which calls method 'methodName' on this Java object.
@@ -454,18 +485,6 @@ public class JSFunction extends JSObject {
         });
     }
 
-
-    @Override
-    protected void finalize() throws Throwable {
-        context.sync(new Runnable() {
-            @Override
-            public void run() {
-                releaseFunctionWithCallback(context.ctxRef(), valueRef);
-            }
-        });
-        super.finalize();
-    }
-
     private long functionCallback(long ctxRef, long functionRef, long thisObjectRef,
                                   long argumentsValueRef[], long exceptionRefRef) {
 
@@ -617,12 +636,15 @@ public class JSFunction extends JSObject {
                     Constructor<?> defaultConstructor = subclass.getConstructor();
                     JSObject thiz = (JSObject) defaultConstructor.newInstance();
                     thiz.context = context;
-                    thiz.valueRef = makeWithFinalizeCallback(context.ctxRef());
+                    thiz.valueRef = make(context.ctxRef(), 0); //makeInstance(context.ctxRef());
                     thiz.isInstanceOf = JSFunction.this;
                     function(thiz,args);
                     context.persistObject(thiz);
-                    for (String prop : proto.propertyNames()) {
-                        thiz.property(prop,proto.property(prop));
+                    context.zombies.add(thiz);
+                    if (proto != null) {
+                        for (String prop : proto.propertyNames()) {
+                            thiz.property(prop, proto.property(prop));
+                        }
                     }
                     return thiz;
                 } catch (NoSuchMethodException e) {
@@ -689,11 +711,6 @@ public class JSFunction extends JSObject {
      * don't forget to call protect()!
      */
     protected JSFunction() {
-    }
-
-    private void finalizeCallback(long objectRef) {
-        assert(objectRef == this.valueRef);
-        context.finalizeObject(this);
     }
 
     private JSValue __nullFunc() {

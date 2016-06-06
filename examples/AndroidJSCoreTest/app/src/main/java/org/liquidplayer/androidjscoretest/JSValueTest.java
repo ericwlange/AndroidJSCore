@@ -12,7 +12,7 @@ public class JSValueTest extends JSTest {
 
     public void testJSValueConstructors() throws TestAssertException {
         println("Test JSValue creation methods");
-        JSContext context = new JSContext();
+        JSContext context = track(new JSContext(),"testJSValueConstructors:context");
         JSValue undefined = new JSValue(context);
         tAssert(undefined.isUndefined(), "JSValue(context) -> undefined");
         JSValue NULL = new JSValue(context,null);
@@ -47,7 +47,7 @@ public class JSValueTest extends JSTest {
                 "var array = []; \n" +
                 "var date = new Date(); \n" +
                 "";
-        JSContext context = new JSContext();
+        JSContext context = track(new JSContext(),"testJSValueTesters:context");
         context.evaluateScript(script);
         boolean undefNot =
                 context.property("undefined").isNull() ||
@@ -132,7 +132,7 @@ public class JSValueTest extends JSTest {
 
     public void testJSValueComparators() throws TestAssertException {
         println("Test JSValue comparator methods");
-        JSContext context = new JSContext();
+        JSContext context = track(new JSContext(),"testJSValueComparators:context");
         context.property("number",42f);
         tAssert(context.property("number").equals(42L) && !context.property("number").equals(43),
                 "JSValue.equals(<Number>)");
@@ -144,6 +144,7 @@ public class JSValueTest extends JSTest {
         tAssert(context.property("number").equals(context.property("another_number")),
                 "JSValue.equals(<JSValue>)");
         println("Test isStrictEqual (===)");
+
         tAssert(new JSValue(context,0).equals(false) && !(new JSValue(context,0).isStrictEqual(false)),
                 "0 == false && 0 !== false");
         tAssert(new JSValue(context,1).equals("1") && !(new JSValue(context,1).isStrictEqual("1")),
@@ -159,6 +160,7 @@ public class JSValueTest extends JSTest {
         tAssert(new JSValue(context,null).equals(new JSValue(context)) &&
                 !(new JSValue(context,null).isStrictEqual(new JSValue(context))),
                 "null == undefined && null !== undefined");
+        context.garbageCollect();
     }
 
     public void testJSValueGetters() throws TestAssertException {
@@ -173,7 +175,7 @@ public class JSValueTest extends JSTest {
                 "var array = []; \n" +
                 "var date = new Date(1970,10,30); \n" +
                 "";
-        JSContext context = new JSContext();
+        JSContext context = track(new JSContext(),"testJSValueGetters:context");
         context.evaluateScript(script);
         JSValue undefined = context.property("undefined");
         JSValue NULL = context.property("NULL");
@@ -200,12 +202,14 @@ public class JSValueTest extends JSTest {
                 "[].toNumber() == 0 && [1,2,3].toNumber() == NaN");
         tAssert(date.toNumber().equals(context.evaluateScript("date.getTime()").toNumber()),
                 "new Date(<d>).toNumber() == Date(<d>).getTime()");
+
         tAssert(undefined.toString().equals("undefined"), "<undefined>.toString() == 'undefined'");
         tAssert(NULL.toString().equals("null"), "<null>.toString() == 'null'");
         tAssert(bool.toString().equals("true") && context.evaluateScript("false").toString().equals("false"),
                 "<boolean>.toString() == 'true' || 'false'");
         tAssert(number.toString().equals("15.6"), "<number>.toString() = '<number>'");
         tAssert(string.toString().equals("string"), "<string>.toString() = <string>");
+
         println("object.toString() = " + object.toString());
         println("array.toString() = " + context.evaluateScript("[1,2,3]").toString());
         println("date.toString() = " + date.toString());
@@ -241,6 +245,8 @@ public class JSValueTest extends JSTest {
                 "<undefined>.toJSON() -> <null>");
         tAssert(NULL.toJSON().equals(context.property("jsNULL").toString()),
                 "<null>.toJSON() -> " + NULL.toJSON());
+
+        context.garbageCollect();
     }
 
     public void run() throws TestAssertException {

@@ -1,5 +1,5 @@
 //
-// JSON.java
+// Instance.h
 // AndroidJSCore project
 //
 // https://github.com/ericwlange/AndroidJSCore/
@@ -30,31 +30,35 @@
  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-package org.liquidplayer.webkit.javascriptcore;
 
-/**
- * A convenience class for creating JavaScript values from JSON 
- * @since 1.0
- */
-public class JSON extends JSValue {
-	/**
-	 * Creates a new JavaScript value from a JSString JSON string
-	 * @param ctx  The context in which to create the value
-	 * @param str  The string containing the JSON
-     * @since 1.0
-     */
-	public JSON(JSContext ctx, JSString str) {
-		context = ctx;
-		valueRef = this.makeFromJSONString(context.ctxRef(), str.stringRef());
-	}
-	/**
-	 * Creates a new JavaScript value from a Java JSON string
-	 * @param ctx  The context in which to create the value
-	 * @param str  The string containing the JSON
-     * @since 1.0
-     */
-	public JSON(JSContext ctx, String str) {
-		context = ctx;
-		valueRef = this.makeFromJSONString(context.ctxRef(), new JSString(str).stringRef());
-	}
-}
+#ifndef ANDROIDJSCORE_INSTANCE_H
+#define ANDROIDJSCORE_INSTANCE_H
+
+#include "JSJNI.h"
+#include <map>
+#include <mutex>
+
+class Instance {
+public:
+	Instance(JNIEnv *env, jobject thiz, JSContextRef ctx,
+	    JSClassDefinition def = kJSClassDefinitionEmpty, JSStringRef name = NULL);
+	virtual ~Instance();
+	virtual long getObjRef() { return (long) objRef; }
+    static Instance* getInstance(JSObjectRef objref);
+
+protected:
+	JavaVM *jvm;
+	jobject thiz;
+
+private:
+	JSObjectRef objRef;
+	JSClassRef classRef;
+    JSClassDefinition definition;
+
+	static std::map<JSObjectRef,Instance *> objMap;
+	static std::mutex mutex;
+
+	static void StaticFinalizeCallback(JSObjectRef object);
+};
+
+#endif //ANDROIDJSCORE_INSTANCE_H

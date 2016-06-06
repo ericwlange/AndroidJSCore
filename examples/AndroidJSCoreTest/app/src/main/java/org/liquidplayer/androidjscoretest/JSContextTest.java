@@ -36,19 +36,19 @@ public class JSContextTest extends JSTest {
 
     public void testJSContextConstructor() throws TestAssertException {
         println("Test JSContext()");
-        JSContext context = new JSContext();
+        JSContext context = track(new JSContext(),"testJSContextConstructor:context");
         context.property("test",10);
         tAssert(context.property("test").toNumber().equals(10.0), "Read property on context");
 
         println("Test JSContext(<iface>)");
-        JSContext context1 = new JSContextClass();
+        JSContext context1 = track(new JSContextClass(),"testJSContextConstructor:context1");
         JSValue ret = context1.evaluateScript("func1()");
         tAssert(ret.toNumber().equals(55.0), "Call global java function on context");
 
         println("Test JSContext(<JSContextGroup>)");
         JSContextGroup contextGroup = new JSContextGroup();
-        JSContext context2 = new JSContext(contextGroup);
-        JSContext context3 = new JSContext(contextGroup);
+        JSContext context2 = track(new JSContext(contextGroup), "testJSContextConstructor:context2");
+        JSContext context3 = track(new JSContext(contextGroup), "testJSContextConstructor:context3");
         context2.evaluateScript("var forty_two = 42; var cx2_func = function() { return forty_two; };");
         JSValue cx2_func = context2.property("cx2_func");
         context3.property("cx3_func", cx2_func);
@@ -57,6 +57,7 @@ public class JSContextTest extends JSTest {
 
         println("Test JSContext(<JSContextGroup>,<iface>)");
         JSContextInGroup context4 = new JSContextInGroup(contextGroup);
+        track(context4,"testJSContextConstructor:context4");
         context4.property("testObject", cx2_func);
         ret = context4.evaluateScript("func1()");
         tAssert(ret.toNumber().equals(42.0), "Call global java function on JSContextGroup");
@@ -67,13 +68,19 @@ public class JSContextTest extends JSTest {
                 context4.getGroup() != null, "Check context group equivalence");
         tAssert(!context1.getGroup().equals(context2.getGroup()),
                 "Check context group different");
+
+        context.garbageCollect();
+        context1.garbageCollect();
+        context2.garbageCollect();
+        context3.garbageCollect();
+        context4.garbageCollect();
     }
 
     private boolean excp;
 
     public void testJSContextExceptionHandler() throws TestAssertException {
         println("Test IJSContextExceptionHandler()");
-        JSContext context = new JSContext();
+        JSContext context = track(new JSContext(),"testJSContextExceptionHandler:context");
         try {
             context.property("does_not_exist").toFunction();
             tAssert(false,"Catch exception in try/catch block");
@@ -109,7 +116,7 @@ public class JSContextTest extends JSTest {
 
         println("Test exception inside exception handler");
         excp = false;
-        final JSContext context2 = new JSContext();
+        final JSContext context2 = track(new JSContext(),"testJSContextExceptionHandler:context2");
         context2.setExceptionHandler(new JSContext.IJSExceptionHandler() {
             @Override
             public void handle(JSException e) {
@@ -125,6 +132,8 @@ public class JSContextTest extends JSTest {
             tAssert(excp,"Exception inside of exception handler");
         }
 
+        context.garbageCollect();
+        context2.garbageCollect();
     }
 
     public void testJSContextEvaluateScript() throws TestAssertException {
@@ -135,7 +144,7 @@ public class JSContextTest extends JSTest {
             "does_not_exist(do_something);";
         String url = "http://liquidplayer.com/script1.js";
 
-        JSContext context = new JSContext();
+        JSContext context = track(new JSContext(),"testJSContextEvaluateScript:context");
         try {
             context.evaluateScript(script1, null, url, 1);
             tAssert(false,"evaluateScript with URL & line[2]");
@@ -159,6 +168,7 @@ public class JSContextTest extends JSTest {
         val = context.evaluateScript("this.localv");
         tAssert(val.toNumber().equals(69.0), "Check that null 'this' is default");
 
+        context.garbageCollect();
     }
 
     @Override

@@ -7,7 +7,7 @@
 // Created by Eric Lange
 //
 /*
- Copyright (c) 2014 Eric Lange. All rights reserved.
+ Copyright (c) 2014-2016 Eric Lange. All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -51,6 +51,7 @@ public class JSValue {
 
     protected Long valueRef = 0L;
 	protected JSContext context = null;
+	protected Boolean isDefunct = false;
 	
 	/* Constructors */
 	/**
@@ -71,7 +72,6 @@ public class JSValue {
             @Override
             public void run() {
                 valueRef = makeUndefined(context.ctxRef());
-                protect(ctx,valueRef);
             }
         });
 	}
@@ -95,7 +95,7 @@ public class JSValue {
                 } else if (val instanceof Double) {
                     valueRef = makeNumber(context.ctxRef(), (Double)val);
                 } else if (val instanceof Float) {
-                    valueRef = makeNumber(context.ctxRef(), new Double(((Float)val).toString()));
+                    valueRef = makeNumber(context.ctxRef(), Double.valueOf(((Float)val).toString()));
                 } else if (val instanceof Integer ) {
                     valueRef = makeNumber(context.ctxRef(), ((Integer)val).doubleValue());
                 } else if (val instanceof Long) {
@@ -108,52 +108,11 @@ public class JSValue {
                 } else {
                     valueRef = makeUndefined(context.ctxRef());
                 }
-                protect(context,valueRef);
             }
         });
 	}
-	/*
-	 * JavaScript values held by the Java environment must be protected from garbage collection
-	 * in the JS environment.  If only the Java environment holds a reference to a JS object, the
-	 * JS garbage collector will see this value as unreferenced and clean it.  So we must manage
-	 * protecting and unprotecting values we hold references to on the Java side.
-	 */
-	private static class ValRef {
-		public long valueRef;
-		public JSContext ctx;
-		public ValRef(JSContext ctx, long val) {
-			this.ctx = ctx; valueRef = val;
-		}
-	}
-	private static ReferenceQueue<JSValue> rq = new ReferenceQueue<JSValue>();
-	private static HashMap<WeakReference<JSValue>,ValRef> whm = new HashMap<WeakReference<JSValue>,ValRef>();
-	private ValRef thisValRef = null;
-	protected synchronized void protect(JSContext ctx, Long valueRef) {
-		protect(ctx.ctxRef(),valueRef);
-		thisValRef = new ValRef(context,valueRef);
-		whm.put(new WeakReference<JSValue>(this,rq), thisValRef);
-		unprotectDeadReferences();
-	}
-	private synchronized void unprotectDeadReferences() {
-		Reference<? extends JSValue> p;
-		HashMap<JSContext,Boolean> collect = new HashMap<JSContext,Boolean>();
-		while ((p = rq.poll()) != null) {
-			final ValRef vr = whm.get(p);
-            context.async(new Runnable() {
-                @Override
-                public void run() {
-                    unprotect(vr.ctx.ctxRef(),vr.valueRef);
-                }
-            });
-			whm.remove(p);
-			collect.put(vr.ctx, true);
-		}
-		for (JSContext ctx : collect.keySet()) {
-			ctx.garbageCollect();
-		}
-	}
-	
-	/**
+
+    /**
 	 * Wraps an existing JavaScript value
 	 * @param valueRef  The JavaScriptCore reference to the value
 	 * @param ctx  The context in which the value exists
@@ -164,16 +123,19 @@ public class JSValue {
         context.sync(new Runnable() {
             @Override
             public void run() {
-                if (valueRef == 0) JSValue.this.valueRef = makeUndefined(context.ctxRef());
-                JSValue.this.valueRef = valueRef;
-                protect(context,valueRef);
+                if (valueRef == 0) {
+					JSValue.this.valueRef = makeUndefined(context.ctxRef());
+				}
+                else {
+					JSValue.this.valueRef = valueRef;
+				}
             }
         });
 	}
 	@Override
 	protected void finalize() throws Throwable {
 		super.finalize();
-		unprotectDeadReferences();
+        unprotect();
 	}
 	
 	/* Testers */
@@ -295,7 +257,15 @@ public class JSValue {
      * @since 1.0
      */
     public Boolean isObject() {
-        return isObject(context.ctxRef(), valueRef);
+        JNIReturnClass runnable = new JNIReturnClass() {
+            @Override
+            public void run() {
+                jni = new JNIReturnObject();
+                jni.bool = isObject(context.ctxRef(), valueRef);
+            }
+        };
+        context.sync(runnable);
+        return runnable.jni.bool;
     }
 	/**
 	 * Tests whether a value in an instance of a constructor object
@@ -515,7 +485,14 @@ public class JSValue {
 		return valueRef;
 	}
 
-	/* Native functions */
+    protected void unprotect() {
+        if (isProtected && !context.isDefunct)
+            unprotect(context.ctxRef(),valueRef);
+        isProtected = false;
+    }
+    private boolean isProtected = true;
+
+    /* Native functions */
 	protected native int getType(long ctxRef, long valueRef); /**/
 	protected native boolean isUndefined(long ctxRef, long valueRef);
 	protected native boolean isNull(long ctxRef, long valueRef );
@@ -539,7 +516,7 @@ public class JSValue {
 	protected native JNIReturnObject toNumber(long ctxRef, long valueRef);
 	protected native JNIReturnObject toStringCopy(long ctxRef, long valueRef);
 	protected native JNIReturnObject toObject(long ctxRef, long valueRef);
-	protected native void protect(long ctx, long valueRef); /**/
-	private native void unprotect(long ctx, long valueRef); /**/
+	private native void protect(long ctx, long valueRef); /**/
+	protected native void unprotect(long ctx, long valueRef); /**/
 	protected native void setException(long valueRef, long exceptionRefRef);
 }

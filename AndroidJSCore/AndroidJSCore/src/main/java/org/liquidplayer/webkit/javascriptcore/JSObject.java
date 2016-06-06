@@ -7,7 +7,7 @@
 // Created by Eric Lange
 //
 /*
- Copyright (c) 2014 Eric Lange. All rights reserved.
+ Copyright (c) 2014-2016 Eric Lange. All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -32,12 +32,9 @@
 */
 package org.liquidplayer.webkit.javascriptcore;
 
-import org.json.JSONObject;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A JavaScript object.
@@ -86,15 +83,13 @@ public class JSObject extends JSValue {
         context.sync(new Runnable() {
             @Override public void run() {
                 valueRef = make(context.ctxRef(), 0L);
-                protect(context,valueRef);
             }
         });
         context.persistObject(this);
 	}
 	/**
  	 * Called only by convenience subclasses.  If you use
-	 * this, you must set context and valueRef yourself.  Also,
-	 * don't forget to call protect()!
+	 * this, you must set context and valueRef yourself.
 	 */
 	public JSObject() {
 	}
@@ -106,13 +101,7 @@ public class JSObject extends JSValue {
 	 * @since 1.0
 	 */
 	public JSObject(final long objRef, JSContext ctx, JSValue ... params) {
-		context = ctx;
-        context.sync(new Runnable() {
-            @Override public void run() {
-                valueRef = objRef;
-                protect(context,valueRef);
-            }
-        });
+        super(objRef,ctx);
         context.persistObject(this);
 	}
 	/**
@@ -147,7 +136,6 @@ public class JSObject extends JSValue {
                             JSObject.class, JSObject.this);
                     property(methods[i].getName(),f);
                 }
-                protect(context,valueRef);
             }
         });
         context.persistObject(this);
@@ -357,6 +345,14 @@ public class JSObject extends JSValue {
         return runnable.jni.bool;
 	}
 
+    protected final List<JSObject> zombies = new ArrayList<JSObject>();
+
+    @Override
+	protected void finalize() throws Throwable {
+        super.finalize();
+		context.finalizeObject(this);
+	}
+
 	public void setThis(JSObject thiz) {
 		this.thiz = thiz;
 	}
@@ -368,7 +364,7 @@ public class JSObject extends JSValue {
     private JSObject thiz = null;
 
     protected native long make(long ctx, long data);
-	protected native long makeWithFinalizeCallback(long ctx);
+	protected native long makeInstance(long ctx);
 	protected native JNIReturnObject makeArray(long ctx, long [] args);
 	protected native JNIReturnObject makeDate(long ctx, long [] args);
 	protected native JNIReturnObject makeError(long ctx, long [] args);
@@ -391,7 +387,6 @@ public class JSObject extends JSValue {
 	protected native long [] getPropertyNames(long propertyNameArray);
 	protected native void releasePropertyNames(long propertyNameArray);
 	protected native long makeFunctionWithCallback(long ctx, long name);
-	protected native void releaseFunctionWithCallback(long ctx, long function);
 	protected native JNIReturnObject makeFunction(long ctx, long name, long [] parameterNames,
 			long body, long sourceURL, int startingLineNumber);
 }

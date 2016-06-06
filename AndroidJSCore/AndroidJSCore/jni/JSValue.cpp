@@ -98,6 +98,8 @@ NATIVE(JSValue,jobject,isEqual) (PARAMS, jlong ctxRef, jlong a, jlong b)
 	fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (long)exception);
 
+    env->DeleteLocalRef(ret);
+
 	return out;
 }
 
@@ -125,6 +127,8 @@ NATIVE(JSValue,jobject,isInstanceOfConstructor) (PARAMS, jlong ctxRef, jlong val
 	fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (long)exception);
 
+    env->DeleteLocalRef(ret);
+
 	return out;
 }
 
@@ -132,34 +136,46 @@ NATIVE(JSValue,jobject,isInstanceOfConstructor) (PARAMS, jlong ctxRef, jlong val
 
 NATIVE(JSValue,jlong,makeUndefined) (PARAMS, jlong ctx)
 {
-	return (jlong) JSValueMakeUndefined((JSContextRef) ctx);
+	JSValueRef value = JSValueMakeUndefined((JSContextRef) ctx);
+	JSValueProtect((JSContextRef) ctx, value);
+	return (long)value;
 }
 
 NATIVE(JSValue,jlong,makeNull) (PARAMS, jlong ctx)
 {
-	return (jlong) JSValueMakeNull((JSContextRef) ctx);
+	JSValueRef value = JSValueMakeNull((JSContextRef) ctx);
+	JSValueProtect((JSContextRef) ctx, value);
+	return (long)value;
 }
 
 NATIVE(JSValue,jlong,makeBoolean) (PARAMS, jlong ctx, jboolean boolean)
 {
-	return (jlong) JSValueMakeBoolean((JSContextRef) ctx, (bool) boolean);
+	JSValueRef value = JSValueMakeBoolean((JSContextRef) ctx, (bool) boolean);
+	JSValueProtect((JSContextRef) ctx, value);
+	return (long)value;
 }
 
 NATIVE(JSValue,jlong,makeNumber) (PARAMS, jlong ctx, jdouble number)
 {
-	return (jlong) JSValueMakeNumber((JSContextRef) ctx, (double) number);
+	JSValueRef value = JSValueMakeNumber((JSContextRef) ctx, (double) number);
+	JSValueProtect((JSContextRef) ctx, value);
+	return (long)value;
 }
 
 NATIVE(JSValue,jlong,makeString) (PARAMS, jlong ctx, jlong stringRef)
 {
-	return (jlong) JSValueMakeString((JSContextRef) ctx, (JSStringRef) stringRef);
+	JSValueRef value = JSValueMakeString((JSContextRef) ctx, (JSStringRef) stringRef);
+	JSValueProtect((JSContextRef) ctx, value);
+	return (long)value;
 }
 
 /* Converting to and from JSON formatted strings */
 
 NATIVE(JSValue,jlong,makeFromJSONString) (PARAMS, jlong ctx, jlong stringRef)
 {
-	return (jlong) JSValueMakeFromJSONString((JSContextRef) ctx, (JSStringRef) stringRef);
+	JSValueRef value = JSValueMakeFromJSONString((JSContextRef) ctx, (JSStringRef) stringRef);
+	JSValueProtect((JSContextRef) ctx, value);
+	return (long)value;
 }
 
 NATIVE(JSValue,jobject,createJSONString) (PARAMS, jlong ctxRef, jlong valueRef, jint indent)
@@ -171,16 +187,20 @@ NATIVE(JSValue,jobject,createJSONString) (PARAMS, jlong ctxRef, jlong valueRef, 
 	jobject out = env->NewObject(ret, cid);
 
 	jfieldID fid = env->GetFieldID(ret , "reference", "J");
-	jlong lval = (jlong) JSValueCreateJSONString(
+	JSStringRef value = JSValueCreateJSONString(
 		(JSContextRef)ctxRef,
 		(JSValueRef)valueRef,
 		(unsigned)indent,
 		&exception);
+	if (value)
+	    value = JSStringRetain(value);
 
-	env->SetLongField( out, fid, lval);
+	env->SetLongField( out, fid, (long)value);
 
 	fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (long)exception);
+
+    env->DeleteLocalRef(ret);
 
 	return out;
 }
@@ -209,6 +229,8 @@ NATIVE(JSValue,jobject,toNumber) (PARAMS, jlong ctxRef, jlong valueRef)
 	fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (long) exception);
 
+    env->DeleteLocalRef(ret);
+
 	return out;
 }
 
@@ -222,12 +244,16 @@ NATIVE(JSValue,jobject,toStringCopy) (PARAMS, jlong ctxRef, jlong valueRef)
 
 	jfieldID fid = env->GetFieldID(ret , "reference", "J");
 
-	jlong lval = (jlong) JSValueToStringCopy((JSContextRef)ctxRef, (JSValueRef)valueRef, &exception);
+	JSStringRef string = JSValueToStringCopy((JSContextRef)ctxRef, (JSValueRef)valueRef, &exception);
+	if (string)
+	    string = JSStringRetain(string);
 
-	env->SetLongField( out, fid, lval);
+	env->SetLongField( out, fid, (long)string);
 
 	fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (long) exception);
+
+    env->DeleteLocalRef(ret);
 
 	return out;
 }
@@ -242,12 +268,15 @@ NATIVE(JSValue,jobject,toObject) (PARAMS, jlong ctxRef, jlong valueRef)
 
 	jfieldID fid = env->GetFieldID(ret , "reference", "J");
 	
-	jlong lret = (jlong) JSValueToObject((JSContextRef)ctxRef, (JSValueRef)valueRef, &exception);
+	JSObjectRef value = JSValueToObject((JSContextRef)ctxRef, (JSValueRef)valueRef, &exception);
+	JSValueProtect((JSContextRef)ctxRef, value);
 
-	env->SetLongField( out, fid, lret);
+	env->SetLongField( out, fid, (long)value);
 
 	fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (long) exception);
+
+    env->DeleteLocalRef(ret);
 
 	return out;
 }

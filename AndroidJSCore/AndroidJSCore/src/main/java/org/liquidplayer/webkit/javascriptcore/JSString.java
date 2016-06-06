@@ -7,7 +7,7 @@
 // Created by Eric Lange
 //
 /*
- Copyright (c) 2014 Eric Lange. All rights reserved.
+ Copyright (c) 2014-2016 Eric Lange. All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -38,28 +38,45 @@ package org.liquidplayer.webkit.javascriptcore;
  */
 public class JSString {
 
-	protected final Long stringRef;
-	
+    private static final JSWorkerQueue workerQueue = new JSWorkerQueue();
+
+    private class JNIReturnClass implements Runnable {
+        @Override
+        public void run() {}
+        JNIReturnObject jni;
+        String string;
+    }
+
+    protected Long stringRef;
+
 	/**
 	 * Creates a JavaScript string from a Java string
 	 * @param s  The Java string with which to initialize the JavaScript string
 	 * @since 1.0
 	 */
-	public JSString(String s) {
-		stringRef = createWithUTF8CString(s);
+	public JSString(final String s) {
+        if (s==null) stringRef = 0L;
+		else {
+            workerQueue.sync(new Runnable() {
+                @Override
+                public void run() {
+                    stringRef = createWithCharacters(s);
+                }
+            });
+        }
 	}
 	/**
 	 * Wraps an existing JavaScript string
 	 * @param stringRef  The JavaScriptCore reference to the string
 	 */
 	public JSString(Long stringRef) {
-		this.stringRef = retain(stringRef);
+		this.stringRef = stringRef;
 	}
 	@Override
 	protected void finalize() throws Throwable {
-		if (stringRef==null) return;
-		if (stringRef!=null && stringRef!=0) release(stringRef);
 		super.finalize();
+        if (stringRef != 0)
+            release(stringRef);
 	}
 	@Override
 	public boolean equals(Object other) {
@@ -85,12 +102,27 @@ public class JSString {
 		} else {
 			return false;
 		}
-        long foo = otherJSString.stringRef;
-		return isEqual(stringRef, foo);
+        final long foo = otherJSString.stringRef;
+        JNIReturnClass payload = new JNIReturnClass() {
+            @Override
+            public void run() {
+                jni = new JNIReturnObject();
+                jni.bool = isEqual(stringRef, foo);;
+            }
+        };
+        workerQueue.sync(payload);
+		return payload.jni.bool;
 	}
 	@Override
 	public String toString() {
-		return toString(stringRef);
+        JNIReturnClass payload = new JNIReturnClass() {
+            @Override
+            public void run() {
+                string = JSString.this.toString(stringRef);
+            }
+        };
+        workerQueue.sync(payload);
+		return payload.string;
 	}
 
 	/**
@@ -108,7 +140,15 @@ public class JSString {
 	 * @since 1.0
 	 */
 	public Integer length() {
-		return getLength(stringRef);
+        JNIReturnClass payload = new JNIReturnClass() {
+            @Override
+            public void run() {
+                jni = new JNIReturnObject();
+                jni.reference = getLength(stringRef);
+            }
+        };
+        workerQueue.sync(payload);
+        return new Long(payload.jni.reference).intValue();
 	}
 	
 	protected native long createWithCharacters(String str);

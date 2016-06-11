@@ -32,10 +32,9 @@
 */
 package org.liquidplayer.webkit.javascriptcore;
 
-import java.lang.ref.Reference;
-import java.lang.ref.ReferenceQueue;
-import java.lang.ref.WeakReference;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A JavaScript value
@@ -83,6 +82,7 @@ public class JSValue {
 	 * @param val  The Java value
 	 * @since 1.0
 	 */
+    @SuppressWarnings("unchecked")
 	public JSValue(JSContext ctx, final Object val) {
 		context = ctx;
         context.sync(new Runnable() {
@@ -90,6 +90,18 @@ public class JSValue {
             public void run() {
                 if (val == null) {
                     valueRef = makeNull(context.ctxRef());
+                } else if (val instanceof JSValue) {
+                    valueRef = ((JSValue) val).valueRef();
+                    protect(context.ctxRef(), valueRef);
+                } else if (val instanceof Map) {
+                    valueRef = new JSMap(context, (Map)val, Object.class).getJSObject().valueRef();
+                    protect(context.ctxRef(), valueRef);
+                } else if (val instanceof List) {
+                    valueRef = new JSArray<>(context, (List) val).valueRef();
+                    protect(context.ctxRef(), valueRef);
+                } else if (val.getClass().isArray()) {
+                    valueRef = new JSArray<>(context, (Object[])val).valueRef();
+                    protect(context.ctxRef(), valueRef);
                 } else if (val instanceof Boolean) {
                     valueRef = makeBoolean(context.ctxRef(), (Boolean)val);
                 } else if (val instanceof Double) {
@@ -118,7 +130,7 @@ public class JSValue {
 	 * @param ctx  The context in which the value exists
 	 * @since 1.0
 	 */
-	public JSValue(final long valueRef, JSContext ctx) {
+	protected JSValue(final long valueRef, JSContext ctx) {
 		context = ctx;
         context.sync(new Runnable() {
             @Override
@@ -424,6 +436,13 @@ public class JSValue {
 		}
 		return context.getObjectFromRef(runnable.jni.reference);
 	}
+
+    /**
+     * If the JS value is a function, gets the JSFunction
+     * @return  The JSFunction for this value
+     * @since 3.0
+     * @throws JSException  if not a function
+     */
 	public JSFunction toFunction() throws JSException {
 		if (isObject() && toObject() instanceof JSFunction) {
 			return (JSFunction)toObject();
@@ -435,7 +454,26 @@ public class JSValue {
             return null;
         }
 	}
-	/**
+
+    /**
+     * If the JS value is an array, gets the JSArray
+     * @return  The JSArray for this value
+     * @since 3.0
+     * @throws JSException  if not an array
+     */
+    public JSArray toJSArray() throws JSException {
+        if (isObject() && toObject() instanceof JSArray) {
+            return (JSArray)toObject();
+        } else if (!isObject()) {
+            toObject();
+            return null;
+        } else {
+            context.throwJSException(new JSException(context, "JSObject not an array"));
+            return null;
+        }
+    }
+
+    /**
 	 * Gets the JSON of this JS value
 	 * @param indent  number of spaces to indent
 	 * @return  the JSON representing this value, or null if value is undefined
@@ -468,7 +506,37 @@ public class JSValue {
 	public String toJSON() throws JSException {
 		return toJSON(0);
 	}
-	/**
+
+    protected Object toJavaObject(Class clazz) {
+        if (clazz == Map.class)
+            return new JSMap(toObject(),Object.class);
+        else if (clazz == List.class)
+            return toJSArray();
+        else if (clazz == String.class)
+            return toString();
+        else if (clazz == Double.class || clazz == double.class)
+            return toNumber();
+        else if (clazz == Float.class || clazz == float.class)
+            return toNumber().floatValue();
+        else if (clazz == Integer.class || clazz == int.class)
+            return toNumber().intValue();
+        else if (clazz == Long.class || clazz == long.class)
+            return toNumber().longValue();
+        else if (clazz == Boolean.class || clazz == boolean.class)
+            return toBoolean();
+        else if (clazz == JSString.class)
+            return toJSString();
+        else if (JSObject.class.isAssignableFrom(clazz))
+            return clazz.cast(toObject());
+        else if (clazz.isArray()) {
+            return toJSArray().toArray(clazz.getComponentType());
+        }
+        else if (JSValue.class.isAssignableFrom(clazz))
+            return clazz.cast(this);
+        return null;
+    }
+
+    /**
 	 * Gets the JSContext of this value
 	 * @return the JSContext of this value
 	 * @since 1.0

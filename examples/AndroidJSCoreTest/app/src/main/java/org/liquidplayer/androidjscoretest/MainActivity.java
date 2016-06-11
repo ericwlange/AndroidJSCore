@@ -24,6 +24,15 @@ public class MainActivity extends AppCompatActivity {
                 new JSContextTest(MainActivity.this).run();
                 new JSValueTest(MainActivity.this).run();
                 new JSObjectTest(MainActivity.this).run();
+                new JSStringTest(MainActivity.this).run();
+                new JSFunctionTest(MainActivity.this).run();
+                new JSArrayTest(MainActivity.this).run();
+                new JSMapTest(MainActivity.this).run();
+                new JSDateTest(MainActivity.this).run();
+                new JSONTest(MainActivity.this).run();
+                new JSRegExpTest(MainActivity.this).run();
+                new JSErrorTest(MainActivity.this).run();
+                new JSExceptionTest(MainActivity.this).run();
                 new LargeScriptTest(MainActivity.this).run();
 
                 new JSTest(MainActivity.this) {

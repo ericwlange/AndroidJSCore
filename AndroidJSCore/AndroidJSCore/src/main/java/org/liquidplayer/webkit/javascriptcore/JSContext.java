@@ -50,10 +50,10 @@ public class JSContext extends JSObject {
 
     private final JSWorkerQueue mWorker = new JSWorkerQueue();
 
-    public void sync(Runnable runnable) {
+    protected void sync(Runnable runnable) {
         mWorker.sync(runnable);
     }
-    public void async(Runnable runnable) {
+    protected void async(Runnable runnable) {
         mWorker.async(runnable);
     }
 
@@ -300,7 +300,7 @@ public class JSContext extends JSObject {
 	 * @since 1.0
 	 * @return The JSObject representing the reference
 	 */
-	public synchronized JSObject getObjectFromRef(long objRef,boolean create) {
+	protected synchronized JSObject getObjectFromRef(long objRef,boolean create) {
         if (objRef == valueRef()) return this;
         WeakReference<JSObject> wr = objects.get(objRef);
         JSObject obj = null;
@@ -310,14 +310,16 @@ public class JSContext extends JSObject {
                 obj.unprotect(ctxRef(),obj.valueRef());
         }
 		if (obj==null && create) {
-            if (isFunction(ctxRef(),objRef))
+            if (isArray(ctxRef(),objRef))
+                obj = new JSArray(objRef,this);
+            else if (isFunction(ctxRef(),objRef))
                 obj = new JSFunction(objRef,this);
             else
 			    obj = new JSObject(objRef, this);
 		}
 		return obj;
 	}
-    public synchronized JSObject getObjectFromRef(long objRef) {
+    protected synchronized JSObject getObjectFromRef(long objRef) {
         return getObjectFromRef(objRef,true);
     }
 	/**

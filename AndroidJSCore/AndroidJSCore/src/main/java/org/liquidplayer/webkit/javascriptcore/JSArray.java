@@ -32,11 +32,23 @@
 */
 package org.liquidplayer.webkit.javascriptcore;
 
+import android.support.annotation.NonNull;
+
+import java.lang.reflect.Array;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.NoSuchElementException;
+
 /**
- * A convenience class for handling JavaScript arrays
+ * A convenience class for handling JavaScript arrays.  Implements java.util.List interface for
+ * simple integration with Java methods.
  *
  */
-public class JSArray extends JSObject {
+public class JSArray<T> extends JSObject implements List<T> {
+    private T dummy = null;
+
 	/**
 	 * Creates a JavaScript array object, initialized with 'array' JSValues
 	 * @param ctx  The JSContext to create the array in
@@ -99,6 +111,19 @@ public class JSArray extends JSObject {
         context.persistObject(this);
     }
 
+    /**
+     * Creates a JavaScript array object, initialized with 'list' Java values
+     *
+     * @param ctx  The JSContext to create the array in
+     * @param list The List of Java object T with which to initialize the JavaScript array object.  Each
+     *             object will be converted to a JSValue
+     * @since 3.0
+     * @throws JSException
+     */
+    public JSArray(JSContext ctx, List<T> list) throws JSException {
+        this(ctx,list.toArray());
+    }
+
 	/**
 	 * Wraps an existing JavaScript object and treats it as an array.
 	 * @param objRef  The JavaScriptCore reference to the object
@@ -109,19 +134,25 @@ public class JSArray extends JSObject {
 	public JSArray(long objRef, JSContext ctx) throws JSException {
 		super(objRef,ctx);
 	}
-	
+
+	public Object[] toArray(Class clazz) throws JSException {
+		int count = property("length").toNumber().intValue();
+
+		Object [] array = (Object[]) Array.newInstance(clazz,count);
+        for (int i=0; i<count; i++) {
+			array[i] = propertyAtIndex(i).toJavaObject(clazz);
+		}
+		return array;
+	}
+
 	/**
 	 * Extracts Java JSValue array from JavaScript array
 	 * @return JavaScript array as Java array of JSValues
 	 * @throws JSException
 	 */
-	public JSValue [] toArray() throws JSException {
-		int count = property("length").toNumber().intValue();
-		JSValue [] array = new JSValue[count];
-		for (int i=0; i<count; i++) {
-			array[i] = propertyAtIndex(i);
-		}
-		return array;
+    @Override @NonNull
+	public Object [] toArray() throws JSException {
+		return toArray(JSValue.class);
 	}
 	
 	/**
@@ -131,12 +162,14 @@ public class JSArray extends JSObject {
 	 * @since 1.0
 	 * @throws JSException
 	 */
-	public JSValue get(int index) throws JSException {
+    @Override
+    @SuppressWarnings("unchecked")
+	public T get(final int index) {
 		int count = property("length").toNumber().intValue();
 		if (index >= count) {
 			throw new ArrayIndexOutOfBoundsException();
 		}
-		return propertyAtIndex(index);
+		return (T) dummy.getClass().cast(propertyAtIndex(index));
 	}
 
 	/**
@@ -146,12 +179,14 @@ public class JSArray extends JSObject {
 	 * @since 1.0
 	 * @throws JSException
 	 */
-	public void replace(int index, Object val) throws JSException {
+	public JSValue replace(int index, Object val) throws JSException {
 		int count = property("length").toNumber().intValue();
 		if (index >= count) {
 			throw new ArrayIndexOutOfBoundsException();
 		}
+        JSValue oldValue = propertyAtIndex(index);
 		propertyAtIndex(index,val);
+        return oldValue;
 	}
 	
 	/**
@@ -160,10 +195,12 @@ public class JSArray extends JSObject {
 	 * @since 1.0
 	 * @throws JSException
 	 */
-	public void add(Object val) throws JSException {
+    @Override
+	public boolean add(final T val) throws JSException {
 		int count = property("length").toNumber().intValue();
 		JSValue newVal = new JSValue(context,val);
 		propertyAtIndex(count,newVal);
+        return true;
 	}
 
 	/**
@@ -172,15 +209,17 @@ public class JSArray extends JSObject {
 	 * @since 1.0
 	 * @throws JSException
 	 */
-	public void remove(int index) throws JSException {
+	public JSValue removeItemAtIndex(final int index) throws JSException {
 		int count = property("length").toNumber().intValue();
 		if (index >= count) {
 			throw new ArrayIndexOutOfBoundsException();
 		}
+        JSValue oldValue = propertyAtIndex(index);
 		for (int i=index+1; i<count; i++) {
 			propertyAtIndex(i-1,propertyAtIndex(i));
 		}
 		property("length",count-1);
+        return oldValue;
 	}
 	
 	/**
@@ -201,7 +240,7 @@ public class JSArray extends JSObject {
 		}
 		propertyAtIndex(index,val);
 	}
-	
+
 	/**
 	 * Gets the number of elements in the array
 	 * @return  length of the array
@@ -209,7 +248,286 @@ public class JSArray extends JSObject {
 	 * @throws JSException
 	 */
 	public int length() throws JSException {
-		int count = property("length").toNumber().intValue();
-		return count;
+		return property("length").toNumber().intValue();
 	}
+
+    @Override
+    public int size() {
+        return length();
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return (size() == 0);
+    }
+
+    @Override
+    public boolean contains(final Object object) {
+        for (int i=0; i<size(); i++) {
+            if(get(i).equals(object))
+                return true;
+        }
+        return false;
+    }
+
+    private class ArrayIterator implements ListIterator<T> {
+        private int current = 0;
+
+        public ArrayIterator() {
+            this(0);
+        }
+        public ArrayIterator(int index) {
+            if (index >= size()) index = size() - 1;
+            if (index < 0) index = 0;
+            current = index;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return (current <= length());
+        }
+
+        @Override
+        public boolean hasPrevious() {
+            return (current > 0);
+        }
+
+        @Override
+        public T next() {
+            if (!hasNext())
+                throw new NoSuchElementException();
+            return get(current++);
+        }
+
+        @Override
+        public T previous() {
+            if (!hasPrevious())
+                throw new NoSuchElementException();
+            return get(--current);
+        }
+
+        @Override
+        public void remove() {
+            JSArray.this.removeItemAtIndex(current);
+        }
+
+        @Override
+        public int nextIndex() {
+            return current;
+        }
+
+        @Override
+        public int previousIndex() {
+            return current - 1;
+        }
+
+        @Override
+        public void set(T value) {
+            JSArray.this.set(current,value);
+        }
+
+        @Override
+        public void add(T value) {
+            JSArray.this.add(value);
+        }
+    }
+
+    @Override
+    public @NonNull Iterator<T> iterator() {
+        return new ArrayIterator();
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    @NonNull
+    public <T> T[] toArray(final @NonNull T[] elemArray) {
+        if (size() > elemArray.length) {
+            return (T[])toArray();
+        }
+        ArrayIterator iterator = new ArrayIterator();
+        int index = 0;
+        while (iterator.hasNext()) {
+            Object next = iterator.next();
+            elemArray[index++] = (T)next;
+        }
+        for (int i = index; i < elemArray.length; i++) {
+            elemArray[i] = null;
+        }
+        return elemArray;
+    }
+
+    @Override
+    public boolean remove(final Object object) {
+        ArrayIterator listIterator = new ArrayIterator();
+        while (listIterator.hasNext()) {
+            if (listIterator.next().equals(object)) {
+                listIterator.remove();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean containsAll(final @NonNull Collection<?> collection) {
+        for (Object item : collection.toArray()) {
+            if (!contains(item)) return false;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean addAll(final @NonNull  Collection<? extends T> collection) {
+        return addAll(size(), collection);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public boolean addAll(final int index, final @NonNull Collection<? extends T> collection) {
+        if (collection.isEmpty()) {
+            return false;
+        }
+
+        int i = index;
+        for (Object item : collection.toArray()) {
+            add(i++,(T)item);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean removeAll(final @NonNull Collection<?> collection) {
+        if (collection.isEmpty()) {
+            return false;
+        }
+        boolean any = false;
+        for (Object item : collection.toArray()) {
+            any = remove(item) || any;
+        }
+        return any;
+    }
+
+    @Override
+    public boolean retainAll(final @NonNull Collection<?> collection) {
+        if (collection.isEmpty()) {
+            return false;
+        }
+        boolean any = false;
+        for (int i=length(); i > 0; --i) {
+            if (!collection.contains(get(i))) {
+                removeItemAtIndex(i);
+                any = true;
+            }
+        }
+        return any;
+    }
+
+    @Override
+    public void clear() {
+        if (isEmpty()) {
+            return;
+        }
+        for (int i=length(); i > 0; --i) {
+            removeItemAtIndex(i);
+        }
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public T set(final int index, final T element) {
+        if (this == element) {
+            throw new IllegalArgumentException();
+        }
+        JSValue old = replace(index, element);
+        return (T) old.toJavaObject(dummy.getClass());
+    }
+
+    @Override
+    public void add(final int index, final T element) {
+        if (this == element) {
+            throw new IllegalArgumentException();
+        }
+        insert(index, element);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public T remove(final int index) {
+        JSValue value = removeItemAtIndex(index);
+        return (T) value.toJavaObject(dummy.getClass());
+    }
+
+    @Override
+    public int indexOf(final Object object) {
+        ListIterator<T> listIterator = listIterator();
+        while (listIterator.hasNext()) {
+            if (listIterator.next().equals(object)) {
+                return listIterator.nextIndex() - 1;
+            }
+        }
+        return -1;
+    }
+
+    @Override
+    public int lastIndexOf(final Object object) {
+        ListIterator<T> listIterator = listIterator(size());
+        while (listIterator.hasPrevious()) {
+            if (listIterator.previous().equals(object)) {
+                return listIterator.previousIndex() + 1;
+            }
+        }
+        return -1;
+    }
+
+    @Override
+    public ListIterator<T> listIterator() {
+        return listIterator(0);
+    }
+
+    @Override @NonNull
+    public ListIterator<T> listIterator(final int index) {
+        return new ArrayIterator(index);
+    }
+
+    @Override @NonNull
+    @SuppressWarnings("unchecked")
+    public List<T> subList(final int fromIndex, final int toIndex) {
+        if (fromIndex < 0 || toIndex > size() || fromIndex > toIndex) {
+            throw new IndexOutOfBoundsException();
+        }
+        JSArray subArray = new JSArray(context);
+        for (int index = fromIndex; index < toIndex; index++) {
+            subArray.add(get(index));
+        }
+        return subArray;
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (other == null) {
+            return false;
+        }
+        if (!(other instanceof List<?>)) {
+            return false;
+        }
+        List<?> otherList = (List<?>)other;
+        if (size() != otherList.size()) {
+            return false;
+        }
+        Iterator<T> iterator = iterator();
+        Iterator<?> otherIterator = otherList.iterator();
+        while (iterator.hasNext() && otherIterator.hasNext()) {
+            T next = iterator.next();
+            Object otherNext = otherIterator.next();
+            if (next.equals(otherNext)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return toString().hashCode();
+    }
 }

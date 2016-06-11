@@ -7,7 +7,7 @@
 // Created by Eric Lange
 //
 /*
- Copyright (c) 2014-2016 Eric Lange. All rights reserved.
+ Copyright (c) 2014 Eric Lange. All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -242,7 +242,7 @@ public class JSFunction extends JSObject {
      * @since 3.0
      */
     public JSFunction(JSContext ctx) throws JSException {
-        this(ctx,(Method)null);
+        this(ctx,(String)null);
     }
 
     /**
@@ -289,22 +289,16 @@ public class JSFunction extends JSObject {
                       JSObject invokeObject) throws JSException {
         context = ctx;
         this.invokeObject = (invokeObject==null) ? this : invokeObject;
+        String name = (methodName==null) ? "__nullFunc" : methodName;
         Method [] methods = this.invokeObject.getClass().getMethods();
         for (Method method : methods) {
-            if (method.getName().equals(methodName)) {
+            if (method.getName().equals(name)) {
                 this.method = method;
                 break;
             }
         }
         if (method == null) {
-            try {
-                if (methodName != null) {
-                    throw new NoSuchMethodException();
-                }
-                method = JSFunction.class.getMethod("__nullFunc", (Class<?>)null);
-            } catch (NoSuchMethodException e) {
-                context.throwJSException(new JSException(context,e.getMessage()));
-            }
+            context.throwJSException(new JSException(context,"No such method. Did you make it public?"));
         }
         context.sync(new Runnable() {
             @Override
@@ -415,7 +409,7 @@ public class JSFunction extends JSObject {
         JNIReturnClass runnable = new JNIReturnClass() {
             @Override
             public void run() {
-                ArrayList<JSValue> largs = new ArrayList<JSValue>();
+                ArrayList<JSValue> largs = new ArrayList<>();
                 if (args!=null) {
                     for (Object o: args) {
                         JSValue v;
@@ -488,9 +482,6 @@ public class JSFunction extends JSObject {
     private long functionCallback(long ctxRef, long functionRef, long thisObjectRef,
                                   long argumentsValueRef[], long exceptionRefRef) {
 
-        assert(ctxRef == context.ctxRef());
-        assert(functionRef == valueRef);
-
         try {
             JSValue [] args = new JSValue[argumentsValueRef.length];
             for (int i=0; i<argumentsValueRef.length; i++) {
@@ -519,70 +510,7 @@ public class JSFunction extends JSObject {
         for (int i=0; i<passArgs.length; i++) {
             if (i<args.length) {
                 if (args[i]==null) passArgs[i] = null;
-                else if (pType[i] == String.class) passArgs[i] = args[i].toString();
-                else if (pType[i] == Double.class) passArgs[i] = args[i].toNumber();
-                else if (pType[i] == double.class) passArgs[i] = args[i].toNumber();
-                else if (pType[i] == Float.class) passArgs[i] = args[i].toNumber().floatValue();
-                else if (pType[i] == float.class) passArgs[i] = args[i].toNumber().floatValue();
-                else if (pType[i] == Integer.class) passArgs[i] = args[i].toNumber().intValue();
-                else if (pType[i] == int.class) passArgs[i] = args[i].toNumber().intValue();
-                else if (pType[i] == Long.class) passArgs[i] = args[i].toNumber().longValue();
-                else if (pType[i] == long.class) passArgs[i] = args[i].toNumber().longValue();
-                else if (pType[i] == Boolean.class) passArgs[i] = args[i].toBoolean();
-                else if (pType[i] == boolean.class) passArgs[i] = args[i].toBoolean();
-                else if (JSObject.class.isAssignableFrom(pType[i])) passArgs[i] =
-                        pType[i].cast(args[i].toObject());
-                else if (pType[i] == JSString.class) passArgs[i] = args[i].toJSString();
-                else if (pType[i].isArray()) {
-                    JSObject arr = args[i].toObject();
-                    Integer length = 0;
-                    if (arr.isArray()) {
-                        length = arr.property("length").toNumber().intValue();
-                    }
-                    ArrayList<Object> objList = new ArrayList<Object>();
-                    for (int j=0; j<length; j++) {
-                        if (pType[i] == Boolean[].class || pType[i] == boolean[].class)
-                            objList.add(arr.propertyAtIndex(j).toBoolean());
-                        else if (pType[i] == Integer[].class || pType[i] == int[].class)
-                            objList.add(arr.propertyAtIndex(j).toNumber().intValue());
-                        else if (pType[i] == String[].class)
-                            objList.add(arr.propertyAtIndex(j).toString());
-                        else if (pType[i] == Long[].class || pType[i] == long[].class)
-                            objList.add(arr.propertyAtIndex(j).toNumber().longValue());
-                        else if (pType[i] == Double[].class || pType[i] == double[].class)
-                            objList.add(arr.propertyAtIndex(j).toNumber());
-                        else if (pType[i] == Float[].class || pType[i] == float[].class)
-                            objList.add(arr.propertyAtIndex(j).toNumber());
-                        else if (pType[i] == JSValue[].class)
-                            objList.add(arr.propertyAtIndex(j));
-                        else if (pType[i] == JSObject[].class)
-                            objList.add(arr.propertyAtIndex(j).toObject());
-                        else if (pType[i] == JSString[].class)
-                            objList.add(arr.propertyAtIndex(j).toJSString());
-                        else objList.add(null);
-                    }
-                    if (pType[i] == Boolean[].class || pType[i] == boolean[].class)
-                        passArgs[i] = objList.toArray(new Boolean[objList.size()]);
-                    else if (pType[i] == Integer[].class || pType[i] == int[].class)
-                        passArgs[i] = objList.toArray(new Integer[objList.size()]);
-                    else if (pType[i] == String[].class)
-                        passArgs[i] = objList.toArray(new String[objList.size()]);
-                    else if (pType[i] == Long[].class || pType[i] == long[].class)
-                        passArgs[i] = objList.toArray(new Long[objList.size()]);
-                    else if (pType[i] == Double[].class || pType[i] == double[].class)
-                        passArgs[i] = objList.toArray(new Double[objList.size()]);
-                    else if (pType[i] == Float[].class || pType[i] == float[].class)
-                        passArgs[i] = objList.toArray(new Float[objList.size()]);
-                    else if (pType[i] == JSValue[].class)
-                        passArgs[i] = objList.toArray(new JSValue[objList.size()]);
-                    else if (pType[i] == JSObject[].class)
-                        passArgs[i] = objList.toArray(new JSObject[objList.size()]);
-                    else if (pType[i] == JSString[].class)
-                        passArgs[i] = objList.toArray(new JSString[objList.size()]);
-                    else passArgs[i] = null;
-                }
-                else if (pType[i] == JSValue.class) passArgs[i] = args[i];
-                else passArgs[i] = null;
+                else passArgs[i] = args[i].toJavaObject(pType[i]);
             } else {
                 passArgs[i] = null;
             }
@@ -597,8 +525,6 @@ public class JSFunction extends JSObject {
                 returnValue = new JSValue(context);
             else if (ret instanceof JSValue)
                 returnValue = (JSValue)ret;
-            else if (ret instanceof Object[])
-                returnValue = new JSArray(context, (Object[])ret);
             else
                 returnValue = new JSValue(context,ret);
         } catch (InvocationTargetException e) {
@@ -638,6 +564,7 @@ public class JSFunction extends JSObject {
                     thiz.context = context;
                     thiz.valueRef = make(context.ctxRef(), 0); //makeInstance(context.ctxRef());
                     thiz.isInstanceOf = JSFunction.this;
+                    thiz.property("constructor",JSFunction.this,JSObject.JSPropertyAttributeDontEnum);
                     function(thiz,args);
                     context.persistObject(thiz);
                     context.zombies.add(thiz);
@@ -670,8 +597,6 @@ public class JSFunction extends JSObject {
     private long constructorCallback(long ctxRef, long constructorRef,
                                      long argumentsValueRef[], long exceptionRefRef) {
 
-        assert(ctxRef == context.ctxRef());
-        assert(constructorRef == this.valueRef);
         try {
             JSValue [] args = new JSValue[argumentsValueRef.length];
             for (int i=0; i<argumentsValueRef.length; i++) {
@@ -689,17 +614,10 @@ public class JSFunction extends JSObject {
     }
     private boolean hasInstanceCallback(long ctxRef, long constructorRef,
                                         long possibleInstanceRef, long exceptionRefRef) {
-        assert(ctxRef == context.ctxRef());
-        assert(constructorRef == this.valueRef);
-
         setException(0L, exceptionRefRef);
 
         JSValue instance = new JSValue(possibleInstanceRef, context);
-        if (instance.isObject()) {
-            return (instance.toObject()).isInstanceOf == this;
-        }
-
-        return false;
+        return (instance.isObject() && ((instance.toObject()).isInstanceOf == this));
     }
 
     private Class<? extends JSObject> subclass = null;
@@ -711,10 +629,6 @@ public class JSFunction extends JSObject {
      * don't forget to call protect()!
      */
     protected JSFunction() {
-    }
-
-    private JSValue __nullFunc() {
-        return new JSValue(context);
     }
 
     protected Method method = null;

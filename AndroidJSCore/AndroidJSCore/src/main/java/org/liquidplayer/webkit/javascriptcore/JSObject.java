@@ -35,6 +35,7 @@ package org.liquidplayer.webkit.javascriptcore;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A JavaScript object.
@@ -95,6 +96,7 @@ public class JSObject extends JSValue {
     /**
      * Called only by convenience subclasses.  If you use
      * this, you must set context and valueRef yourself.
+     * @since 3.0
      */
     public JSObject() {
     }
@@ -106,7 +108,7 @@ public class JSObject extends JSValue {
      * @param ctx    The JSContext of the reference
      * @since 1.0
      */
-    public JSObject(final long objRef, JSContext ctx, JSValue... params) {
+    protected JSObject(final long objRef, JSContext ctx) {
         super(objRef, ctx);
         context.persistObject(this);
     }
@@ -146,6 +148,17 @@ public class JSObject extends JSValue {
             }
         });
         context.persistObject(this);
+    }
+
+    /**
+     * Creates a new function object with the entries in 'map' set as properties.
+     *
+     * @param ctx  The JSContext to create object in
+     * @param map  The map containing the properties
+     */
+    public JSObject(JSContext ctx, final Map map) {
+        this(ctx);
+        new JSMap<>(this,Object.class).putAll(map);
     }
 
     /**
@@ -378,7 +391,7 @@ public class JSObject extends JSValue {
         context.finalizeObject(this);
     }
 
-    public void setThis(JSObject thiz) {
+    protected void setThis(JSObject thiz) {
         this.thiz = thiz;
     }
 
@@ -386,8 +399,14 @@ public class JSObject extends JSValue {
         return thiz;
     }
 
+    public JSValue __nullFunc() {
+        return new JSValue(context);
+    }
+
     protected JSFunction isInstanceOf = null;
     private JSObject thiz = null;
+
+    /* Native Methods */
 
     protected native long make(long ctx, long data);
 
@@ -444,9 +463,9 @@ public class JSObject extends JSValue {
 
     /**
      * @deprecated Function constructors have been removed from JSObject since 3.0.  Use JSFunction instead.
-     * @param ctx
-     * @param iface
-     * @param subclass
+     * @param ctx deprecated
+     * @param iface deprecated
+     * @param subclass deprecated
      * @since 1.0
      * @throws JSException
      */
@@ -457,9 +476,9 @@ public class JSObject extends JSValue {
 
     /**
      * @deprecated Function constructors have been removed from JSObject since 3.0.  Use JSFunction instead.
-     * @param ctx
-     * @param invoke
-     * @param method
+     * @param ctx deprecated
+     * @param invoke deprecated
+     * @param method deprecated
      * @since 1.0
      * @throws JSException
      */
@@ -471,9 +490,9 @@ public class JSObject extends JSValue {
     /**
      * @deprecated Function calls have been removed from JSObject since 3.0.  Use JSFunction.call or
      *             JSFunction.apply instead
-     * @param thiz
-     * @param args
-     * @return
+     * @param thiz deprecated
+     * @param args deprecated
+     * @return deprecated
      * @since 1.0
      * @throws JSException
      */
@@ -485,8 +504,8 @@ public class JSObject extends JSValue {
     /**
      * @deprecated Function calls have been removed from JSObject since 3.0.  Use JSFunction.call or
      *             JSFunction.apply instead
-     * @param thiz
-     * @return
+     * @param thiz deprecated
+     * @return deprecated
      * @since 2.2
      * @throws JSException
      */
@@ -498,8 +517,8 @@ public class JSObject extends JSValue {
     /**
      * @deprecated Function calls have been removed from JSObject since 3.0.  Use JSFunction.call or
      *             JSFunction.apply instead
-     * @param args
-     * @return
+     * @param args deprecated
+     * @return deprecated
      * @since 2.2
      * @throws JSException
      */
@@ -511,7 +530,7 @@ public class JSObject extends JSValue {
     /**
      * @deprecated Function calls have been removed from JSObject since 3.0.  Use JSFunction.call or
      *             JSFunction.apply instead
-     * @return
+     * @return deprecated
      * @since 2.2
      * @throws JSException
      */
@@ -523,7 +542,7 @@ public class JSObject extends JSValue {
     /**
      * @deprecated Constructor functions have been removed from JSObject since 3.0.  Use
      *             JSFunction.prototype() instead
-     * @return
+     * @return deprecated
      */
     @Deprecated
     public JSValue prototype() {
@@ -533,8 +552,8 @@ public class JSObject extends JSValue {
     /**
      * @deprecated Constructor functions have been removed from JSObject since 3.0.  Use
      *             JSFunction.prototype() instead
-     * @param proto
-     * @return
+     * @param proto deprecated
+     * @return deprected
      */
     @Deprecated
     public void prototype(JSValue proto) {

@@ -48,17 +48,53 @@ import java.util.Set;
  * A JSObject shadow class which implements the Java Map interface.  Convenient
  * for setting/getting/iterating properties.
  */
-public class JSMap<K, V> implements Map<K, V> {
+public class JSMap<V> implements Map<String, V> {
+    /**
+     * Creates a new Map object which operates on object 'object' and assumes type 'cls'.
+     * Example:
+     * <code>
+     *     java.util.Map<String,Double> map = new JSMap<String,Double>(object,Double.class);
+     * </code>
+     * @param object The JSObject whose properties will be mapped
+     * @param cls    The class of the component Values; must match template
+     * @since 3.0
+     */
     public JSMap(JSObject object, Class<V> cls) {
         mObject = object;
         mType = cls;
     }
 
-    public JSMap(JSContext context, Map <K,V> map, Class<V> cls) {
+    /**
+     * Creates a new Map object and underlying JSObject and sets initial properties in 'map'.
+     * Assumes value class of type 'cls'.
+     * Example:
+     * <code>
+     *     java.util.Map<String,Double> map = new HashMap<>();
+     *     map.put("one",1.0);
+     *     map.put("two",2.0);
+     *     java.util.Map<String,Double> jsmap = new JSMap<String,Double>(context,map,Double.class)
+     * </code>
+     * @param context  The JSContext in which to create the object
+     * @param map      The initial properties to set
+     * @param cls      The class of the component Values; must match template
+     * @since 3.0
+     */
+    public JSMap(JSContext context, Map map, Class<V> cls) {
         mObject = new JSObject(context,map);
         mType = cls;
     }
 
+    /**
+     * Creates a new Map object and underlying JSObject with no initial properties.
+     * Assumes value class of type 'cls'.
+     * Example:
+     * <code>
+     *     java.util.Map<String,Double> jsmap = new JSMap<String,Double>(context,Double.class)
+     * </code>
+     * @param context  The JSContext in which to create the object
+     * @param cls      The class of the component Values; must match template
+     * @since 3.0
+     */
     public JSMap(JSContext context, Class<V> cls) {
         mObject = new JSObject(context);
         mType = cls;
@@ -67,6 +103,11 @@ public class JSMap<K, V> implements Map<K, V> {
     private final JSObject mObject;
     private final Class<V> mType;
 
+    /**
+     * Gets the underlying JSObject for this map
+     * @return the underlying JSObject
+     * @since 3.0
+     */
     public JSObject getJSObject() {
         return mObject;
     }
@@ -81,6 +122,7 @@ public class JSMap<K, V> implements Map<K, V> {
 
     /**
      * @see java.util.Map#isEmpty()
+     * @since 3.0
      */
     @Override
     public boolean isEmpty() {
@@ -89,6 +131,7 @@ public class JSMap<K, V> implements Map<K, V> {
 
     /**
      * @see java.util.Map#containsKey(java.lang.Object)
+     * @since 3.0
      */
     @Override
     public boolean containsKey(final Object key) {
@@ -97,6 +140,7 @@ public class JSMap<K, V> implements Map<K, V> {
 
     /**
      * @see java.util.Map#containsValue(java.lang.Object)
+     * @since 3.0
      */
     @Override
     public boolean containsValue(final Object value) {
@@ -108,40 +152,32 @@ public class JSMap<K, V> implements Map<K, V> {
         return false;
     }
 
-    private class GenericClass<T> {
-
-        private final Class<T> type;
-
-        public GenericClass(Class<T> type) {
-            this.type = type;
-        }
-
-        public Class<T> getMyType() {
-            return this.type;
-        }
-    }
-
     /**
      * @see java.util.Map#get(java.lang.Object)
+     * @since 3.0
      */
     @Override
     @SuppressWarnings("unchecked")
     public V get(final Object key) {
-        return (V) mObject.property(key.toString()).toJavaObject(mType);
+        JSValue val = mObject.property(key.toString());
+        if (val.isUndefined()) return null;
+        return (V) val.toJavaObject(mType);
     }
 
     /**
      * @see java.util.Map#put(java.lang.Object, java.lang.Object)
+     * @since 3.0
      */
     @Override
-    public V put(final K key, final V value) {
+    public V put(final String key, final V value) {
         final V oldValue = get(key);
-        mObject.property(key.toString(),value);
+        mObject.property(key,value);
         return oldValue;
     }
 
     /**
      * @see java.util.Map#remove(java.lang.Object)
+     * @since 3.0
      */
     @Override
     public V remove(final Object key) {
@@ -152,16 +188,18 @@ public class JSMap<K, V> implements Map<K, V> {
 
     /**
      * @see java.util.Map#putAll(java.util.Map)
+     * @since 3.0
      */
     @Override
-    public void putAll(final @NonNull Map<? extends K, ? extends V> map) {
-        for (K key : map.keySet()) {
+    public void putAll(final @NonNull Map<? extends String, ? extends V> map) {
+        for (String key : map.keySet()) {
             put(key,map.get(key));
         }
     }
 
     /**
      * @see java.util.Map#clear()
+     * @since 3.0
      */
     @Override
     public void clear()
@@ -173,6 +211,7 @@ public class JSMap<K, V> implements Map<K, V> {
 
     /**
      * @see java.util.Map#keySet()
+     * @since 3.0
      */
     @Override
     @SuppressWarnings("unchecked")
@@ -182,6 +221,7 @@ public class JSMap<K, V> implements Map<K, V> {
 
     /**
      * @see java.util.Map#values()
+     * @since 3.0
      */
     @Override
     public @NonNull Collection<V> values()
@@ -204,10 +244,15 @@ public class JSMap<K, V> implements Map<K, V> {
             {
                 return mObject.propertyNames().length;
             }
+
+            @Override
+            public boolean contains(Object val) {
+                return containsValue(val);
+            }
         };
     }
 
-    private class SetIterator implements Iterator<Entry<K,V>> {
+    private class SetIterator implements Iterator<Entry<String,V>> {
         private String current = null;
 
         public SetIterator() {
@@ -230,20 +275,20 @@ public class JSMap<K, V> implements Map<K, V> {
 
         @Override
         @SuppressWarnings("unchecked")
-        public Entry<K,V> next() {
+        public Entry<String,V> next() {
             if (current == null)
                 throw new NoSuchElementException();
 
             String [] properties = mObject.propertyNames();
-            Entry<K,V> entry = null;
+            Entry<String,V> entry = null;
             int i = 0;
             for (; i<properties.length; i++) {
                 if (current.equals(properties[i])) {
                     final Object key = properties[i];
-                    entry = new Entry<K, V>() {
+                    entry = new Entry<String, V>() {
                         @Override
-                        public K getKey() {
-                            return (K) key;
+                        public String getKey() {
+                            return (String) key;
                         }
 
                         @Override
@@ -253,7 +298,7 @@ public class JSMap<K, V> implements Map<K, V> {
 
                         @Override
                         public V setValue(V object) {
-                            return put((K)key,object);
+                            return put((String)key,object);
                         }
                     };
                     break;
@@ -272,20 +317,21 @@ public class JSMap<K, V> implements Map<K, V> {
 
         @Override
         public void remove() {
-            Entry<K,V> entry = next();
-            mObject.deleteProperty(entry.getKey().toString());
+            Entry<String,V> entry = next();
+            mObject.deleteProperty(entry.getKey());
         }
     }
 
     /**
      * @see java.util.Map#entrySet()
+     * @since 3.0
      */
     @Override
-    public @NonNull Set<Entry<K, V>> entrySet() {
-        return new AbstractSet<Entry<K, V>>() {
+    public @NonNull Set<Entry<String, V>> entrySet() {
+        return new AbstractSet<Entry<String, V>>() {
 
             @Override
-            public @NonNull Iterator<Entry<K, V>> iterator() {
+            public @NonNull Iterator<Entry<String, V>> iterator() {
                 return new SetIterator();
             }
 

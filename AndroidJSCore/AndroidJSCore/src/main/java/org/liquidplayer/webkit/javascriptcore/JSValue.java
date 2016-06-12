@@ -507,8 +507,11 @@ public class JSValue {
 		return toJSON(0);
 	}
 
+    @SuppressWarnings("unchecked")
     protected Object toJavaObject(Class clazz) {
-        if (clazz == Map.class)
+        if (clazz == Object.class)
+            return this;
+        else if (clazz == Map.class)
             return new JSMap(toObject(),Object.class);
         else if (clazz == List.class)
             return toJSArray();
@@ -528,9 +531,8 @@ public class JSValue {
             return toJSString();
         else if (JSObject.class.isAssignableFrom(clazz))
             return clazz.cast(toObject());
-        else if (clazz.isArray()) {
+        else if (clazz.isArray())
             return toJSArray().toArray(clazz.getComponentType());
-        }
         else if (JSValue.class.isAssignableFrom(clazz))
             return clazz.cast(this);
         return null;

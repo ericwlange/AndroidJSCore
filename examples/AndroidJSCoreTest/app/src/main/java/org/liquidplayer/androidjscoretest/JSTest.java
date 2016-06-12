@@ -51,9 +51,7 @@ public class JSTest {
                             .setCancelable(false)
                             .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int id) {
-                                    // if this button is clicked, close
-                                    // current activity
-                                    activity.finish();
+                                    dialog.dismiss();
                                 }
                             });
 

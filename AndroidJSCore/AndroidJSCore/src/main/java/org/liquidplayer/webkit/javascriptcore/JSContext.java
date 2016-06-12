@@ -32,9 +32,6 @@
 */
 package org.liquidplayer.webkit.javascriptcore;
 
-import android.os.Handler;
-import android.os.Looper;
-
 import org.liquidplayer.hemroid.JavaScriptCoreGTK;
 
 import java.lang.ref.WeakReference;
@@ -281,7 +278,7 @@ public class JSContext extends JSObject {
 	 * @param obj  The object with which to associate with this context
 	 * @since 1.0
 	 */
-	public synchronized  void persistObject(JSObject obj) {
+	protected synchronized  void persistObject(JSObject obj) {
 		objects.put(obj.valueRef(), new WeakReference<JSObject>(obj));
 	}
 	/**
@@ -290,7 +287,7 @@ public class JSContext extends JSObject {
 	 * @param obj the JSObject to dereference
 	 * @since 1.0
 	 */
-	public synchronized void finalizeObject(JSObject obj) {
+	protected synchronized void finalizeObject(JSObject obj) {
         objects.remove(obj.valueRef());
     }
 	/**

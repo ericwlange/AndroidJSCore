@@ -1,8 +1,14 @@
 package org.liquidplayer.androidjscoretest;
 
 import org.liquidplayer.webkit.javascriptcore.JSContext;
+import org.liquidplayer.webkit.javascriptcore.JSObject;
 import org.liquidplayer.webkit.javascriptcore.JSString;
 import org.liquidplayer.webkit.javascriptcore.JSValue;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Eric on 5/7/16.
@@ -13,12 +19,28 @@ public class JSValueTest extends JSTest {
     public void testJSValueConstructors() throws TestAssertException {
         println("Test JSValue creation methods");
         JSContext context = track(new JSContext(),"testJSValueConstructors:context");
+
+        /**
+         * new JSValue(context)
+         */
         JSValue undefined = new JSValue(context);
         tAssert(undefined.isUndefined(), "JSValue(context) -> undefined");
+
+        /**
+         * new JSValue(context,null)
+         */
         JSValue NULL = new JSValue(context,null);
         tAssert(NULL.isNull(), "JSValue(context,null) -> null");
+
+        /**
+         * new JSValue(context,boolean)
+         */
         JSValue bool = new JSValue(context,false);
         tAssert(bool.isBoolean(), "JSValue(context,<Boolean>) -> boolean");
+
+        /**
+         * new JSValue(context,number)
+         */
         JSValue integer = new JSValue(context,50);
         JSValue doub = new JSValue(context,50.0);
         JSValue lng = new JSValue(context,50L);
@@ -27,12 +49,49 @@ public class JSValueTest extends JSTest {
         tAssert(doub.isNumber(), "JSValue(context,<Double>) -> number");
         tAssert(lng.isNumber(), "JSValue(context,<Long>) -> number");
         tAssert(flt.isNumber(), "JSValue(context,<Float>) -> number");
+
+        /**
+         * new JSValue(context,string)
+         */
         JSValue str1 = new JSValue(context,"This is a string");
         JSValue str2 = new JSValue(context,new JSString("This is a string on drugs"));
         tAssert(str1.isString(), "JSValue(context,<String>) -> string");
         tAssert(str2.isString(), "JSValue(context,<JSString>) -> string");
+
+        /**
+         * new JSValue(context,Object)
+         */
         JSValue alsoUndefined = new JSValue(context,new Object());
         tAssert(alsoUndefined.isUndefined(), "JSValue(context,<RandomObject>) -> undefined");
+
+        /**
+         * new JSValue(context,Map)
+         */
+        Map<String,Integer> map = new HashMap<>();
+        map.put("one",1);
+        map.put("two",2);
+        JSValue mapValue = new JSValue(context,map);
+        tAssert(mapValue.isObject() && mapValue.toObject().property("two").equals(2),
+                "JSValue(context,<map>) -> JSObject");
+
+        /**
+         * new JSValue(context,List)
+         */
+        List<String> list = new ArrayList<>();
+        list.add("first");
+        list.add("second");
+        JSValue listValue = new JSValue(context,list);
+        tAssert(listValue.isArray() && listValue.toJSArray().get(1).equals("second"),
+                "JSValue(context,<list>) -> JSArray");
+
+        /**
+         * new JSValue(context,Array)
+         */
+        String [] array = new String[] {"first", "second", "third"};
+        JSValue arrayValue = new JSValue(context,array);
+        tAssert(arrayValue.isArray() && arrayValue.toJSArray().get(2).equals("third"),
+                "JSValue(context,<array>) -> JSArray");
+
     }
 
     public void testJSValueTesters() throws TestAssertException {
@@ -174,6 +233,7 @@ public class JSValueTest extends JSTest {
                 "var object = {}; \n" +
                 "var array = []; \n" +
                 "var date = new Date(1970,10,30); \n" +
+                "var func = function(x) {return x+1;};" +
                 "";
         JSContext context = track(new JSContext(),"testJSValueGetters:context");
         context.evaluateScript(script);
@@ -185,9 +245,11 @@ public class JSValueTest extends JSTest {
         JSValue object = context.property("object");
         JSValue array = context.property("array");
         JSValue date = context.property("date");
+        JSValue func = context.property("func");
         tAssert(
                 !undefined.toBoolean() && !NULL.toBoolean() && bool.toBoolean() && number.toBoolean() &&
-                string.toBoolean() && object.toBoolean() && array.toBoolean() && date.toBoolean(),
+                string.toBoolean() && object.toBoolean() && array.toBoolean() && date.toBoolean() &&
+                func.toBoolean(),
                 "JSValue.toBoolean()"
         );
         tAssert(NULL.toNumber().equals(0.0), "<null>.toNumber() == 0");
@@ -197,6 +259,7 @@ public class JSValueTest extends JSTest {
         tAssert(undefined.toNumber().isNaN(), "<undefined>.toNumber() == NaN");
         tAssert(string.toNumber().isNaN(), "'string'.toNumber() == NaN");
         tAssert(object.toNumber().isNaN(), "{}.toNumber() == NaN");
+        tAssert(func.toNumber().isNaN(), "function.toNumber() == NaN");
         println("new Date() = " + date.toNumber());
         tAssert(array.toNumber().equals(0.0) && context.evaluateScript("[1,2,3]").toNumber().isNaN(),
                 "[].toNumber() == 0 && [1,2,3].toNumber() == NaN");
@@ -210,10 +273,10 @@ public class JSValueTest extends JSTest {
         tAssert(number.toString().equals("15.6"), "<number>.toString() = '<number>'");
         tAssert(string.toString().equals("string"), "<string>.toString() = <string>");
 
-        println("object.toString() = " + object.toString());
-        println("array.toString() = " + context.evaluateScript("[1,2,3]").toString());
-        println("date.toString() = " + date.toString());
         tAssert(object.toString().equals("[object Object]"), "object.toString() = '[object Object]'");
+        println("'" + func.toString() + "'");
+        tAssert(func.toString().equals("function (x) {return x+1;}"),
+                "func.toString() = 'function (x) {return x+1;}'");
         tAssert(array.toString().equals(""), "[].toString() == ''");
         tAssert(context.evaluateScript("[1,2,3]").toString().equals("1,2,3"),
                 "[1,2,3].toString() == '1,2,3'");
@@ -227,6 +290,7 @@ public class JSValueTest extends JSTest {
                 "var jsObject = JSON.stringify(object); \n" +
                 "var jsArray = JSON.stringify(array); \n" +
                 "var jsDate = JSON.stringify(date); \n" +
+                "var jsFunc = JSON.stringify(func); \n" +
                 "";
         context.evaluateScript(script2);
         tAssert(bool.toJSON().equals(context.property("jsBool").toString()),
@@ -237,6 +301,8 @@ public class JSValueTest extends JSTest {
                 "<string>.toJSON() -> " + string.toJSON());
         tAssert(object.toJSON().equals(context.property("jsObject").toString()),
                 "<object>.toJSON() -> " + object.toJSON());
+        tAssert(func.toJSON() == null,
+                "<function>.toJSON() -> <null>");
         tAssert(array.toJSON().equals(context.property("jsArray").toString()),
                 "<array>.toJSON() -> " + array.toJSON());
         tAssert(date.toJSON().equals(context.property("jsDate").toString()),
@@ -245,6 +311,25 @@ public class JSValueTest extends JSTest {
                 "<undefined>.toJSON() -> <null>");
         tAssert(NULL.toJSON().equals(context.property("jsNULL").toString()),
                 "<null>.toJSON() -> " + NULL.toJSON());
+
+        /**
+         * toObject()
+         */
+        tAssert(object.toObject() != null && func.toObject() != null &&
+                array.toObject() != null && date.toObject() != null,
+                "JSValue.toObject()");
+
+        /**
+         * toFunction()
+         */
+        tAssert(func.toFunction() != null && func.toFunction().call(null,5).equals(6),
+                "JSValue.toFunction()");
+
+        /**
+         * toJSArray()
+         */
+        tAssert(array.toJSArray() != null && array.toJSArray().size() == 0,
+                "JSValue.toJSArray()");
 
         context.garbageCollect();
     }

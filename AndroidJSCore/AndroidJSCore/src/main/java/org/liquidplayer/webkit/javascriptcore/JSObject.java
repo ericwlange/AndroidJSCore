@@ -383,6 +383,11 @@ public class JSObject extends JSValue {
         return runnable.jni.bool;
     }
 
+    @Override
+    public int hashCode() {
+        return valueRef().intValue();
+    }
+
     protected final List<JSObject> zombies = new ArrayList<JSObject>();
 
     @Override

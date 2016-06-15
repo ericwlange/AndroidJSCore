@@ -70,7 +70,7 @@ public class JSFunctionTest extends JSTest {
                     Double.toString(doubleParam2),
                     stringParam,
                     booleanParam.toString(),
-                    new JSArray(context,arrayParam).toJSON()
+                    new JSArray<Object>(context,arrayParam,Object.class).toJSON()
             };
         }
         final public String script =

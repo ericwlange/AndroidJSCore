@@ -165,7 +165,7 @@ public class JSObjectTest extends JSTest {
         map.put("two",2.0);
         map.put("string","this is a string");
         map.put("object",new JSObject(context));
-        map.put("array",new JSArray<>(context, new Integer[] {1,2,3}));
+        map.put("array",new JSArray<Integer>(context, new Integer[] {1,2,3}, Integer.class));
         map.put("func",new JSFunction(context,"func") {
            public int func(int x) {
                return x+1;

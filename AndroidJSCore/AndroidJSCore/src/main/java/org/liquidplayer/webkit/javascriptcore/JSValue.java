@@ -97,10 +97,10 @@ public class JSValue {
                     valueRef = new JSMap(context, (Map)val, Object.class).getJSObject().valueRef();
                     protect(context.ctxRef(), valueRef);
                 } else if (val instanceof List) {
-                    valueRef = new JSArray<>(context, (List) val).valueRef();
+                    valueRef = new JSArray<Object>(context, (List) val, Object.class).valueRef();
                     protect(context.ctxRef(), valueRef);
                 } else if (val.getClass().isArray()) {
-                    valueRef = new JSArray<>(context, (Object[])val).valueRef();
+                    valueRef = new JSArray<Object>(context, (Object[])val, Object.class).valueRef();
                     protect(context.ctxRef(), valueRef);
                 } else if (val instanceof Boolean) {
                     valueRef = makeBoolean(context.ctxRef(), (Boolean)val);
@@ -538,6 +538,15 @@ public class JSValue {
         return null;
     }
 
+    @Override
+    public int hashCode() {
+        if (isBoolean()) return toBoolean().hashCode();
+        else if (isNumber()) return toNumber().hashCode();
+        else if (isString()) return toString().hashCode();
+        else if (isUndefined() || isNull()) return 0;
+        else return super.hashCode();
+    }
+
     /**
 	 * Gets the JSContext of this value
 	 * @return the JSContext of this value
@@ -586,7 +595,7 @@ public class JSValue {
 	protected native JNIReturnObject toNumber(long ctxRef, long valueRef);
 	protected native JNIReturnObject toStringCopy(long ctxRef, long valueRef);
 	protected native JNIReturnObject toObject(long ctxRef, long valueRef);
-	private native void protect(long ctx, long valueRef); /**/
+	protected native void protect(long ctx, long valueRef); /**/
 	protected native void unprotect(long ctx, long valueRef); /**/
 	protected native void setException(long valueRef, long exceptionRefRef);
 }

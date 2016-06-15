@@ -418,7 +418,7 @@ public class JSFunction extends JSObject {
                         else if (o instanceof JSValue)
                             v = (JSValue)o;
                         else if (o instanceof Object[])
-                            v = new JSArray(context, (Object[])o);
+                            v = new JSArray<Object>(context, (Object[])o, Object.class);
                         else
                             v = new JSValue(context,o);
                         largs.add(v);

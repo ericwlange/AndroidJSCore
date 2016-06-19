@@ -52,74 +52,74 @@ import java.util.NoSuchElementException;
  */
 public class JSArray<T> extends JSObject implements List<T> {
 
-	/**
-	 * Creates a JavaScript array object, initialized with 'array' JSValues
-	 * @param ctx  The JSContext to create the array in
-	 * @param array  An array of JSValues with which to initialize the JavaScript array object
-     * @param cls  The class of the component objects
-	 * @since 3.0
-	 * @throws JSException
-	 */
-    @SuppressWarnings("unused")
-	public JSArray(JSContext ctx, JSValue [] array, Class<T> cls) throws JSException {
-		context = ctx;
-        mType = cls;
-		long [] valueRefs = new long[array.length];
-		for (int i=0; i<array.length; i++) {
-			valueRefs[i] = array[i].valueRef();
-		}
-		JNIReturnObject jni = makeArray(context.ctxRef(), valueRefs);
-		if (jni.exception!=0) {
-			context.throwJSException(new JSException(new JSValue(jni.exception, context)));
-            jni.reference = make(context.ctxRef(), 0L);
-		}
-		valueRef = jni.reference;
-        context.persistObject(this);
-	}
-
-	/**
-	 * Creates an empty JavaScript array object
-	 * @param ctx  The JSContext to create the array in
+    /**
+     * Creates a JavaScript array object, initialized with 'array' JSValues
+     * @param ctx  The JSContext to create the array in
+     * @param array  An array of JSValues with which to initialize the JavaScript array object
      * @param cls  The class of the component objects
      * @since 3.0
-	 * @throws JSException
-	 */
-	public JSArray(JSContext ctx, Class<T> cls) throws JSException {
-		context = ctx;
+     * @throws JSException
+     */
+    @SuppressWarnings("unused")
+    public JSArray(JSContext ctx, JSValue [] array, Class<T> cls) throws JSException {
+        context = ctx;
         mType = cls;
-        long [] valueRefs = new long[0];
-		JNIReturnObject jni = makeArray(context.ctxRef(), valueRefs);
-		if (jni.exception!=0) {
-			context.throwJSException(new JSException(new JSValue(jni.exception, context)));
-            jni.reference = make(context.ctxRef(), 0L);
-		}
-		valueRef = jni.reference;
-        context.persistObject(this);
-	}
-
-	/**
-	 * Creates a JavaScript array object, initialized with 'array' Java values
-	 * @param ctx  The JSContext to create the array in
-	 * @param array  An array of Java objects with which to initialize the JavaScript array object.  Each
-	 *               Object will be converted to a JSValue
-     * @param cls  The class of the component objects
-	 * @since 3.0
-	 * @throws JSException
-	 */
-	public JSArray(JSContext ctx, Object [] array, Class<T> cls) throws JSException {
-		context = ctx;
-        mType = cls;
-		long [] valueRefs = new long[array.length];
-		for (int i=0; i<array.length; i++) {
-			JSValue v = new JSValue(context,array[i]);
-			valueRefs[i] = v.valueRef();
-		}
-		JNIReturnObject jni = makeArray(context.ctxRef(), valueRefs);
+        long [] valueRefs = new long[array.length];
+        for (int i=0; i<array.length; i++) {
+            valueRefs[i] = array[i].valueRef();
+        }
+        JNIReturnObject jni = makeArray(context.ctxRef(), valueRefs);
         if (jni.exception!=0) {
             context.throwJSException(new JSException(new JSValue(jni.exception, context)));
             jni.reference = make(context.ctxRef(), 0L);
         }
-		valueRef = jni.reference;
+        valueRef = jni.reference;
+        context.persistObject(this);
+    }
+
+    /**
+     * Creates an empty JavaScript array object
+     * @param ctx  The JSContext to create the array in
+     * @param cls  The class of the component objects
+     * @since 3.0
+     * @throws JSException
+     */
+    public JSArray(JSContext ctx, Class<T> cls) throws JSException {
+        context = ctx;
+        mType = cls;
+        long [] valueRefs = new long[0];
+        JNIReturnObject jni = makeArray(context.ctxRef(), valueRefs);
+        if (jni.exception!=0) {
+            context.throwJSException(new JSException(new JSValue(jni.exception, context)));
+            jni.reference = make(context.ctxRef(), 0L);
+        }
+        valueRef = jni.reference;
+        context.persistObject(this);
+    }
+
+    /**
+     * Creates a JavaScript array object, initialized with 'array' Java values
+     * @param ctx  The JSContext to create the array in
+     * @param array  An array of Java objects with which to initialize the JavaScript array object.  Each
+     *               Object will be converted to a JSValue
+     * @param cls  The class of the component objects
+     * @since 3.0
+     * @throws JSException
+     */
+    public JSArray(JSContext ctx, Object [] array, Class<T> cls) throws JSException {
+        context = ctx;
+        mType = cls;
+        long [] valueRefs = new long[array.length];
+        for (int i=0; i<array.length; i++) {
+            JSValue v = new JSValue(context,array[i]);
+            valueRefs[i] = v.valueRef();
+        }
+        JNIReturnObject jni = makeArray(context.ctxRef(), valueRefs);
+        if (jni.exception!=0) {
+            context.throwJSException(new JSException(new JSValue(jni.exception, context)));
+            jni.reference = make(context.ctxRef(), 0L);
+        }
+        valueRef = jni.reference;
         context.persistObject(this);
     }
 
@@ -138,17 +138,17 @@ public class JSArray<T> extends JSObject implements List<T> {
     }
 
     /**
-	 * Wraps an existing JavaScript object and treats it as an array.
-	 * @param objRef  The JavaScriptCore reference to the object
-	 * @param ctx  The JSContext in which the array exists
-	 * @since 1.0
-	 * @throws JSException
-	 */
+     * Wraps an existing JavaScript object and treats it as an array.
+     * @param objRef  The JavaScriptCore reference to the object
+     * @param ctx  The JSContext in which the array exists
+     * @since 1.0
+     * @throws JSException
+     */
     @SuppressWarnings("unchecked")
-	public JSArray(long objRef, JSContext ctx) throws JSException {
-		super(objRef,ctx);
+    public JSArray(long objRef, JSContext ctx) throws JSException {
+        super(objRef,ctx);
         mType = (Class<T>) Object.class;
-	}
+    }
 
     private JSArray(JSArray<T> superList, int leftBuffer, int rightBuffer, Class<T> cls) {
         mType = cls;
@@ -173,71 +173,71 @@ public class JSArray<T> extends JSObject implements List<T> {
      * @throws JSException
      */
     public Object[] toArray(Class clazz) throws JSException {
-		int count = size();
+        int count = size();
 
-		Object [] array = (Object[]) Array.newInstance(clazz,count);
+        Object [] array = (Object[]) Array.newInstance(clazz,count);
         for (int i=0; i<count; i++) {
-			array[i] = propertyAtIndex(i).toJavaObject(clazz);
-		}
-		return array;
-	}
+            array[i] = propertyAtIndex(i).toJavaObject(clazz);
+        }
+        return array;
+    }
 
-	/**
-	 * Extracts Java JSValue array from JavaScript array
+    /**
+     * Extracts Java JSValue array from JavaScript array
      * @see List#toArray()
-	 * @return JavaScript array as Java array of JSValues
-	 * @throws JSException
-	 */
+     * @return JavaScript array as Java array of JSValues
+     * @throws JSException
+     */
     @Override @NonNull
-	public Object [] toArray() throws JSException {
-		return toArray(mType);
-	}
-	
-	/**
-	 * Gets JSValue at 'index'
+    public Object [] toArray() throws JSException {
+        return toArray(mType);
+    }
+
+    /**
+     * Gets JSValue at 'index'
      * @see List#get(int)
-	 * @param index  Index of the element to get
-	 * @return  The JSValue at index 'index'
-	 * @since 1.0
-	 * @throws JSException
-	 */
+     * @param index  Index of the element to get
+     * @return  The JSValue at index 'index'
+     * @since 1.0
+     * @throws JSException
+     */
     @Override
     @SuppressWarnings("unchecked")
-	public T get(final int index) {
-		int count = size();
-		if (index >= count) {
-			throw new ArrayIndexOutOfBoundsException();
-		}
-		return (T) propertyAtIndex(index).toJavaObject(mType);
-	}
+    public T get(final int index) {
+        int count = size();
+        if (index >= count) {
+            throw new ArrayIndexOutOfBoundsException();
+        }
+        return (T) propertyAtIndex(index).toJavaObject(mType);
+    }
 
-	/**
-	 * Adds a JSValue to the end of an array.  The Java Object is converted to a JSValue.
+    /**
+     * Adds a JSValue to the end of an array.  The Java Object is converted to a JSValue.
      * @see List#add(Object)
-	 * @param val  The Java object to add to the array, will get converted to a JSValue
-	 * @since 1.0
-	 * @throws JSException
-	 */
+     * @param val  The Java object to add to the array, will get converted to a JSValue
+     * @since 1.0
+     * @throws JSException
+     */
     @Override
-	public boolean add(final T val) throws JSException {
-		int count = size();
-		JSValue newVal = new JSValue(context,val);
-		propertyAtIndex(count,newVal);
+    public boolean add(final T val) throws JSException {
+        int count = size();
+        JSValue newVal = new JSValue(context,val);
+        propertyAtIndex(count,newVal);
         return true;
-	}
+    }
 
     /**
      * @see List#size()
      * @since 3.0
      */
     @Override
-	public int size() {
+    public int size() {
         if (mSuperList == null) {
             return property("length").toNumber().intValue();
         } else {
             return Math.max(0, mSuperList.size() - mLeftBuffer - mRightBuffer);
         }
-	}
+    }
 
     @Override
     public JSValue propertyAtIndex(final int index) {

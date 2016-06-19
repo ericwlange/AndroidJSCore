@@ -413,6 +413,7 @@ public class JSFunction extends JSObject {
                 if (args!=null) {
                     for (Object o: args) {
                         JSValue v;
+                        if (o == null) break;
                         if (o.getClass() == Void.class)
                             v = new JSValue(context);
                         else if (o instanceof JSValue)

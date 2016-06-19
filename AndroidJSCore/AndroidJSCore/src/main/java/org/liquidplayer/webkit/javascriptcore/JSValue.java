@@ -97,10 +97,10 @@ public class JSValue {
                     valueRef = new JSMap(context, (Map)val, Object.class).getJSObject().valueRef();
                     protect(context.ctxRef(), valueRef);
                 } else if (val instanceof List) {
-                    valueRef = new JSArray<Object>(context, (List) val, Object.class).valueRef();
+                    valueRef = new JSArray<JSValue>(context, (List) val, JSValue.class).valueRef();
                     protect(context.ctxRef(), valueRef);
                 } else if (val.getClass().isArray()) {
-                    valueRef = new JSArray<Object>(context, (Object[])val, Object.class).valueRef();
+                    valueRef = new JSArray<JSValue>(context, (Object[])val, JSValue.class).valueRef();
                     protect(context.ctxRef(), valueRef);
                 } else if (val instanceof Boolean) {
                     valueRef = makeBoolean(context.ctxRef(), (Boolean)val);

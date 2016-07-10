@@ -140,8 +140,6 @@ NATIVE(JSContext,jobject,evaluateScript) (PARAMS, jlong ctx, jlong script,
 	fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (jlong) exception);
 
-    env->DeleteLocalRef(ret);
-
 	return out;
 }
 
@@ -165,8 +163,6 @@ NATIVE(JSContext,jobject,checkScriptSyntax) (PARAMS, jlong ctx, jlong script,
 
 	fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (jlong) exception);
-
-    env->DeleteLocalRef(ret);
 
 	return out;
 }

@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.liquidplayer.hemroidlib">
+    package="org.liquidplayer.webkit.javascriptcore">
 
     <application
         android:allowBackup="true"

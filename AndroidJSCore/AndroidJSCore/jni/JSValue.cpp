@@ -98,8 +98,6 @@ NATIVE(JSValue,jobject,isEqual) (PARAMS, jlong ctxRef, jlong a, jlong b)
 	fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (long)exception);
 
-    env->DeleteLocalRef(ret);
-
 	return out;
 }
 
@@ -126,8 +124,6 @@ NATIVE(JSValue,jobject,isInstanceOfConstructor) (PARAMS, jlong ctxRef, jlong val
 
 	fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (long)exception);
-
-    env->DeleteLocalRef(ret);
 
 	return out;
 }
@@ -200,8 +196,6 @@ NATIVE(JSValue,jobject,createJSONString) (PARAMS, jlong ctxRef, jlong valueRef, 
 	fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (long)exception);
 
-    env->DeleteLocalRef(ret);
-
 	return out;
 }
 
@@ -229,8 +223,6 @@ NATIVE(JSValue,jobject,toNumber) (PARAMS, jlong ctxRef, jlong valueRef)
 	fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (long) exception);
 
-    env->DeleteLocalRef(ret);
-
 	return out;
 }
 
@@ -253,8 +245,6 @@ NATIVE(JSValue,jobject,toStringCopy) (PARAMS, jlong ctxRef, jlong valueRef)
 	fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (long) exception);
 
-    env->DeleteLocalRef(ret);
-
 	return out;
 }
 
@@ -275,8 +265,6 @@ NATIVE(JSValue,jobject,toObject) (PARAMS, jlong ctxRef, jlong valueRef)
 
 	fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (long) exception);
-
-    env->DeleteLocalRef(ret);
 
 	return out;
 }

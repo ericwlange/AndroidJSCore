@@ -39,7 +39,6 @@ NATIVE(JSString,jlong,createWithCharacters) (PARAMS, jstring str)
 	JSStringRef string = JSStringRetain(JSStringCreateWithCharacters(chars,
 	    env->GetStringLength(str)));
 	env->ReleaseStringChars(str,chars);
-	env->DeleteLocalRef(str);
 	return (long)string;
 }
 
@@ -48,7 +47,6 @@ NATIVE(JSString,jlong,createWithUTF8CString) (PARAMS, jstring str)
     const char *string = env->GetStringUTFChars(str, NULL);
 	JSStringRef ret = JSStringRetain(JSStringCreateWithUTF8CString(string));
 	env->ReleaseStringUTFChars(str, string);
-	env->DeleteLocalRef(str);
 	return (long)ret;
 }
 
@@ -85,7 +83,6 @@ NATIVE(JSString,jboolean,isEqualToUTF8CString) (PARAMS, jlong a, jstring b) {
 	const char *string = env->GetStringUTFChars(b, NULL);
 	jboolean ret = JSStringIsEqualToUTF8CString((JSStringRef)a, string);
 	env->ReleaseStringUTFChars(b, string);
-	env->DeleteLocalRef(b);
 	return ret;
 }
 

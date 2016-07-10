@@ -7,10 +7,10 @@ android {
     buildToolsVersion "23.0.2"
 
     defaultConfig {
-        minSdkVersion 9
+        minSdkVersion 11
         targetSdkVersion 23
         versionCode 3
-        versionName "3.0-pre1"
+        versionName "3.0-pre2"
         setProperty("archivesBaseName", "AndroidJSCore-$versionName")
     }
     buildTypes {

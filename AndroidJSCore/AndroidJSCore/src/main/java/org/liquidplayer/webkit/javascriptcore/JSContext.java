@@ -32,11 +32,16 @@
 */
 package org.liquidplayer.webkit.javascriptcore;
 
+import android.os.Handler;
+import android.os.Looper;
+
 import org.liquidplayer.hemroid.JavaScriptCoreGTK;
 
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -45,14 +50,39 @@ import java.util.Map;
  */
 public class JSContext extends JSObject {
 
-    private final JSWorkerQueue mWorker = new JSWorkerQueue();
+    private final JSWorkerQueue mWorker = new JSWorkerQueue(new Runnable() {
+        @Override
+        public void run() {
+            if (deadReferences.size() > 100) {
+                cleanDeadReferences();
+            }
+        }
+    });
 
-    protected void sync(Runnable runnable) {
+    public void sync(Runnable runnable) {
         mWorker.sync(runnable);
     }
     protected void async(Runnable runnable) {
         mWorker.async(runnable);
     }
+
+    public final Object mMutex = new Object();
+
+	private final List<Long> deadReferences = new ArrayList<>();
+
+	protected void markForUnprotection(Long valueR) {
+		synchronized (mMutex) {
+			deadReferences.add(valueR);
+		}
+	}
+	private void cleanDeadReferences() {
+		synchronized (mMutex) {
+            for (Long reference : deadReferences) {
+				unprotect(ctxRef(), reference);
+			}
+			deadReferences.clear();
+		}
+	}
 
 	/**
 	 * Object interface for handling JSExceptions.
@@ -64,7 +94,7 @@ public class JSContext extends JSObject {
 		 * @param exception caught exception
 		 * @since 2.1
 		 */
-        public void handle(JSException exception);
+        void handle(JSException exception);
 	}
 
 	protected Long ctx;
@@ -144,6 +174,7 @@ public class JSContext extends JSObject {
 	@Override
 	protected void finalize() throws Throwable {
         super.finalize();
+        cleanDeadReferences();
         isDefunct = true;
         release(ctx);
         if (mWorker != null) {
@@ -307,12 +338,13 @@ public class JSContext extends JSObject {
                 obj.unprotect(ctxRef(),obj.valueRef());
         }
 		if (obj==null && create) {
+            obj = new JSObject(objRef,this);
             if (isArray(ctxRef(),objRef))
                 obj = new JSArray(objRef,this);
+            else if (JSTypedArray.isTypedArray(obj))
+                obj = JSTypedArray.from(obj);
             else if (isFunction(ctxRef(),objRef))
                 obj = new JSFunction(objRef,this);
-            else
-			    obj = new JSObject(objRef, this);
 		}
 		return obj;
 	}

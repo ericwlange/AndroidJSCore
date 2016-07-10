@@ -79,8 +79,6 @@ NATIVE(JSObject,jobject,makeArray) (PARAMS, jlong ctx, jlongArray args) {
 	fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (long) exception);
 
-	env->DeleteLocalRef(ret);
-
 	delete [] elements;
 	return out;
 }
@@ -110,8 +108,6 @@ NATIVE(JSObject,jobject,makeDate) (PARAMS, jlong ctx, jlongArray args) {
 
 	fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (long) exception);
-
-	env->DeleteLocalRef(ret);
 
 	delete [] elements;
 	return out;
@@ -143,8 +139,6 @@ NATIVE(JSObject,jobject,makeError) (PARAMS, jlong ctx, jlongArray args) {
 	fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (long) exception);
 
-	env->DeleteLocalRef(ret);
-
 	delete [] elements;
 	return out;
 }
@@ -174,8 +168,6 @@ NATIVE(JSObject,jobject,makeRegExp) (PARAMS, jlong ctx, jlongArray args) {
 
 	fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (long) exception);
-
-	env->DeleteLocalRef(ret);
 
 	delete [] elements;
 	return out;
@@ -216,8 +208,6 @@ NATIVE(JSObject,jobject,makeFunction) (PARAMS, jlong ctx, jlong name,
 	fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (long) exception);
 
-	env->DeleteLocalRef(ret);
-
 	delete [] parameterNameArr;
 	return out;
 }
@@ -256,8 +246,6 @@ NATIVE(JSObject,jobject,getProperty) (PARAMS, jlong ctx, jlong object,
 	fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (long) exception);
 
-	env->DeleteLocalRef(ret);
-
 	return out;
 }
 
@@ -275,8 +263,6 @@ NATIVE(JSObject,jobject,setProperty) (PARAMS, jlong ctx, jlong object, jlong pro
 
 	jfieldID fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (long) exception);
-
-	env->DeleteLocalRef(ret);
 
 	return out;
 }
@@ -299,8 +285,6 @@ NATIVE(JSObject,jobject,deleteProperty) (PARAMS, jlong ctx, jlong object,
 
 	fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (long) exception);
-
-	env->DeleteLocalRef(ret);
 
 	return out;
 }
@@ -325,8 +309,6 @@ NATIVE(JSObject,jobject,getPropertyAtIndex) (PARAMS, jlong ctx, jlong object,
 	fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (long) exception);
 
-	env->DeleteLocalRef(ret);
-
 	return out;
 }
 
@@ -347,7 +329,6 @@ NATIVE(JSObject,jobject,setPropertyAtIndex) (PARAMS, jlong ctx, jlong object,
 	fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (long) exception);
 
-	env->DeleteLocalRef(ret);
 
 	return out;
 }
@@ -392,8 +373,6 @@ NATIVE(JSObject,jobject,callAsFunction) (PARAMS, jlong ctx, jlong object,
 	fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (long) exception);
 
-	env->DeleteLocalRef(ret);
-
 	delete [] elements;
 	return out;
 }
@@ -430,8 +409,6 @@ NATIVE(JSObject,jobject,callAsConstructor) (PARAMS, jlong ctx, jlong object,
 
 	fid = env->GetFieldID(ret , "exception", "J");
 	env->SetLongField( out, fid, (long) exception);
-
-	env->DeleteLocalRef(ret);
 
 	delete [] elements;
 	return out;

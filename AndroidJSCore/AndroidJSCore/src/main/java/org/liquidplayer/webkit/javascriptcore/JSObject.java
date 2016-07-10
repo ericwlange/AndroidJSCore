@@ -98,8 +98,8 @@ public class JSObject extends JSValue {
      * this, you must set context and valueRef yourself.
      * @since 3.0
      */
-    public JSObject() {
-    }
+     public JSObject() {
+     }
 
     /**
      * Wraps an existing object from JavaScript

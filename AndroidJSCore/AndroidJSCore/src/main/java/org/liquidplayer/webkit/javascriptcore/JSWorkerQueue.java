@@ -32,102 +32,74 @@
 */
 package org.liquidplayer.webkit.javascriptcore;
 
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
+
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 
 /**
- * Ensures single-threaded access to JavaScriptCore
+ * Ensures JavaScriptCore is not accessed from the main thread
  */
-public class JSWorkerQueue extends Thread {
-
-    private Boolean mReady = false;
-    private int mThreadId;
-    private Boolean mutex = false;
-
-    @Override
-    public void run() {
-        Looper.prepare();
-        workerHandler = new Handler();
-        mThreadId = android.os.Process.myTid();
-        synchronized (mReady) {
-            mReady = true;
-        }
-        Looper.loop();
+public class JSWorkerQueue {
+    public JSWorkerQueue(final Runnable monitor) {
+        mMonitor = monitor;
     }
+    final Runnable mMonitor;
 
-    public Handler workerHandler;
-
-    public JSWorkerQueue() {
-        super();
-        start();
-        Boolean ready = false;
-        while (!ready) {
-            synchronized (mReady) {
-                ready = mReady;
-            }
-        }
-    }
-
-    private class SyncRunnable implements Runnable {
-        SyncRunnable(Runnable runnable) {
-            mRunnable = runnable;
-        }
-        private final Runnable mRunnable;
-        private Boolean mComplete = false;
-        private JSException exception = null;
+    private class JSTask extends AsyncTask<Runnable, Void, JSException> {
         @Override
-        public void run() {
+        public JSException doInBackground(Runnable ... params) {
             try {
-                mRunnable.run();
+                ((Runnable) params[0]).run();
+                mMonitor.run();
             } catch (JSException e) {
-                exception = e;
+                return e;
             }
-            synchronized (mComplete) {
-                mComplete = true;
-            }
-        }
-        public void block() throws JSException {
-            Boolean complete = false;
-            while (!complete) {
-                synchronized (mComplete) {
-                    complete = mComplete;
-                }
-            }
-            if (exception != null) throw exception;
+            return null;
         }
     }
 
     public void sync(final Runnable runnable) throws JSException {
-        int currThreadId = android.os.Process.myTid();
-        if (currThreadId == mThreadId) {
-            runnable.run();
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            try {
+                JSException e = new JSTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, runnable).get();
+                if (e != null) throw e;
+            } catch (ExecutionException e) {
+                Log.e("JSWorkerQueue", e.getMessage());
+            } catch (InterruptedException e) {
+                Thread.interrupted();
+            }
         } else {
-            SyncRunnable syncr = new SyncRunnable(runnable);
-            workerHandler.post(syncr);
-            syncr.block();
+            runnable.run();
+            mMonitor.run();
         }
     }
+
     public void async(final Runnable runnable) {
-        workerHandler.post(runnable);
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            new JSTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, runnable);
+        } else {
+            runnable.run();
+            mMonitor.run();
+        }
     }
 
     public void quit() {
-        synchronized (mutex) {
-            if (!mutex) {
-                workerHandler.getLooper().quit();
-                try {
-                    join();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
-                mutex = true;
-            }
-        }
-    }
 
-    @Override
-    public void finalize() throws Throwable {
-        super.finalize();
-        quit();
     }
-};
+}

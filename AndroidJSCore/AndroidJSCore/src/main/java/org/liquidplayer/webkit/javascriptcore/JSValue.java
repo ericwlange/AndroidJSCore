@@ -33,6 +33,7 @@
 package org.liquidplayer.webkit.javascriptcore;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -59,7 +60,7 @@ public class JSValue {
 	 * @since 1.0
 	 */
 	protected JSValue() {
-	}
+    }
 	/**
 	 * Creates a new undefined JavaScript value
 	 * @param ctx  The context in which to create the value
@@ -112,6 +113,8 @@ public class JSValue {
                     valueRef = makeNumber(context.ctxRef(), ((Integer)val).doubleValue());
                 } else if (val instanceof Long) {
                     valueRef = makeNumber(context.ctxRef(), ((Long)val).doubleValue());
+                } else if (val instanceof Byte) {
+                    valueRef = makeNumber(context.ctxRef(), ((Byte)val).doubleValue());
                 } else if (val instanceof String) {
                     JSString s = new JSString((String)val);
                     valueRef = makeString(context.ctxRef(), s.stringRef);
@@ -140,6 +143,7 @@ public class JSValue {
 				}
                 else {
 					JSValue.this.valueRef = valueRef;
+                    protect(context.ctxRef(), valueRef);
 				}
             }
         });
@@ -461,9 +465,9 @@ public class JSValue {
      * @since 3.0
      * @throws JSException  if not an array
      */
-    public JSArray toJSArray() throws JSException {
-        if (isObject() && toObject() instanceof JSArray) {
-            return (JSArray)toObject();
+    public JSBaseArray toJSArray() throws JSException {
+        if (isObject() && toObject() instanceof JSBaseArray) {
+            return (JSBaseArray)toObject();
         } else if (!isObject()) {
             toObject();
             return null;
@@ -525,14 +529,16 @@ public class JSValue {
             return toNumber().intValue();
         else if (clazz == Long.class || clazz == long.class)
             return toNumber().longValue();
+        else if (clazz == Byte.class || clazz == byte.class)
+            return toNumber().byteValue();
         else if (clazz == Boolean.class || clazz == boolean.class)
             return toBoolean();
         else if (clazz == JSString.class)
             return toJSString();
-        else if (JSObject.class.isAssignableFrom(clazz))
-            return clazz.cast(toObject());
         else if (clazz.isArray())
             return toJSArray().toArray(clazz.getComponentType());
+        else if (JSObject.class.isAssignableFrom(clazz))
+            return clazz.cast(toObject());
         else if (JSValue.class.isAssignableFrom(clazz))
             return clazz.cast(this);
         return null;
@@ -566,7 +572,7 @@ public class JSValue {
 
     protected void unprotect() {
         if (isProtected && !context.isDefunct)
-            unprotect(context.ctxRef(),valueRef);
+            context.markForUnprotection(valueRef());
         isProtected = false;
     }
     private boolean isProtected = true;

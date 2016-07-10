@@ -38,7 +38,12 @@ package org.liquidplayer.webkit.javascriptcore;
  */
 public class JSString {
 
-    private static final JSWorkerQueue workerQueue = new JSWorkerQueue();
+    private static final JSWorkerQueue workerQueue = new JSWorkerQueue(new Runnable() {
+		@Override
+		public void run() {
+
+		}
+	});
 
     private class JNIReturnClass implements Runnable {
         @Override

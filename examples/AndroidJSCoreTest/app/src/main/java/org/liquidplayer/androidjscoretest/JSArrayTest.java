@@ -1,6 +1,7 @@
 package org.liquidplayer.androidjscoretest;
 
 import org.liquidplayer.webkit.javascriptcore.JSArray;
+import org.liquidplayer.webkit.javascriptcore.JSBaseArray;
 import org.liquidplayer.webkit.javascriptcore.JSContext;
 import org.liquidplayer.webkit.javascriptcore.JSDate;
 import org.liquidplayer.webkit.javascriptcore.JSFunction;
@@ -324,7 +325,7 @@ public class JSArrayTest extends JSTest {
 
         // Array.prototype.copyWithin()
         JSArray copyWithin = JSArray.of(context,1,2,3,4,5);
-        JSArray copyWithin2 = copyWithin.copyWithin(-2);
+        JSArray copyWithin2 = (JSArray) copyWithin.copyWithin(-2);
         Integer [] copyWithin3 = new Integer [] { 1,2,3,1,2 };
         tAssert(copyWithin.equals(Arrays.asList(copyWithin3)) &&
                 copyWithin2.equals(Arrays.asList(copyWithin3)), "JSArray.copyWithin()");
@@ -339,9 +340,9 @@ public class JSArrayTest extends JSTest {
         JSArray<Integer> every1 = new JSArray<Integer>(context, JSArray.of(context,12,5,8,130,44), Integer.class);
         JSArray<Integer> every2 = new JSArray<Integer>(context, JSArray.of(context,12,54,18,130,44), Integer.class);
         tAssert(
-        !every1.every(new JSArray.JSArrayEachBooleanCallback<Integer>() {
+        !every1.every(new JSArray.JSBaseArrayEachBooleanCallback<Integer>() {
             @Override
-            public boolean callback(Integer value, int i, JSArray<Integer> jsArray) {
+            public boolean callback(Integer value, int i, JSBaseArray<Integer> jsArray) {
                 return value >= 10;
             }
         }) &&
@@ -351,16 +352,17 @@ public class JSArrayTest extends JSTest {
 
         // Array.prototype.fill()
         JSArray<Integer> fillArray = new JSArray<Integer>(context,copyWithin3,Integer.class);
-        JSArray<Integer> fillArray2 = fillArray.fill(4,1);
+        JSArray<Integer> fillArray2 = (JSArray<Integer>) fillArray.fill(4,1);
         Integer [] fillCompare = new Integer [] { 1,4,4,4,4 };
         tAssert(fillArray.equals(Arrays.asList(fillCompare)) &&
                 fillArray2.equals(Arrays.asList(fillCompare)),
                 "JSArray.fill()");
 
         // Array.prototype.filter()
-        JSArray<Integer> filtered = every1.filter(new JSArray.JSArrayEachBooleanCallback<Integer>() {
+        JSArray<Integer> filtered = (JSArray<Integer>)
+            every1.filter(new JSArray.JSBaseArrayEachBooleanCallback<Integer>() {
             @Override
-            public boolean callback(Integer value, int i, JSArray<Integer> jsArray) {
+            public boolean callback(Integer value, int i, JSBaseArray<Integer> jsArray) {
                 return value >= 10;
             }
         });
@@ -374,9 +376,9 @@ public class JSArrayTest extends JSTest {
         map1.put("quantity", 2);     map2.put("quantity", 0);      map3.put("quantity", 5);
 
         JSArray<Map> inventory = new JSArray<Map>(context,Arrays.asList(map1,map2,map3),Map.class);
-        Map cherries = inventory.find(new JSArray.JSArrayEachBooleanCallback<Map>() {
+        Map cherries = inventory.find(new JSArray.JSBaseArrayEachBooleanCallback<Map>() {
             @Override
-            public boolean callback(Map map, int i, JSArray<Map> jsArray) {
+            public boolean callback(Map map, int i, JSBaseArray<Map> jsArray) {
                 return map.get("name").equals("cherries");
             }
         });
@@ -401,9 +403,9 @@ public class JSArrayTest extends JSTest {
 
         // Array.prototype.forEach()
         final HashMap<Integer,Integer> forEachMap = new HashMap<>();
-        notPrime.forEach(new JSArray.JSArrayForEachCallback<Integer>() {
+        notPrime.forEach(new JSArray.JSBaseArrayForEachCallback<Integer>() {
             @Override
-            public void callback(Integer integer, int i, JSArray<Integer> jsArray) {
+            public void callback(Integer integer, int i, JSBaseArray<Integer> jsArray) {
                 forEachMap.put(i,integer);
             }
         });
@@ -442,10 +444,10 @@ public class JSArrayTest extends JSTest {
         tAssert(keysArr.size()==1002 && keysArr.pop().equals("One-Thousand One"), "JSArray.push()");
 
         // Array.prototype.map()
-        JSArray<JSValue> inventoryMap = inventory
-                .map(new JSArray.JSArrayMapCallback<Map>() {
+        JSArray<JSValue> inventoryMap = (JSArray<JSValue>) inventory
+                .map(new JSArray.JSBaseArrayMapCallback<Map>() {
                     @Override
-                    public JSValue callback(Map map, int i, JSArray<Map> jsArray) {
+                    public JSValue callback(Map map, int i, JSBaseArray<Map> jsArray) {
                         return new JSValue(context,map.get("quantity"));
                     }
                 });
@@ -453,9 +455,10 @@ public class JSArrayTest extends JSTest {
 
         // Array.prototype.reduce()
         int inventoryCount = inventoryMap
-                .reduce(new JSArray.JSArrayReduceCallback() {
+                .reduce(new JSArray.JSBaseArrayReduceCallback() {
                     @Override
-                    public JSValue callback(JSValue jsValue, JSValue jsValue1, int i, JSArray<JSValue> jsArray) {
+                    public JSValue callback(JSValue jsValue, JSValue jsValue1, int i,
+                                            JSBaseArray<JSValue> jsArray) {
                         return new JSValue(context,jsValue.toNumber() + jsValue1.toNumber());
                     }
                 }).toNumber().intValue();
@@ -468,9 +471,10 @@ public class JSArrayTest extends JSTest {
                         return (JSValue) map.get("quantity");
                     }
                 })
-                .reduceRight(new JSArray.JSArrayReduceCallback() {
+                .reduceRight(new JSArray.JSBaseArrayReduceCallback() {
                     @Override
-                    public JSValue callback(JSValue jsValue, JSValue jsValue1, int i, JSArray<JSValue> jsArray) {
+                    public JSValue callback(JSValue jsValue, JSValue jsValue1, int i,
+                                            JSBaseArray<JSValue> jsArray) {
                         return new JSValue(context,jsValue.toNumber() - jsValue1.toNumber());
                     }
                 },inventoryCount)
@@ -480,7 +484,7 @@ public class JSArrayTest extends JSTest {
 
         // Array.prototype.reverse()
         JSArray<JSValue> forward = JSArray.of(context,"one","two","three");
-        JSArray<JSValue> reverse = forward.reverse();
+        JSArray<JSValue> reverse = (JSArray<JSValue>) forward.reverse();
         tAssert(forward == reverse && reverse.equals(Arrays.asList("three","two","one")),
                 "JSArray.reverse()");
 
@@ -493,7 +497,7 @@ public class JSArrayTest extends JSTest {
 
         // Array.prototype.slice()
         JSArray<String> sliceme = new JSArray<String>(context,reverse,String.class);
-        JSArray<String> slice = sliceme.slice(1,3);
+        JSArray<String> slice = (JSArray<String>) sliceme.slice(1,3);
         tAssert(slice.equals(Arrays.asList("three","two")), "JSArray.slice()");
 
         // Array.prototype.some()
@@ -502,9 +506,9 @@ public class JSArrayTest extends JSTest {
                 return value.equals("7");
             }
         });
-        boolean truth = notPrime.some(new JSArray.JSArrayEachBooleanCallback<Integer>() {
+        boolean truth = notPrime.some(new JSArray.JSBaseArrayEachBooleanCallback<Integer>() {
             @Override
-            public boolean callback(Integer integer, int i, JSArray<Integer> jsArray) {
+            public boolean callback(Integer integer, int i, JSBaseArray<Integer> jsArray) {
                 return integer==7;
             }
         });
@@ -512,7 +516,7 @@ public class JSArrayTest extends JSTest {
 
         // Array.prototype.sort()
         boolean sorted = reverse.sort().equals(Arrays.asList("four","one","three","two"));
-        notPrime.sort(new JSArray.JSArraySortCallback<Integer>() {
+        notPrime.sort(new JSArray.JSBaseArraySortCallback<Integer>() {
             @Override
             public double callback(Integer t1, Integer t2) {
                 return t2 - t1;

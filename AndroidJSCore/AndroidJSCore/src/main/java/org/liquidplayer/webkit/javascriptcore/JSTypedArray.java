@@ -1,9 +1,45 @@
+//
+// JSTypedArray.java
+// AndroidJSCore project
+//
+// https://github.com/ericwlange/AndroidJSCore/
+//
+// Created by Eric Lange
+//
+/*
+ Copyright (c) 2014-2016 Eric Lange. All rights reserved.
+
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+
+ - Redistributions of source code must retain the above copyright notice, this
+ list of conditions and the following disclaimer.
+
+ - Redistributions in binary form must reproduce the above copyright notice,
+ this list of conditions and the following disclaimer in the documentation
+ and/or other materials provided with the distribution.
+
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 package org.liquidplayer.webkit.javascriptcore;
 
 /**
- * Created by Eric on 6/20/16.
+ * A convenience base class for JavaScript typed arrays.  This is an abstract class, and is
+ * subclassed by JSInt8Array, JSInt16Array, JSInt32Array, JSUint8Array, JSUint16Array,
+ * JSUint32Array, JSUint8ClampedArray, JSFloat32Array, and JSFloat64Array
+ * @since 3.0
+ * @param <T>
  */
-public class JSTypedArray<T> extends JSBaseArray<T> {
+public abstract class JSTypedArray<T> extends JSBaseArray<T> {
     protected JSTypedArray(JSContext ctx, int length, String jsConstructor, Class<T> cls) {
         super(cls);
         context = ctx;
@@ -40,7 +76,7 @@ public class JSTypedArray<T> extends JSBaseArray<T> {
         context.persistObject(this);
     }
 
-    public JSTypedArray(JSArrayBuffer buffer, int byteOffset, int length, String jsConstructor,
+    protected JSTypedArray(JSArrayBuffer buffer, int byteOffset, int length, String jsConstructor,
                         Class<T> cls) {
         super(cls);
         JSFunction constructor = new JSFunction(context,"_" + jsConstructor,
@@ -52,7 +88,7 @@ public class JSTypedArray<T> extends JSBaseArray<T> {
         protect(context.ctxRef(), valueRef);
         context.persistObject(this);
     }
-    public JSTypedArray(JSArrayBuffer buffer, int byteOffset, String jsConstructor,
+    protected JSTypedArray(JSArrayBuffer buffer, int byteOffset, String jsConstructor,
                         Class<T> cls) {
         super(cls);
         JSFunction constructor = new JSFunction(context,"_" + jsConstructor,
@@ -64,7 +100,7 @@ public class JSTypedArray<T> extends JSBaseArray<T> {
         protect(context.ctxRef(), valueRef);
         context.persistObject(this);
     }
-    public JSTypedArray(JSArrayBuffer buffer, String jsConstructor, Class<T> cls) {
+    protected JSTypedArray(JSArrayBuffer buffer, String jsConstructor, Class<T> cls) {
         super(cls);
         JSFunction constructor = new JSFunction(context,"_" + jsConstructor,
                 new String[] {"buffer"},
@@ -79,6 +115,13 @@ public class JSTypedArray<T> extends JSBaseArray<T> {
         super(objRef,ctx,cls);
     }
 
+    /**
+     * JavaScript: TypedArray.from(), see:
+     * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray/from
+     * @param obj source object
+     * @return a new typed array
+     * @since 3.0
+     */
     public static JSTypedArray from(JSObject obj) {
         JSTypedArray arr = null;
         if (isTypedArray(obj)) {
@@ -108,6 +151,12 @@ public class JSTypedArray<T> extends JSBaseArray<T> {
         return arr;
     }
 
+    /**
+     * Determineds if a JSValue is a typed array
+     * @param value  the JSValue to test
+     * @return  true if a typed array, false otherwise
+     * @since 3.0
+     */
     public static boolean isTypedArray(JSValue value) {
         if (!value.isObject()) return false;
         JSObject obj = value.toObject();
@@ -117,14 +166,32 @@ public class JSTypedArray<T> extends JSBaseArray<T> {
         return false;
     }
 
+    /**
+     * JavaScript: TypedArray.prototype.buffer, see:
+     * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray/buffer
+     * @return the underlying ArrayBuffer of this typed array
+     * @since 3.0
+     */
     public JSArrayBuffer buffer() {
         return new JSArrayBuffer(property("buffer").toObject());
     }
 
+    /**
+     * JavaScript: TypedArray.prototype.buffer, see:
+     * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray/byteLength
+     * @return the length in bytes of the underlying ArrayBuffer
+     * @since 3.0
+     */
     public int byteLength() {
         return property("byteLength").toNumber().intValue();
     }
 
+    /**
+     * JavaScript: TypedArray.prototype.buffer, see:
+     * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray/byteOffset
+     * @return the byte offset of the typed array in the underlying ArrayBuffer
+     * @since 3.0
+     */
     public int byteOffset() {
         return property("byteOffset").toNumber().intValue();
     }

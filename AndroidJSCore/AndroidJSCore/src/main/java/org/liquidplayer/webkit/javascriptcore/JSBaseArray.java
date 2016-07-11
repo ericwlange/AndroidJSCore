@@ -48,7 +48,7 @@ import java.util.NoSuchElementException;
  * simple integration with Java methods.
  *
  */
-public class JSBaseArray<T> extends JSFunction implements List<T> {
+public abstract class JSBaseArray<T> extends JSFunction implements List<T> {
 
     protected Class<T> mType;
     protected int mLeftBuffer = 0;

@@ -19,7 +19,7 @@ Design Goals
 
 Version
 -------
-[3.0-pre1](https://github.com/ericwlange/AndroidJSCore/releases/tag/3.0-pre1) - Please help test this version
+[3.0-pre2](https://github.com/ericwlange/AndroidJSCore/releases/tag/3.0-pre2) - Please help test this version
 
 Note there are some significant changes between 3.0 and the 2.x series.  In particular, handling of functions
 and constructors is simpler (and more correct).
@@ -102,7 +102,7 @@ just about everything.
 
 Use AndroidJSCore in your project
 ---------------------------------
-The easy way is to simply download the file `AndroidJSCore-3.0-pre1-release.aar` from
+The easy way is to simply download the file `AndroidJSCore-3.0-pre2-release.aar` from
 the [latest release] and drop it somewhere in your project (`libs/` is meant just for this). Then
 add the following to your app-level `build.gradle`:
 
@@ -113,7 +113,7 @@ add the following to your app-level `build.gradle`:
     }
 
     dependencies {
-        compile(name:'AndroidJSCore-3.0-pre1-release', ext:'aar')
+        compile(name:'AndroidJSCore-3.0-pre2-release', ext:'aar')
     }
 
 Building the AndroidJSCoreExample app
@@ -125,7 +125,7 @@ If you want to see AndroidJSCore in action, you can run the example app:
     cd ~/AndroidJSCore
     mkdir ~/AndroidJSCore/lib
 
-Then download `AndroidJSCore-3.0-pre1-release.aar` from the [latest release] and
+Then download `AndroidJSCore-3.0-pre2-release.aar` from the [latest release] and
 copy it into `~/AndroidJSCore/lib`.  Now you can open `~/AndroidJSCore/examples/AndroidJSCoreExample`
 in Android Studio and run it.
 
@@ -161,7 +161,7 @@ and then re-run `hemroid install javascriptcore`.
     % echo sdk.dir=$ANDROID_SDK >> local.properties
     % ./gradlew assembleRelease
 
-Your library now sits in `AndroidJSCore/build/outputs/aar/AndroidJSCore-3.0-pre1-release.aar`.  To use it, simply
+Your library now sits in `AndroidJSCore/build/outputs/aar/AndroidJSCore-3.0-pre2-release.aar`.  To use it, simply
 add the following to your app's `build.gradle`:
 
     repositories {

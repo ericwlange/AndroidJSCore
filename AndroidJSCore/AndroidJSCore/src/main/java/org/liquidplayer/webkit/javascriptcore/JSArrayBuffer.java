@@ -34,12 +34,14 @@ package org.liquidplayer.webkit.javascriptcore;
 
 /**
  * A wrapper class for a JavaScript ArrayBuffer
+ * @since 3.0
  */
 public class JSArrayBuffer {
     /**
      * Creates a new array buffer of 'length' bytes
      * @param ctx  the JSContext in which to create the ArrayBuffer
      * @param length  the length in bytes of the ArrayBuffer
+     * @since 3.0
      */
     public JSArrayBuffer(JSContext ctx, int length) {
         JSFunction constructor = new JSFunction(ctx,"_ArrayBuffer",new String[] {"length"},
@@ -52,6 +54,7 @@ public class JSArrayBuffer {
      * Treats an existing JSObject as an ArrayBuffer.  It is up to the user to ensure the
      * underlying JSObject is actually an ArrayBuffer.
      * @param buffer  The ArrayBuffer JSObject to wrap
+     * @since 3.0
      */
     public JSArrayBuffer(JSObject buffer) {
         mArrayBuffer = buffer;
@@ -61,6 +64,7 @@ public class JSArrayBuffer {
     /**
      * Gets underlying JSObject
      * @return JSObject representing the ArrayBuffer
+     * @since 3.0
      */
     public JSObject getJSObject() {
         return mArrayBuffer;
@@ -70,6 +74,7 @@ public class JSArrayBuffer {
      * JavaScript: ArrayBuffer.prototype.byteLength, see:
      * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer/byteLength
      * @return length of ArrayBuffer in bytes
+     * @since 3.0
      */
     public int byteLength() {
         return mArrayBuffer.property("byteLength").toNumber().intValue();
@@ -81,6 +86,7 @@ public class JSArrayBuffer {
      * @param arg the argument to be checked
      * @return true if arg is one of the ArrayBuffer views, such as typed array objects or
      * a DataView; false otherwise
+     * @since 3.0
      */
     public static boolean isView(JSValue arg) {
         return arg.getContext().property("ArrayBuffer").toObject().property("isView").toFunction()
@@ -93,6 +99,7 @@ public class JSArrayBuffer {
      * @param oldBuffer  An ArrayBuffer object from which to transfer from
      * @param newByteLength  The byte length of the new ArrayBuffer object
      * @return a new ArrayBuffer
+     * @since 3.0
      */
     public static JSArrayBuffer transfer(JSArrayBuffer oldBuffer, int newByteLength) {
         return new JSArrayBuffer(oldBuffer.getJSObject().getContext().property("ArrayBuffer").toObject()
@@ -103,6 +110,7 @@ public class JSArrayBuffer {
      * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer/transfer
      * @param oldBuffer  An ArrayBuffer object from which to transfer from
      * @return a new ArrayBuffer
+     * @since 3.0
      */
     public static JSArrayBuffer transfer(JSArrayBuffer oldBuffer) {
         return new JSArrayBuffer(oldBuffer.getJSObject().getContext().property("ArrayBuffer").toObject()
@@ -115,6 +123,7 @@ public class JSArrayBuffer {
      * @param begin Zero-based byte index at which to begin slicing
      * @param end Byte index to end slicing
      * @return new ArrayBuffer with sliced contents copied
+     * @since 3.0
      */
     public JSArrayBuffer slice(int begin, int end) {
         return new JSArrayBuffer(
@@ -125,6 +134,7 @@ public class JSArrayBuffer {
      * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer/slice
      * @param begin Zero-based byte index at which to begin slicing
      * @return new ArrayBuffer with sliced contents copied
+     * @since 3.0
      */
     public JSArrayBuffer slice(int begin) {
         return new JSArrayBuffer(

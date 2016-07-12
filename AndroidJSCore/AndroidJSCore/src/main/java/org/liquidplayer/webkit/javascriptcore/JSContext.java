@@ -59,7 +59,7 @@ public class JSContext extends JSObject {
         }
     });
 
-    public void sync(Runnable runnable) {
+    protected void sync(Runnable runnable) {
         mWorker.sync(runnable);
     }
     protected void async(Runnable runnable) {

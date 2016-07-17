@@ -34,9 +34,11 @@ package org.liquidplayer.webkit.javascriptcore;
 
 /**
  * A wrapper class for a JavaScript ArrayBuffer
+ * See: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer
+ * Note, experimental ArrayBuffer.transfer() is not supported by this JavaScriptCore version
  * @since 3.0
  */
-public class JSArrayBuffer {
+public class JSArrayBuffer extends JSObjectWrapper {
     /**
      * Creates a new array buffer of 'length' bytes
      * @param ctx  the JSContext in which to create the ArrayBuffer
@@ -44,10 +46,9 @@ public class JSArrayBuffer {
      * @since 3.0
      */
     public JSArrayBuffer(JSContext ctx, int length) {
-        JSFunction constructor = new JSFunction(ctx,"_ArrayBuffer",new String[] {"length"},
+        super(new JSFunction(ctx,"_ArrayBuffer",new String[] {"length"},
                 "return new ArrayBuffer(length);",
-                null, 0);
-        mArrayBuffer = constructor.call(null,length).toObject();
+                null, 0).call(null,length).toObject());
     }
 
     /**
@@ -57,17 +58,7 @@ public class JSArrayBuffer {
      * @since 3.0
      */
     public JSArrayBuffer(JSObject buffer) {
-        mArrayBuffer = buffer;
-    }
-    private final JSObject mArrayBuffer;
-
-    /**
-     * Gets underlying JSObject
-     * @return JSObject representing the ArrayBuffer
-     * @since 3.0
-     */
-    public JSObject getJSObject() {
-        return mArrayBuffer;
+        super(buffer);
     }
 
     /**
@@ -77,7 +68,7 @@ public class JSArrayBuffer {
      * @since 3.0
      */
     public int byteLength() {
-        return mArrayBuffer.property("byteLength").toNumber().intValue();
+        return property("byteLength").toNumber().intValue();
     }
 
     /**
@@ -94,30 +85,6 @@ public class JSArrayBuffer {
     }
 
     /**
-     * JavaScript: ArrayBuffer.transfer(), see:
-     * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer/transfer
-     * @param oldBuffer  An ArrayBuffer object from which to transfer from
-     * @param newByteLength  The byte length of the new ArrayBuffer object
-     * @return a new ArrayBuffer
-     * @since 3.0
-     */
-    public static JSArrayBuffer transfer(JSArrayBuffer oldBuffer, int newByteLength) {
-        return new JSArrayBuffer(oldBuffer.getJSObject().getContext().property("ArrayBuffer").toObject()
-                .property("transfer").toFunction().call(null,oldBuffer,newByteLength).toObject());
-    }
-    /**
-     * JavaScript: ArrayBuffer.transfer(), see:
-     * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer/transfer
-     * @param oldBuffer  An ArrayBuffer object from which to transfer from
-     * @return a new ArrayBuffer
-     * @since 3.0
-     */
-    public static JSArrayBuffer transfer(JSArrayBuffer oldBuffer) {
-        return new JSArrayBuffer(oldBuffer.getJSObject().getContext().property("ArrayBuffer").toObject()
-                .property("transfer").toFunction().call(null,oldBuffer).toObject());
-    }
-
-    /**
      * JavaScript: ArrayBuffer.prototype.slice(), see:
      * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer/slice
      * @param begin Zero-based byte index at which to begin slicing
@@ -127,7 +94,7 @@ public class JSArrayBuffer {
      */
     public JSArrayBuffer slice(int begin, int end) {
         return new JSArrayBuffer(
-                mArrayBuffer.property("slice").toFunction().call(null,begin,end).toObject());
+                property("slice").toFunction().call(this,begin,end).toObject());
     }
     /**
      * JavaScript: ArrayBuffer.prototype.slice(), see:
@@ -138,6 +105,6 @@ public class JSArrayBuffer {
      */
     public JSArrayBuffer slice(int begin) {
         return new JSArrayBuffer(
-                mArrayBuffer.property("slice").toFunction().call(null,begin).toObject());
+                property("slice").toFunction().call(this,begin).toObject());
     }
 }

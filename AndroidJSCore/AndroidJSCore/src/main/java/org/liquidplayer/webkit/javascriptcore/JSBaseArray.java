@@ -67,7 +67,8 @@ public abstract class JSBaseArray<T> extends JSFunction implements List<T> {
         valueRef = superList.valueRef();
         mSuperList = superList;
     }
-    protected JSBaseArray(Class<T> cls) {
+    protected JSBaseArray(JSContext ctx, Class<T> cls) {
+        context = ctx;
         mType = cls;
     }
 
@@ -280,15 +281,15 @@ public abstract class JSBaseArray<T> extends JSFunction implements List<T> {
     @Override
     @SuppressWarnings("unchecked")
     @NonNull
-    public <T> T[] toArray(final @NonNull T[] elemArray) {
+    public <U> U[] toArray(final @NonNull U[] elemArray) {
         if (size() > elemArray.length) {
-            return (T[])toArray();
+            return (U[])toArray();
         }
         ArrayIterator iterator = new ArrayIterator();
         int index = 0;
         while (iterator.hasNext()) {
             Object next = iterator.next();
-            elemArray[index++] = (T)next;
+            elemArray[index++] = (U)next;
         }
         for (int i = index; i < elemArray.length; i++) {
             elemArray[i] = null;
@@ -546,8 +547,7 @@ public abstract class JSBaseArray<T> extends JSFunction implements List<T> {
     @Override
     public int hashCode() {
         int hashCode = 1;
-        for (Iterator<T> it = listIterator(); it.hasNext(); ) {
-            T e = it.next();
+        for (T e : this) {
             hashCode = 31 * hashCode + (e == null ? 0 : e.hashCode());
         }
         return hashCode;
@@ -569,7 +569,7 @@ public abstract class JSBaseArray<T> extends JSFunction implements List<T> {
          * @since 3.0
          * @return true if condition is met, false otherwise
          */
-        public boolean callback(T currentValue, int index, JSBaseArray<T> array);
+        boolean callback(T currentValue, int index, JSBaseArray<T> array);
     }
 
     /**
@@ -585,7 +585,7 @@ public abstract class JSBaseArray<T> extends JSFunction implements List<T> {
          * @param array array being traversed
          * @since 3.0
          */
-        public void callback(T currentValue, int index, JSBaseArray<T> array);
+        void callback(T currentValue, int index, JSBaseArray<T> array);
     }
 
     /**
@@ -602,7 +602,7 @@ public abstract class JSBaseArray<T> extends JSFunction implements List<T> {
          * @since 3.0
          * @return mapped value
          */
-        public JSValue callback(T currentValue, int index, JSBaseArray<T> array);
+        JSValue callback(T currentValue, int index, JSBaseArray<T> array);
     }
 
     /**
@@ -619,7 +619,7 @@ public abstract class JSBaseArray<T> extends JSFunction implements List<T> {
          * @since 3.0
          * @return new accumulator value
          */
-        public JSValue callback(JSValue previousValue, JSValue currentValue, int index,
+        JSValue callback(JSValue previousValue, JSValue currentValue, int index,
                                 JSBaseArray<JSValue> array);
     }
 
@@ -637,7 +637,7 @@ public abstract class JSBaseArray<T> extends JSFunction implements List<T> {
          * @return 0 if values are the same, negative if 'b' comes before 'a', and positive if 'a' comes
          *         before 'b'
          */
-        public double callback(T a, T b);
+        double callback(T a, T b);
     }
 
     private JSValue each(JSFunction callback, JSObject thiz, String each) {
@@ -645,7 +645,7 @@ public abstract class JSBaseArray<T> extends JSFunction implements List<T> {
     }
     private JSValue each(final JSBaseArrayEachBooleanCallback<T> callback, String each) {
         return property(each).toFunction().call(this,new JSFunction(context,"_callback") {
-            @SuppressWarnings("unchecked")
+            @SuppressWarnings("unchecked,unused")
             public boolean _callback(T currentValue, int index, JSBaseArray array) {
                 return callback.callback((T)((JSValue)currentValue).toJavaObject(mType),index,array);
             }
@@ -653,7 +653,7 @@ public abstract class JSBaseArray<T> extends JSFunction implements List<T> {
     }
     private JSValue each(final JSBaseArrayForEachCallback<T> callback, String each) {
         return property(each).toFunction().call(this,new JSFunction(context,"_callback") {
-            @SuppressWarnings("unchecked")
+            @SuppressWarnings("unchecked,unused")
             public void _callback(T currentValue, int index, JSBaseArray array) {
                 callback.callback((T)((JSValue)currentValue).toJavaObject(mType),index,array);
             }
@@ -661,7 +661,7 @@ public abstract class JSBaseArray<T> extends JSFunction implements List<T> {
     }
     private JSValue each(final JSBaseArrayMapCallback<T> callback, String each) {
         return property(each).toFunction().call(this,new JSFunction(context,"_callback") {
-            @SuppressWarnings("unchecked")
+            @SuppressWarnings("unchecked,unused")
             public JSValue _callback(T currentValue, int index, JSBaseArray<T> array) {
                 return callback.callback((T)((JSValue)currentValue).toJavaObject(mType),index,array);
             }
@@ -669,6 +669,7 @@ public abstract class JSBaseArray<T> extends JSFunction implements List<T> {
     }
     private JSValue each(final JSBaseArrayReduceCallback callback, String each, Object initialValue) {
         return property(each).toFunction().call(this,new JSFunction(context,"_callback") {
+            @SuppressWarnings("unused")
             public JSValue _callback(JSValue previousValue, JSValue currentValue, int index,
                                      JSBaseArray<JSValue> array) {
                 return callback.callback(previousValue,currentValue,index,array);
@@ -733,7 +734,7 @@ public abstract class JSBaseArray<T> extends JSFunction implements List<T> {
         @SuppressWarnings("unchecked")
         public Map.Entry<Integer,U> next() {
             JSObject next = jsnext().value().toObject();
-            return new AbstractMap.SimpleEntry<Integer,U>(next.propertyAtIndex(0).toNumber().intValue(),
+            return new AbstractMap.SimpleEntry<>(next.propertyAtIndex(0).toNumber().intValue(),
                     (U) next.propertyAtIndex(1).toJavaObject(mType));
         }
     }
@@ -745,7 +746,7 @@ public abstract class JSBaseArray<T> extends JSFunction implements List<T> {
      * @return an entry iterator
      */
     public JSBaseArrayEntriesIterator<T> entries() {
-        return new JSBaseArrayEntriesIterator<T>(property("entries").toFunction().call(this).toObject());
+        return new JSBaseArrayEntriesIterator<>(property("entries").toFunction().call(this).toObject());
     }
 
     /**
@@ -1134,7 +1135,7 @@ public abstract class JSBaseArray<T> extends JSFunction implements List<T> {
      * @param initialValue The initial value of the reduction
      * @return A reduction of the mapped array
      */
-    public JSValue reduceRight(JSFunction callback, JSObject thiz, Object initialValue) {
+    public JSValue reduceRight(JSFunction callback, Object initialValue) {
         return property("reduceRight").toFunction().call(this,callback,initialValue);
     }
     /**
@@ -1273,6 +1274,7 @@ public abstract class JSBaseArray<T> extends JSFunction implements List<T> {
     @SuppressWarnings("unchecked")
     public JSBaseArray<T> sort(final JSBaseArraySortCallback<T> callback) {
         return toSuperArray(property("sort").toFunction().call(this,new JSFunction(context,"_callback") {
+            @SuppressWarnings("unused")
             public double _callback(T a, T b) {
                 return callback.callback((T)((JSValue)a).toJavaObject(mType),
                         (T)((JSValue)b).toJavaObject(mType));
@@ -1319,6 +1321,6 @@ public abstract class JSBaseArray<T> extends JSFunction implements List<T> {
      * @return an array value iterator
      */
     public JSBaseArrayValuesIterator<T> values() {
-        return new JSBaseArrayValuesIterator<T>(property("values").toFunction().call(this).toObject());
+        return new JSBaseArrayValuesIterator<>(property("values").toFunction().call(this).toObject());
     }
 }

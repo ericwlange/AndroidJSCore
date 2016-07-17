@@ -56,8 +56,7 @@ public class JSArray<T> extends JSBaseArray<T> {
      */
     @SuppressWarnings("unused")
     public JSArray(JSContext ctx, JSValue [] array, Class<T> cls) throws JSException {
-        super(cls);
-        context = ctx;
+        super(ctx,cls);
         long [] valueRefs = new long[array.length];
         for (int i=0; i<array.length; i++) {
             valueRefs[i] = array[i].valueRef();
@@ -79,8 +78,7 @@ public class JSArray<T> extends JSBaseArray<T> {
      * @throws JSException
      */
     public JSArray(JSContext ctx, Class<T> cls) throws JSException {
-        super(cls);
-        context = ctx;
+        super(ctx,cls);
         long [] valueRefs = new long[0];
         JNIReturnObject jni = makeArray(context.ctxRef(), valueRefs);
         if (jni.exception!=0) {
@@ -101,8 +99,7 @@ public class JSArray<T> extends JSBaseArray<T> {
      * @throws JSException
      */
     public JSArray(JSContext ctx, Object [] array, Class<T> cls) throws JSException {
-        super(cls);
-        context = ctx;
+        super(ctx,cls);
         long [] valueRefs = new long[array.length];
         for (int i=0; i<array.length; i++) {
             JSValue v = new JSValue(context,array[i]);
@@ -250,7 +247,8 @@ public class JSArray<T> extends JSBaseArray<T> {
     public static JSArray<JSValue> from(JSContext ctx, Object arrayLike,
                                         final JSBaseArrayMapCallback<JSValue> mapFn) {
         JSFunction from = ctx.property("Array").toObject().property("from").toFunction();
-        return (JSArray)  from.call(null,new JSFunction(ctx,"_callback") {
+        return (JSArray)  from.call(null,arrayLike,new JSFunction(ctx,"_callback") {
+            @SuppressWarnings("unused")
             public JSValue _callback(JSValue currentValue, int index, JSArray array) {
                 return mapFn.callback(currentValue,index,array);
             }

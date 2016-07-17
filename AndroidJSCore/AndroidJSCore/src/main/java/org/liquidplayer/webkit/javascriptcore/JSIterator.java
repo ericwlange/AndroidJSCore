@@ -39,23 +39,22 @@ import java.util.Iterator;
  * @since 3.0
  * @param <T>
  */
-public class JSIterator<T> implements Iterator<T> {
+public class JSIterator<T> extends JSObjectWrapper implements Iterator<T> {
     /**
      * Represents the object returned by 'next'
      * @since 3.0
      */
-    public class Next {
+    public class Next extends JSObjectWrapper {
         protected Next(JSObject next) {
-            this.next = next;
+            super(next);
         }
-        protected final JSObject next;
 
         /**
          * Tests if there are any more elements in the array
          * @return true if more elements to iterate, false otherwise
          */
         public boolean done() {
-            return next.property("done").toBoolean();
+            return getJSObject().property("done").toBoolean();
         }
 
         /**
@@ -63,15 +62,7 @@ public class JSIterator<T> implements Iterator<T> {
          * @return the value returned from next()
          */
         public JSValue value() {
-            return next.property("value");
-        }
-
-        /**
-         * Gets wrapped iterator object
-         * @return the wrapped iterator object
-         */
-        public JSObject getJSObject() {
-            return next;
+            return getJSObject().property("value");
         }
     }
 
@@ -80,14 +71,13 @@ public class JSIterator<T> implements Iterator<T> {
      * @param iterator
      */
     public JSIterator(JSObject iterator) {
-        this.iterator = iterator;
+        super(iterator);
         next = _jsnext();
     }
-    private final JSObject iterator;
     private Next next = null;
 
     private Next _jsnext() {
-        return new Next(iterator.property("next").toFunction().call(iterator).toObject());
+        return new Next(getJSObject().property("next").toFunction().call(getJSObject()).toObject());
     }
 
     /**
@@ -98,14 +88,6 @@ public class JSIterator<T> implements Iterator<T> {
         Next ret = next;
         next = _jsnext();
         return ret;
-    }
-
-    /**
-     * Gets the wrapped iterator object
-     * @return
-     */
-    public JSObject getJSObject() {
-        return iterator;
     }
 
     /**

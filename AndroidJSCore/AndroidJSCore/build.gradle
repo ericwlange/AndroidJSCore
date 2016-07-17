@@ -12,6 +12,7 @@ android {
         versionCode 3
         versionName "3.0-pre2"
         setProperty("archivesBaseName", "AndroidJSCore-$versionName")
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
@@ -25,6 +26,11 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.4.0'
+    androidTestCompile 'junit:junit:4.+'
+    androidTestCompile 'com.android.support:support-annotations:23+'
+    androidTestCompile 'com.android.support.test:runner:0.5'
+    androidTestCompile 'com.android.support.test:rules:0.5'
+    androidTestCompile 'org.hamcrest:hamcrest-library:1.3'
 }
 
 task hemroidBuild(type: Exec) {

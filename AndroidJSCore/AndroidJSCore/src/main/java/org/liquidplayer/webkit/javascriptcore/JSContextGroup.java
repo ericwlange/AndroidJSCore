@@ -83,15 +83,11 @@ public class JSContextGroup {
      */
 	@Override
 	public boolean equals(Object other) {
-		if (other==null)
-            return false;
-        if (this == other)
-            return true;
-		if (!(other instanceof JSContextGroup))
-            return false;
-		if (groupRef() == null || groupRef() == 0)
-            return false;
-        return groupRef().equals(((JSContextGroup)other).groupRef());
+		return (other !=null) &&
+        		(this == other) ||
+				(other instanceof JSContextGroup) &&
+				!(groupRef() == null || groupRef() == 0) &&
+				groupRef().equals(((JSContextGroup)other).groupRef());
 	}
 	
 	protected native long create();

@@ -32,9 +32,6 @@
 */
 package org.liquidplayer.webkit.javascriptcore;
 
-import android.os.Handler;
-import android.os.Looper;
-
 import org.liquidplayer.hemroid.JavaScriptCoreGTK;
 
 import java.lang.ref.WeakReference;
@@ -141,9 +138,9 @@ public class JSContext extends JSObject {
                 ctx = create();
                 valueRef = getGlobalObject(ctx);
                 Method[] methods = iface.getDeclaredMethods();
-                for (int i=0; i<methods.length; i++) {
-                    JSObject f = new JSFunction(context, methods[i], JSObject.class, context);
-                    property(methods[i].getName(),f);
+                for (Method m : methods) {
+                    JSObject f = new JSFunction(context, m, JSObject.class, context);
+                    property(m.getName(),f);
                 }
             }
         });
@@ -164,9 +161,9 @@ public class JSContext extends JSObject {
                 ctx = createInGroup(inGroup.groupRef());
                 valueRef = getGlobalObject(ctx);
                 Method[] methods = iface.getDeclaredMethods();
-                for (int i=0; i<methods.length; i++) {
-                    JSObject f = new JSFunction(context, methods[i], JSObject.class, context);
-                    property(methods[i].getName(),f);
+                for (Method m : methods) {
+                    JSObject f = new JSFunction(context, m, JSObject.class, context);
+                    property(m.getName(),f);
                 }
             }
         });
@@ -227,7 +224,7 @@ public class JSContext extends JSObject {
 	 */
 	public JSContextGroup getGroup() {
 		Long g = getGroup(ctx);
-		if (g==null || g==0) return null;
+		if (g==0) return null;
 		return new JSContextGroup(g);
 	}
 	
@@ -299,7 +296,7 @@ public class JSContext extends JSObject {
 		return evaluateScript(script,null,null,0);
 	}
 	
-	private Map<Long,WeakReference<JSObject>> objects = new HashMap<Long,WeakReference<JSObject>>();
+	private Map<Long,WeakReference<JSObject>> objects = new HashMap<>();
 
 	/**
 	 * Keeps a reference to an object in this context.  This is used so that only one
@@ -310,7 +307,7 @@ public class JSContext extends JSObject {
 	 * @since 1.0
 	 */
 	protected synchronized  void persistObject(JSObject obj) {
-		objects.put(obj.valueRef(), new WeakReference<JSObject>(obj));
+		objects.put(obj.valueRef(), new WeakReference<>(obj));
 	}
 	/**
 	 * Removes a reference to an object in this context.  Should only be used from the 'finalize'
@@ -373,6 +370,7 @@ public class JSContext extends JSObject {
 	protected native long getGroup(long ctx);
 	protected native long getGlobalObject(long ctx);
 	protected native JNIReturnObject evaluateScript(long ctx, long script, long thisObject, long sourceURL, int startingLineNumber);
+    @SuppressWarnings("unused")
 	protected native JNIReturnObject checkScriptSyntax(long ctx, long script, long sourceURL, int startingLineNumber);
 	protected native void garbageCollect(long ctx);
 

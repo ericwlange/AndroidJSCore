@@ -140,10 +140,10 @@ public class JSObject extends JSValue {
             public void run() {
                 valueRef = make(context.ctxRef(), 0L);
                 Method[] methods = iface.getDeclaredMethods();
-                for (int i = 0; i < methods.length; i++) {
-                    JSObject f = new JSFunction(context, methods[i],
+                for (Method m : methods) {
+                    JSObject f = new JSFunction(context, m,
                             JSObject.class, JSObject.this);
-                    property(methods[i].getName(), f);
+                    property(m.getName(), f);
                 }
             }
         });
@@ -156,6 +156,7 @@ public class JSObject extends JSValue {
      * @param ctx  The JSContext to create object in
      * @param map  The map containing the properties
      */
+    @SuppressWarnings("unchecked")
     public JSObject(JSContext ctx, final Map map) {
         this(ctx);
         new JSMap<>(this,Object.class).putAll(map);
@@ -388,7 +389,7 @@ public class JSObject extends JSValue {
         return valueRef().intValue();
     }
 
-    protected final List<JSObject> zombies = new ArrayList<JSObject>();
+    protected final List<JSObject> zombies = new ArrayList<>();
 
     @Override
     protected void finalize() throws Throwable {
@@ -404,6 +405,7 @@ public class JSObject extends JSValue {
         return thiz;
     }
 
+    @SuppressWarnings("unused")
     public JSValue __nullFunc() {
         return new JSValue(context);
     }
@@ -415,6 +417,7 @@ public class JSObject extends JSValue {
 
     protected native long make(long ctx, long data);
 
+    @SuppressWarnings("unused")
     protected native long makeInstance(long ctx);
 
     protected native JNIReturnObject makeArray(long ctx, long[] args);
@@ -441,8 +444,10 @@ public class JSObject extends JSValue {
 
     protected native JNIReturnObject setPropertyAtIndex(long ctx, long object, int propertyIndex, long value);
 
+    @SuppressWarnings("unused")
     protected native long getPrivate(long object);
 
+    @SuppressWarnings("unused")
     protected native boolean setPrivate(long object, long data);
 
     protected native boolean isFunction(long ctx, long object);
@@ -451,6 +456,7 @@ public class JSObject extends JSValue {
 
     protected native boolean isConstructor(long ctx, long object);
 
+    @SuppressWarnings("unused")
     protected native JNIReturnObject callAsConstructor(long ctx, long object, long[] args);
 
     protected native long copyPropertyNames(long ctx, long object);
@@ -475,6 +481,7 @@ public class JSObject extends JSValue {
      * @throws JSException
      */
     @Deprecated
+    @SuppressWarnings("unused")
     public JSObject(JSContext ctx, Class<?> iface, Class<? extends JSObject> subclass) throws JSException {
         throw new UnsupportedOperationException();
     }
@@ -488,6 +495,7 @@ public class JSObject extends JSValue {
      * @throws JSException
      */
     @Deprecated
+    @SuppressWarnings("unused")
     public JSObject(JSContext ctx, JSObject invoke, final Method method) throws JSException {
         throw new UnsupportedOperationException();
     }
@@ -502,6 +510,7 @@ public class JSObject extends JSValue {
      * @throws JSException
      */
     @Deprecated
+    @SuppressWarnings("unused")
     public JSValue callAsFunction(final JSObject thiz, final JSValue [] args) throws JSException {
         throw new UnsupportedOperationException();
     }
@@ -515,6 +524,7 @@ public class JSObject extends JSValue {
      * @throws JSException
      */
     @Deprecated
+    @SuppressWarnings("unused")
     public JSValue callAsFunction(final JSObject thiz) throws JSException {
         throw new UnsupportedOperationException();
     }
@@ -528,6 +538,7 @@ public class JSObject extends JSValue {
      * @throws JSException
      */
     @Deprecated
+    @SuppressWarnings("unused")
     public JSValue callAsFunction(final JSValue [] args) throws JSException {
         throw new UnsupportedOperationException();
     }
@@ -540,6 +551,7 @@ public class JSObject extends JSValue {
      * @throws JSException
      */
     @Deprecated
+    @SuppressWarnings("unused")
     public JSValue callAsFunction() throws JSException {
         throw new UnsupportedOperationException();
     }
@@ -550,6 +562,7 @@ public class JSObject extends JSValue {
      * @return deprecated
      */
     @Deprecated
+    @SuppressWarnings("unused")
     public JSValue prototype() {
         throw new UnsupportedOperationException();
     }
@@ -558,9 +571,9 @@ public class JSObject extends JSValue {
      * @deprecated Constructor functions have been removed from JSObject since 3.0.  Use
      *             JSFunction.prototype() instead
      * @param proto deprecated
-     * @return deprected
      */
     @Deprecated
+    @SuppressWarnings("unused")
     public void prototype(JSValue proto) {
         throw new UnsupportedOperationException();
     }

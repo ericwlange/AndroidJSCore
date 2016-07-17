@@ -36,7 +36,7 @@ package org.liquidplayer.webkit.javascriptcore;
  * A convenience class for handling JavaScript's Uint32Array
  * @since 3.0
  */
-public class JSUint32Array extends JSTypedArray<Integer> {
+public class JSUint32Array extends JSTypedArray<Long> {
     /**
      * Creates a typed array of length 'length' in JSContext 'context'
      * @param ctx  the JSContext in which to create the typed array
@@ -44,7 +44,7 @@ public class JSUint32Array extends JSTypedArray<Integer> {
      * @since 3.0
      */
     public JSUint32Array(JSContext ctx, int length) {
-        super(ctx,length,"Uint32Array",Integer.class);
+        super(ctx,length,"Uint32Array",Long.class);
     }
 
     /**
@@ -53,7 +53,7 @@ public class JSUint32Array extends JSTypedArray<Integer> {
      * @since 3.0
      */
     public JSUint32Array(JSTypedArray tarr) {
-        super(tarr,"Uint32Array",Integer.class);
+        super(tarr,"Uint32Array",Long.class);
     }
 
     /**
@@ -63,7 +63,7 @@ public class JSUint32Array extends JSTypedArray<Integer> {
      * @since 3.0
      */
     public JSUint32Array(JSContext ctx, Object object) {
-        super(ctx,object,"Uint32Array",Integer.class);
+        super(ctx,object,"Uint32Array",Long.class);
     }
 
     /**
@@ -74,7 +74,7 @@ public class JSUint32Array extends JSTypedArray<Integer> {
      * @since 3.0
      */
     public JSUint32Array(JSArrayBuffer buffer, int byteOffset, int length) {
-        super(buffer,byteOffset,length,"Uint32Array",Integer.class);
+        super(buffer,byteOffset,length,"Uint32Array",Long.class);
     }
     /**
      * Creates a typed array from a JSArrayBuffer
@@ -83,7 +83,7 @@ public class JSUint32Array extends JSTypedArray<Integer> {
      * @since 3.0
      */
     public JSUint32Array(JSArrayBuffer buffer, int byteOffset) {
-        super(buffer,byteOffset,"Uint32Array",Integer.class);
+        super(buffer,byteOffset,"Uint32Array",Long.class);
     }
     /**
      * Creates a typed array from a JSArrayBuffer
@@ -91,7 +91,7 @@ public class JSUint32Array extends JSTypedArray<Integer> {
      * @since 3.0
      */
     public JSUint32Array(JSArrayBuffer buffer) {
-        super(buffer,"Uint32Array",Integer.class);
+        super(buffer,"Uint32Array",Long.class);
     }
 
     /**
@@ -101,6 +101,6 @@ public class JSUint32Array extends JSTypedArray<Integer> {
      * @since 3.0
      */
     public JSUint32Array(long valueRef, JSContext ctx) {
-        super(valueRef,ctx,Integer.class);
+        super(valueRef,ctx,Long.class);
     }
 }

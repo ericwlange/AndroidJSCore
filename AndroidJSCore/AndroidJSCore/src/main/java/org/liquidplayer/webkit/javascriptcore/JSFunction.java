@@ -419,7 +419,7 @@ public class JSFunction extends JSObject {
                         else if (o instanceof JSValue)
                             v = (JSValue)o;
                         else if (o instanceof Object[])
-                            v = new JSArray<Object>(context, (Object[])o, Object.class);
+                            v = new JSArray<>(context, (Object[])o, Object.class);
                         else
                             v = new JSValue(context,o);
                         largs.add(v);
@@ -454,6 +454,7 @@ public class JSFunction extends JSObject {
      * @return A JSValue referencing the prototype object, or null if none
      * @since 3.0
      */
+    @SuppressWarnings("deprecation")
     public JSValue prototype() {
         JNIReturnClass runnable = new JNIReturnClass() {
             @Override
@@ -471,6 +472,7 @@ public class JSFunction extends JSObject {
      * @param proto The object defining the function prototypes
      * @since 3.0
      */
+    @SuppressWarnings("deprecation")
     public void prototype(final JSValue proto) {
         context.sync(new Runnable() {
             @Override
@@ -480,9 +482,12 @@ public class JSFunction extends JSObject {
         });
     }
 
+    @SuppressWarnings("unused") // This is called directly from native code
     private long functionCallback(long ctxRef, long functionRef, long thisObjectRef,
                                   long argumentsValueRef[], long exceptionRefRef) {
 
+//        if (BuildConfig.DEBUG && ctxRef != context.ctxRef()) throw new AssertionError();
+        if (BuildConfig.DEBUG && functionRef != valueRef()) throw new AssertionError();
         try {
             JSValue [] args = new JSValue[argumentsValueRef.length];
             for (int i=0; i<argumentsValueRef.length; i++) {
@@ -542,7 +547,8 @@ public class JSFunction extends JSObject {
     }
 
     private interface IJSObjectReturnClass {
-        public JSObject execute();
+        @SuppressWarnings("unused")
+        JSObject execute();
     }
     private class JSObjectReturnClass implements Runnable, IJSObjectReturnClass {
         public JSObject object;
@@ -595,6 +601,7 @@ public class JSFunction extends JSObject {
         return runnable.object;
     }
 
+    @SuppressWarnings("unused") // This is called directly from native code
     private long constructorCallback(long ctxRef, long constructorRef,
                                      long argumentsValueRef[], long exceptionRefRef) {
 
@@ -613,6 +620,7 @@ public class JSFunction extends JSObject {
             return 0L;
         }
     }
+    @SuppressWarnings("unused") // This is called directly from native code
     private boolean hasInstanceCallback(long ctxRef, long constructorRef,
                                         long possibleInstanceRef, long exceptionRefRef) {
         setException(0L, exceptionRefRef);

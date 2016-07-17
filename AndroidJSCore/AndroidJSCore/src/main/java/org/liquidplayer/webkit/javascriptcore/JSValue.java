@@ -32,8 +32,6 @@
 */
 package org.liquidplayer.webkit.javascriptcore;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -98,23 +96,25 @@ public class JSValue {
                     valueRef = new JSMap(context, (Map)val, Object.class).getJSObject().valueRef();
                     protect(context.ctxRef(), valueRef);
                 } else if (val instanceof List) {
-                    valueRef = new JSArray<JSValue>(context, (List) val, JSValue.class).valueRef();
+                    valueRef = new JSArray<>(context, (List) val, JSValue.class).valueRef();
                     protect(context.ctxRef(), valueRef);
                 } else if (val.getClass().isArray()) {
-                    valueRef = new JSArray<JSValue>(context, (Object[])val, JSValue.class).valueRef();
+                    valueRef = new JSArray<>(context, (Object[])val, JSValue.class).valueRef();
                     protect(context.ctxRef(), valueRef);
                 } else if (val instanceof Boolean) {
                     valueRef = makeBoolean(context.ctxRef(), (Boolean)val);
                 } else if (val instanceof Double) {
                     valueRef = makeNumber(context.ctxRef(), (Double)val);
                 } else if (val instanceof Float) {
-                    valueRef = makeNumber(context.ctxRef(), Double.valueOf(((Float)val).toString()));
+                    valueRef = makeNumber(context.ctxRef(), Double.valueOf(val.toString()));
                 } else if (val instanceof Integer ) {
                     valueRef = makeNumber(context.ctxRef(), ((Integer)val).doubleValue());
                 } else if (val instanceof Long) {
                     valueRef = makeNumber(context.ctxRef(), ((Long)val).doubleValue());
                 } else if (val instanceof Byte) {
                     valueRef = makeNumber(context.ctxRef(), ((Byte)val).doubleValue());
+                } else if (val instanceof Short) {
+                    valueRef = makeNumber(context.ctxRef(), ((Short)val).doubleValue());
                 } else if (val instanceof String) {
                     JSString s = new JSString((String)val);
                     valueRef = makeString(context.ctxRef(), s.stringRef);
@@ -323,10 +323,7 @@ public class JSValue {
             }
         };
         context.sync(runnable);
-		if (runnable.jni.exception!=0) {
-			return false;
-		}
-		return runnable.jni.bool;
+		return runnable.jni.exception==0 && runnable.jni.bool;
 	}
 	
 	/**
@@ -531,6 +528,8 @@ public class JSValue {
             return toNumber().longValue();
         else if (clazz == Byte.class || clazz == byte.class)
             return toNumber().byteValue();
+        else if (clazz == Short.class || clazz == short.class)
+            return toNumber().shortValue();
         else if (clazz == Boolean.class || clazz == boolean.class)
             return toBoolean();
         else if (clazz == JSString.class)
@@ -578,6 +577,7 @@ public class JSValue {
     private boolean isProtected = true;
 
     /* Native functions */
+    @SuppressWarnings("unused")
 	protected native int getType(long ctxRef, long valueRef); /**/
 	protected native boolean isUndefined(long ctxRef, long valueRef);
 	protected native boolean isNull(long ctxRef, long valueRef );

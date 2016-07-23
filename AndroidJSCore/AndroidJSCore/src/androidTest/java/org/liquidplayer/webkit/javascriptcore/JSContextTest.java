@@ -1,5 +1,10 @@
 package org.liquidplayer.webkit.javascriptcore;
 
+import android.os.Handler;
+import android.os.Looper;
+
+import java.util.concurrent.Semaphore;
+
 import static org.junit.Assert.*;
 
 public class JSContextTest {
@@ -149,5 +154,30 @@ public class JSContextTest {
         assertTrue(val.toNumber().equals(69.0));
 
         context.garbageCollect();
+    }
+
+    Exception thrownInMainThread = null;
+
+    @org.junit.Test
+    public void testMainThreadSupport() throws Exception {
+        Handler handler = new Handler(Looper.getMainLooper());
+        final Semaphore mutex = new Semaphore(0);
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    JSContextTest test = new JSContextTest();
+                    test.testJSContextConstructor();
+                    test.testJSContextEvaluateScript();
+                    test.testJSContextExceptionHandler();
+                } catch (Exception e) {
+                    thrownInMainThread = e;
+                } finally {
+                    mutex.release();
+                }
+            }
+        });
+        mutex.acquireUninterruptibly();
+        if (thrownInMainThread != null) throw thrownInMainThread;
     }
 }

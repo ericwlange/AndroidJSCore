@@ -138,6 +138,11 @@ public class JSArray<T> extends JSBaseArray<T> {
         super(valueRef,ctx,(Class<T>)JSValue.class);
     }
 
+    @SuppressWarnings("unchecked")
+    protected JSArray(long valueRef, JSContext ctx, Class<T> cls) {
+        super(valueRef,ctx,cls);
+    }
+
     private JSArray(JSArray<T> superList, int leftBuffer, int rightBuffer, Class<T> cls) {
         super(superList,leftBuffer,rightBuffer,cls);
     }

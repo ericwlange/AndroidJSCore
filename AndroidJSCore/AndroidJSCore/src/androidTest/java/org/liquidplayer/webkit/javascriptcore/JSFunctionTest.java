@@ -268,6 +268,7 @@ public class JSFunctionTest {
                         "};";
 
         ConstructorFunction constructorFunction = new ConstructorFunction(context);
+        assertEquals(constructorFunction.prototype().toObject().getClass(),PrototypeObject.class);
         context.property("constructorObjectJava", constructorFunction);
         context.evaluateScript(script2);
         JSObject js1   = context.evaluateScript("new constructorObject(5)").toObject();

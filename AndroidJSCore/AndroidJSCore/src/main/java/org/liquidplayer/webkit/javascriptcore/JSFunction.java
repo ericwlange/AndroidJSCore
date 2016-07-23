@@ -44,9 +44,7 @@ import java.util.ArrayList;
  */
 public class JSFunction extends JSObject {
 
-    private class JNIReturnClass implements Runnable {
-        @Override
-        public void run() {}
+    private abstract class JNIReturnClass implements Runnable {
         JNIReturnObject jni;
     }
 

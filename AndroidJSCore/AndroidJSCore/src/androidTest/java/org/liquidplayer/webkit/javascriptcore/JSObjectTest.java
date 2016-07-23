@@ -1,5 +1,8 @@
 package org.liquidplayer.webkit.javascriptcore;
 
+import org.junit.Test;
+
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -289,5 +292,81 @@ public class JSObjectTest {
         assertFalse(context.property("nofunc").toObject().isConstructor());
         assertTrue(context.property("constr").toObject().isConstructor());
     }
+
+    private interface foo {
+    }
+
+    @Test
+    @SuppressWarnings("deprecation")
+    public void testDeprecatedFunctions() {
+        JSContext context = new JSContext();
+
+        boolean exception = false;
+        try {
+            new JSObject(context, foo.class, JSObject.class);
+        } catch(UnsupportedOperationException e) {
+            exception = true;
+        }
+        assertTrue(exception);
+
+        exception = false;
+        try {
+            new JSObject(context, new JSObject(context), JSObject.class.getMethod("__nullFunc"));
+        } catch(UnsupportedOperationException e) {
+            exception = true;
+        } catch(NoSuchMethodException e) {
+            exception = false;
+        }
+        assertTrue(exception);
+
+        exception = false;
+        try {
+            new JSObject(context).callAsFunction();
+        } catch(UnsupportedOperationException e) {
+            exception = true;
+        }
+        assertTrue(exception);
+
+        exception = false;
+        try {
+            new JSObject(context).callAsFunction(new JSObject(context), new JSValue[]{});
+        } catch(UnsupportedOperationException e) {
+            exception = true;
+        }
+        assertTrue(exception);
+
+        exception = false;
+        try {
+            new JSObject(context).callAsFunction(new JSObject(context));
+        } catch(UnsupportedOperationException e) {
+            exception = true;
+        }
+        assertTrue(exception);
+
+        exception = false;
+        try {
+            new JSObject(context).callAsFunction(new JSValue[] {});
+        } catch(UnsupportedOperationException e) {
+            exception = true;
+        }
+        assertTrue(exception);
+
+        exception = false;
+        try {
+            new JSObject(context).prototype();
+        } catch(UnsupportedOperationException e) {
+            exception = true;
+        }
+        assertTrue(exception);
+
+        exception = false;
+        try {
+            new JSObject(context).prototype(new JSObject(context));
+        } catch(UnsupportedOperationException e) {
+            exception = true;
+        }
+        assertTrue(exception);
+    }
+
 
 }

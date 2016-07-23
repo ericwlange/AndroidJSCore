@@ -87,7 +87,7 @@ public class JSString {
 	public boolean equals(Object other) {
 		if (other == null) return false;
 		if (other == this) return true;
-		JSString otherJSString = null;
+		JSString otherJSString;
 		if (other instanceof JSString) { 
 			otherJSString = (JSString)other;
 		} else if (other instanceof String) {
@@ -112,7 +112,7 @@ public class JSString {
             @Override
             public void run() {
                 jni = new JNIReturnObject();
-                jni.bool = isEqual(stringRef, foo);;
+                jni.bool = isEqual(stringRef, foo);
             }
         };
         workerQueue.sync(payload);
@@ -153,16 +153,20 @@ public class JSString {
             }
         };
         workerQueue.sync(payload);
-        return new Long(payload.jni.reference).intValue();
+        return Long.valueOf(payload.jni.reference).intValue();
 	}
 	
 	protected native long createWithCharacters(String str);
-	protected native long createWithUTF8CString(String str);
 	protected native long retain(long strRef);
 	protected native void release(long stringRef);
 	protected native int getLength(long stringRef);
-	protected native int getMaximumUTF8CStringSize(long stringRef);
 	protected native boolean isEqual(long a, long b);
-	protected native boolean isEqualToUTF8CString(long a, String b);
 	protected native String toString(long strRef);
+
+	@SuppressWarnings("unused")
+	protected native long createWithUTF8CString(String str);
+	@SuppressWarnings("unused")
+	protected native int getMaximumUTF8CStringSize(long stringRef);
+	@SuppressWarnings("unused")
+	protected native boolean isEqualToUTF8CString(long a, String b);
 }

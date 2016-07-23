@@ -154,6 +154,8 @@ public class JSObjectPropertiesMapTest {
          */
         Collection<Object> values = map.values();
         Collection<String> values2 = map2.values();
+        assertThat(values2.size(),is(3));
+        assertThat(values2.iterator().next(),is("zero"));
         assertTrue(values.contains(3.3));
         assertTrue(values.contains(1));
         assertTrue(values.contains("a string"));

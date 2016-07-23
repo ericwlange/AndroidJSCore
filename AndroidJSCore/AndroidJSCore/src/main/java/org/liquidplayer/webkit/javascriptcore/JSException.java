@@ -41,7 +41,7 @@ package org.liquidplayer.webkit.javascriptcore;
 public class JSException extends RuntimeException {
 	private static final long serialVersionUID = 1L;
 
-	private JSValue error;
+	private JSError error;
 	
 	/**
 	 * Creates a Java exception from a thrown JavaScript exception
@@ -49,8 +49,10 @@ public class JSException extends RuntimeException {
 	 * @since 1.0
 	 */
 	public JSException(JSValue error) {
-		this.error = error;
+        super(new JSError(error).message());
+		this.error = new JSError(error);
 	}
+
 	/**
 	 * Creates a JavaScriptCore exception from a string message
 	 * @param ctx  The JSContext in which to create the exception
@@ -58,6 +60,7 @@ public class JSException extends RuntimeException {
 	 * @since 1.0
 	 */
 	public JSException(JSContext ctx, String message) {
+        super(message);
 		try {
 			this.error = new JSError(ctx,message);
 		} catch (JSException e) {
@@ -70,11 +73,31 @@ public class JSException extends RuntimeException {
 	 * @return  the JSValue of the JavaScriptCore exception
 	 * @since 1.0
 	 */
-	public JSValue getError() {
+	public JSError getError() {
 		return error;
 	}
-	
-	@Override
+
+    /**
+     * JavaScript error stack trace, see:
+     * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/Stack
+     * @return stack trace for error
+     * @since 3.0
+     */
+    public String stack() {
+        return (error!=null) ? error.stack() : "undefined";
+    }
+
+    /**
+     * JavaScript error name, see:
+     * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/name
+     * @return error name
+     * @since 3.0
+     */
+    public String name() {
+        return (error!=null) ? error.name() : "JSError";
+    }
+
+    @Override
 	public String toString() {
 		if (error!=null) {
 			try {

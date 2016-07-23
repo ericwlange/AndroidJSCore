@@ -307,10 +307,26 @@ public class JSValue {
 	
 	/* Comparators */
 	@Override
+    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
 	public boolean equals(Object other) {
-		if (other == this) return true;
+        return isEqual(other);
+	}
+
+    /**
+     * JavaScript definition of equality (==).  JSValue.equals() and JSValue.isEqual() represent
+     * the Java and JavaScript definitions, respectively.  Normally they will return the same
+     * value, however some classes may override and offer different results.  Example,
+     * in JavaScript, new Float32Array([1,2,3]) == new Float32Array([1,2,3]) will be false (as
+     * the equality is only true if they are the same physical object), but from a Java util.java.List
+     * perspective, these two are equal.
+     * @param other the value to compare for equality
+     * @return true if == from JavaScript perspective, false otherwise
+     * @since 3.0
+     */
+    public boolean isEqual(Object other) {
+        if (other == this) return true;
         JSValue otherJSValue;
-		if (other instanceof JSValue) {
+        if (other instanceof JSValue) {
             otherJSValue = (JSValue)other;
         } else {
             otherJSValue = new JSValue(context, other);
@@ -323,8 +339,8 @@ public class JSValue {
             }
         };
         context.sync(runnable);
-		return runnable.jni.exception==0 && runnable.jni.bool;
-	}
+        return runnable.jni.exception==0 && runnable.jni.bool;
+    }
 	
 	/**
 	 * Tests whether two values are strict equal.  In JavaScript, equivalent to '===' operator.

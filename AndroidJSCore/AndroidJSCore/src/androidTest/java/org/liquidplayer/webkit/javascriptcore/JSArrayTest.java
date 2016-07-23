@@ -334,7 +334,7 @@ public class JSArrayTest {
 
         // Array.prototype.copyWithin()
         JSArray copyWithin = JSArray.of(context,1,2,3,4,5);
-        JSArray copyWithin2 = (JSArray) copyWithin.copyWithin(-2);
+        JSArray copyWithin2 = copyWithin.copyWithin(-2);
         Integer [] copyWithin3 = new Integer [] { 1,2,3,1,2 };
         assertEquals(copyWithin,Arrays.asList(copyWithin3));
         assertEquals(copyWithin2,Arrays.asList(copyWithin3));
@@ -349,9 +349,9 @@ public class JSArrayTest {
         JSArray<Integer> every1 = new JSArray<>(context, JSArray.of(context,12,5,8,130,44), Integer.class);
         JSArray<Integer> every2 = new JSArray<>(context, JSArray.of(context,12,54,18,130,44), Integer.class);
         assertFalse(
-                every1.every(new JSArray.JSBaseArrayEachBooleanCallback<Integer>() {
+                every1.every(new JSArray.EachBooleanCallback<Integer>() {
                     @Override
-                    public boolean callback(Integer value, int i, JSBaseArray<Integer> jsArray) {
+                    public boolean callback(Integer value, int i, JSArray<Integer> jsArray) {
                         return value >= 10;
                     }
                 }));
@@ -360,7 +360,7 @@ public class JSArrayTest {
 
         // Array.prototype.fill()
         JSArray<Integer> fillArray = new JSArray<>(context,copyWithin3,Integer.class);
-        JSArray<Integer> fillArray2 = (JSArray<Integer>) fillArray.fill(4,1);
+        JSArray<Integer> fillArray2 = fillArray.fill(4,1);
         Integer [] fillCompare = new Integer [] { 1,4,4,4,4 };
         assertEquals(fillArray,Arrays.asList(fillCompare));
         assertEquals(fillArray2,Arrays.asList(fillCompare));
@@ -369,15 +369,15 @@ public class JSArrayTest {
         assertEquals(fillArray,Arrays.asList(fillCompare));
 
         // Array.prototype.filter()
-        JSArray<Integer> filtered = (JSArray<Integer>)
-                every1.filter(new JSArray.JSBaseArrayEachBooleanCallback<Integer>() {
+        JSArray<Integer> filtered =
+                every1.filter(new JSArray.EachBooleanCallback<Integer>() {
                     @Override
-                    public boolean callback(Integer value, int i, JSBaseArray<Integer> jsArray) {
+                    public boolean callback(Integer value, int i, JSArray<Integer> jsArray) {
                         return value >= 10;
                     }
                 });
         assertEquals(filtered,Arrays.asList(12,130,44));
-        JSArray<Integer> filtered2 = (JSArray<Integer>)
+        JSArray<Integer> filtered2 =
                 every1.filter(new JSFunction(context,"filter") {
                     @SuppressWarnings("unused")
                     public boolean filter(Integer value) {
@@ -394,9 +394,9 @@ public class JSArrayTest {
         map1.put("quantity", 2);     map2.put("quantity", 0);      map3.put("quantity", 5);
 
         JSArray<Map> inventory = new JSArray<>(context,Arrays.asList(map1,map2,map3),Map.class);
-        Map cherries = inventory.find(new JSArray.JSBaseArrayEachBooleanCallback<Map>() {
+        Map cherries = inventory.find(new JSArray.EachBooleanCallback<Map>() {
             @Override
-            public boolean callback(Map map, int i, JSBaseArray<Map> jsArray) {
+            public boolean callback(Map map, int i, JSArray<Map> jsArray) {
                 return map.get("name").equals("cherries");
             }
         });
@@ -422,10 +422,10 @@ public class JSArrayTest {
                 return element > 1;
             }
         };
-        JSBaseArray.JSBaseArrayEachBooleanCallback<Integer> isPrime2 =
-                new JSBaseArray.JSBaseArrayEachBooleanCallback<Integer>() {
+        JSArray.EachBooleanCallback<Integer> isPrime2 =
+                new JSArray.EachBooleanCallback<Integer>() {
             @Override
-            public boolean callback(Integer currentValue, int index, JSBaseArray<Integer> array) {
+            public boolean callback(Integer currentValue, int index, JSArray<Integer> array) {
                 int start = 2;
                 while (start <= Math.sqrt(currentValue)) {
                     if (currentValue % start++ < 1) {
@@ -444,9 +444,9 @@ public class JSArrayTest {
 
         // Array.prototype.forEach()
         final HashMap<Integer,Integer> forEachMap = new HashMap<>();
-        notPrime.forEach(new JSArray.JSBaseArrayForEachCallback<Integer>() {
+        notPrime.forEach(new JSArray.ForEachCallback<Integer>() {
             @Override
-            public void callback(Integer integer, int i, JSBaseArray<Integer> jsArray) {
+            public void callback(Integer integer, int i, JSArray<Integer> jsArray) {
                 forEachMap.put(i,integer);
             }
         });
@@ -500,10 +500,10 @@ public class JSArrayTest {
         assertEquals(keysArr.pop(),"One-Thousand One");
 
         // Array.prototype.map()
-        JSArray<JSValue> inventoryMap = (JSArray<JSValue>) inventory
-                .map(new JSArray.JSBaseArrayMapCallback<Map>() {
+        JSArray<JSValue> inventoryMap = inventory
+                .map(new JSArray.MapCallback<Map>() {
                     @Override
-                    public JSValue callback(Map map, int i, JSBaseArray<Map> jsArray) {
+                    public JSValue callback(Map map, int i, JSArray<Map> jsArray) {
                         return new JSValue(context,map.get("quantity"));
                     }
                 });
@@ -511,10 +511,10 @@ public class JSArrayTest {
 
         // Array.prototype.reduce()
         int inventoryCount = inventoryMap
-                .reduce(new JSArray.JSBaseArrayReduceCallback() {
+                .reduce(new JSArray.ReduceCallback() {
                     @Override
                     public JSValue callback(JSValue jsValue, JSValue jsValue1, int i,
-                                            JSBaseArray<JSValue> jsArray) {
+                                            JSArray<JSValue> jsArray) {
                         return new JSValue(context,jsValue.toNumber() + jsValue1.toNumber());
                     }
                 }).toNumber().intValue();
@@ -546,10 +546,10 @@ public class JSArrayTest {
                         return (JSValue) map.get("quantity");
                     }
                 })
-                .reduceRight(new JSArray.JSBaseArrayReduceCallback() {
+                .reduceRight(new JSArray.ReduceCallback() {
                     @Override
                     public JSValue callback(JSValue jsValue, JSValue jsValue1, int i,
-                                            JSBaseArray<JSValue> jsArray) {
+                                            JSArray<JSValue> jsArray) {
                         return new JSValue(context,jsValue.toNumber() - jsValue1.toNumber());
                     }
                 },inventoryCount)
@@ -615,10 +615,10 @@ public class JSArrayTest {
                         return (JSValue) map.get("quantity");
                     }
                 })
-                .reduceRight(new JSArray.JSBaseArrayReduceCallback() {
+                .reduceRight(new JSArray.ReduceCallback() {
                     @Override
                     public JSValue callback(JSValue jsValue, JSValue jsValue1, int i,
-                                            JSBaseArray<JSValue> jsArray) {
+                                            JSArray<JSValue> jsArray) {
                         return new JSValue(context,jsValue.toNumber() - jsValue1.toNumber());
                     }
                 })
@@ -628,7 +628,7 @@ public class JSArrayTest {
 
         // Array.prototype.reverse()
         JSArray<JSValue> forward = JSArray.of(context,"one","two","three");
-        JSArray<JSValue> reverse = (JSArray<JSValue>) forward.reverse();
+        JSArray<JSValue> reverse = forward.reverse();
         assertThat(forward,is(reverse));
         JSArray<String> reverseString = new JSArray<>(context,reverse,String.class);
         assertEquals(reverseString,Arrays.asList("three","two","one"));
@@ -641,13 +641,13 @@ public class JSArrayTest {
         assertThat(reverseString.unshift("four","three"),is(4));
 
         // Array.prototype.slice()
-        JSArray<String> slice = (JSArray<String>) reverseString.slice(1,3);
+        JSArray<String> slice = reverseString.slice(1,3);
         assertEquals(slice,Arrays.asList("three","two"));
 
-        JSArray<String> copy = (JSArray<String>) reverseString.slice();
+        JSArray<String> copy = reverseString.slice();
         assertEquals(copy,reverseString);
 
-        JSArray<String> sliceEnd = (JSArray<String>) reverseString.slice(2);
+        JSArray<String> sliceEnd = reverseString.slice(2);
         assertEquals(sliceEnd,Arrays.asList("two","one"));
 
         // Array.prototype.some()
@@ -657,16 +657,16 @@ public class JSArrayTest {
                 return value.toString().equals("7");
             }
         }));
-        assertFalse(notPrime.some(new JSArray.JSBaseArrayEachBooleanCallback<Integer>() {
+        assertFalse(notPrime.some(new JSArray.EachBooleanCallback<Integer>() {
             @Override
-            public boolean callback(Integer integer, int i, JSBaseArray<Integer> jsArray) {
+            public boolean callback(Integer integer, int i, JSArray<Integer> jsArray) {
                 return integer==7;
             }
         }));
 
         // Array.prototype.sort()
         assertEquals(reverseString.sort(),Arrays.asList("four","one","three","two"));
-        assertEquals(notPrime.sort(new JSArray.JSBaseArraySortCallback<Integer>() {
+        assertEquals(notPrime.sort(new JSArray.SortCallback<Integer>() {
             @Override
             public double callback(Integer t1, Integer t2) {
                 return t2 - t1;

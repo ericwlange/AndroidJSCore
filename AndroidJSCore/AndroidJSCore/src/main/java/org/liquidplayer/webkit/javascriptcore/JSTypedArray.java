@@ -40,6 +40,7 @@ package org.liquidplayer.webkit.javascriptcore;
  * @param <T>
  */
 public abstract class JSTypedArray<T> extends JSBaseArray<T> {
+
     protected JSTypedArray(JSContext ctx, int length, String jsConstructor, Class<T> cls) {
         super(ctx,cls);
         JSFunction constructor = new JSFunction(context,"_" + jsConstructor,new String[] {"length"},
@@ -112,6 +113,10 @@ public abstract class JSTypedArray<T> extends JSBaseArray<T> {
     protected JSTypedArray(long objRef, JSContext ctx, Class<T> cls) {
         super(objRef,ctx,cls);
     }
+    @SuppressWarnings("unchecked")
+    protected JSTypedArray(JSTypedArray superList, int leftBuffer, int rightBuffer, Class<T> cls) {
+        super(superList,leftBuffer,rightBuffer,cls);
+    }
 
     /**
      * JavaScript: TypedArray.from(), see:
@@ -158,10 +163,8 @@ public abstract class JSTypedArray<T> extends JSBaseArray<T> {
     public static boolean isTypedArray(JSValue value) {
         if (!value.isObject()) return false;
         JSObject obj = value.toObject();
-        if (obj.hasProperty("BYTES_PER_ELEMENT") && obj.hasProperty("length") &&
-                obj.hasProperty("byteOffset") && obj.hasProperty("byteLength"))
-            return true;
-        return false;
+        return obj.hasProperty("BYTES_PER_ELEMENT") && obj.hasProperty("length") &&
+                obj.hasProperty("byteOffset") && obj.hasProperty("byteLength");
     }
 
     /**
@@ -195,11 +198,6 @@ public abstract class JSTypedArray<T> extends JSBaseArray<T> {
     }
 
     @Override
-    protected JSBaseArray toSuperArray(JSValue value) {
-        return null;
-    }
-
-    @Override
     protected JSValue arrayElement(final int index) {
         JSFunction getElement = new JSFunction(context,"_getElement",new String[]{"thiz","index"},
                 "return thiz[index]",
@@ -216,38 +214,19 @@ public abstract class JSTypedArray<T> extends JSBaseArray<T> {
         setElement.call(null,this,index,value);
     }
 
-    /**
-     * JavaScript: TypedArray.prototype.subarray(), see:
-     * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray/subarray
-     * @param begin  the element to begin at (inclusive)
-     * @param end the element to end at (exclusive)
-     * @return the new typed subarray
-     */
+    @Override
+    public boolean add(final T val) throws JSException {
+        throw new UnsupportedOperationException();
+    }
+
     @SuppressWarnings("unchecked")
-    public JSTypedArray<T> subarray(int begin, int end) {
+    protected JSTypedArray<T> subarray(int begin, int end) {
         JSValue subarray = property("subarray").toFunction().call(this,begin,end).toObject();
         return (JSTypedArray<T>) subarray.toJSArray();
     }
-    /**
-     * JavaScript: TypedArray.prototype.subarray(), see:
-     * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray/subarray
-     * @param begin  the element to begin at (inclusive)
-     * @return the new typed subarray
-     */
     @SuppressWarnings("unchecked")
-    public JSTypedArray<T> subarray(int begin) {
+    protected JSTypedArray<T> subarray(int begin) {
         JSValue subarray = property("subarray").toFunction().call(this,begin).toObject();
         return (JSTypedArray<T>) subarray.toJSArray();
     }
-    /**
-     * JavaScript: TypedArray.prototype.subarray(), see:
-     * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray/subarray
-     * @return the new typed subarray (a copy of the original array)
-     */
-    @SuppressWarnings("unchecked")
-    public JSTypedArray<T> subarray() {
-        JSValue subarray = property("subarray").toFunction().call(this).toObject();
-        return (JSTypedArray<T>) subarray.toJSArray();
-    }
-
 }

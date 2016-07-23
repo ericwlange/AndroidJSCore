@@ -313,6 +313,35 @@ public class JSArrayTest {
         String [] foo = { "f", "o", "o" };
         assertEquals(new JSArray<>(context,from,String.class),Arrays.asList(foo));
 
+        JSArray<JSValue> from2 = JSArray.from(context, "foo", new JSArray.MapCallback<JSValue>() {
+            @Override
+            public JSValue callback(JSValue currentValue, int index, JSArray<JSValue> array) {
+                return new JSValue(context,currentValue.toString().toUpperCase());
+            }
+        });
+        String [] FOO = { "F", "O", "O" };
+        assertEquals(new JSArray<>(context,from2,String.class),Arrays.asList(FOO));
+
+        JSArray<JSValue> from3 = JSArray.from(context, "foo", new JSFunction(context,"_from") {
+            @SuppressWarnings("unused")
+            public String _from(String currentValue) {
+                return currentValue.toUpperCase();
+            }
+        });
+        assertEquals(new JSArray<>(context,from3,String.class),Arrays.asList(FOO));
+
+        JSObject bar = new JSObject(context);
+        bar.property("string",JSArray.from(context,"BAR"));
+        bar.property("_from", new JSFunction(context,"_from") {
+            @SuppressWarnings("unchecked,unused")
+            public String _from(String currentValue, int index) {
+                return getThis().property("string").toJSArray().get(index).toString();
+            }
+        });
+        JSArray<JSValue> from4 = JSArray.from(context,foo,bar.property("_from").toFunction(),bar);
+        String [] BAR = { "B", "A", "R" };
+        assertEquals(new JSArray<>(context,from4,String.class),Arrays.asList(BAR));
+
         // Array.isArray()
         assertTrue(JSArray.isArray(from));
         assertFalse(JSArray.isArray(new JSValue(context,5)));
@@ -320,8 +349,8 @@ public class JSArrayTest {
         // Array.of()
         @SuppressWarnings("unchecked")
         JSArray<JSValue> of = JSArray.of(context,1,2,3);
-        Integer [] bar = { 1, 2, 3 };
-        assertEquals(new JSArray<>(context,of,Integer.class),Arrays.asList(bar));
+        Integer [] bar2 = { 1, 2, 3 };
+        assertEquals(new JSArray<>(context,of,Integer.class),Arrays.asList(bar2));
 
         // Array.prototype.concat()
         @SuppressWarnings("unchecked")

@@ -93,7 +93,7 @@ public class JSValue {
                     valueRef = ((JSValue) val).valueRef();
                     protect(context.ctxRef(), valueRef);
                 } else if (val instanceof Map) {
-                    valueRef = new JSMap(context, (Map)val, Object.class).getJSObject().valueRef();
+                    valueRef = new JSObjectPropertiesMap(context, (Map)val, Object.class).getJSObject().valueRef();
                     protect(context.ctxRef(), valueRef);
                 } else if (val instanceof List) {
                     valueRef = new JSArray<>(context, (List) val, JSValue.class).valueRef();
@@ -529,7 +529,7 @@ public class JSValue {
         if (clazz == Object.class)
             return this;
         else if (clazz == Map.class)
-            return new JSMap(toObject(),Object.class);
+            return new JSObjectPropertiesMap(toObject(),Object.class);
         else if (clazz == List.class)
             return toJSArray();
         else if (clazz == String.class)

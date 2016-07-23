@@ -1,5 +1,5 @@
 //
-// JSMap.java
+// JSObjectPropertiesMap.java
 // AndroidJSCore project
 //
 // https://github.com/ericwlange/AndroidJSCore/
@@ -48,19 +48,19 @@ import java.util.Set;
  * A JSObject shadow class which implements the Java Map interface.  Convenient
  * for setting/getting/iterating properties.
  */
-public class JSMap<V> implements Map<String, V> {
+public class JSObjectPropertiesMap<V> extends JSObjectWrapper implements Map<String, V> {
     /**
      * Creates a new Map object which operates on object 'object' and assumes type 'cls'.
      * Example:
      * <code>
-     *     java.util.Map<String,Double> map = new JSMap<String,Double>(object,Double.class);
+     *     java.util.Map<String,Double> map = new JSObjectPropertiesMap<String,Double>(object,Double.class);
      * </code>
      * @param object The JSObject whose properties will be mapped
      * @param cls    The class of the component Values; must match template
      * @since 3.0
      */
-    public JSMap(JSObject object, Class<V> cls) {
-        mObject = object;
+    public JSObjectPropertiesMap(JSObject object, Class<V> cls) {
+        super(object);
         mType = cls;
     }
 
@@ -72,15 +72,15 @@ public class JSMap<V> implements Map<String, V> {
      *     java.util.Map<String,Double> map = new HashMap<>();
      *     map.put("one",1.0);
      *     map.put("two",2.0);
-     *     java.util.Map<String,Double> jsmap = new JSMap<String,Double>(context,map,Double.class)
+     *     java.util.Map<String,Double> jsmap = new JSObjectPropertiesMap<String,Double>(context,map,Double.class)
      * </code>
      * @param context  The JSContext in which to create the object
      * @param map      The initial properties to set
      * @param cls      The class of the component Values; must match template
      * @since 3.0
      */
-    public JSMap(JSContext context, Map map, Class<V> cls) {
-        mObject = new JSObject(context,map);
+    public JSObjectPropertiesMap(JSContext context, Map map, Class<V> cls) {
+        super(new JSObject(context,map));
         mType = cls;
     }
 
@@ -89,35 +89,25 @@ public class JSMap<V> implements Map<String, V> {
      * Assumes value class of type 'cls'.
      * Example:
      * <code>
-     *     java.util.Map<String,Double> jsmap = new JSMap<String,Double>(context,Double.class)
+     *     java.util.Map<String,Double> jsmap = new JSObjectPropertiesMap<String,Double>(context,Double.class)
      * </code>
      * @param context  The JSContext in which to create the object
      * @param cls      The class of the component Values; must match template
      * @since 3.0
      */
-    public JSMap(JSContext context, Class<V> cls) {
-        mObject = new JSObject(context);
+    public JSObjectPropertiesMap(JSContext context, Class<V> cls) {
+        super(new JSObject(context));
         mType = cls;
     }
 
-    private final JSObject mObject;
     private final Class<V> mType;
-
-    /**
-     * Gets the underlying JSObject for this map
-     * @return the underlying JSObject
-     * @since 3.0
-     */
-    public JSObject getJSObject() {
-        return mObject;
-    }
 
     /**
      * @see java.util.Map#size()
      */
     @Override
     public int size() {
-        return mObject.propertyNames().length;
+        return propertyNames().length;
     }
 
     /**
@@ -135,7 +125,7 @@ public class JSMap<V> implements Map<String, V> {
      */
     @Override
     public boolean containsKey(final Object key) {
-        return mObject.hasProperty(key.toString());
+        return hasProperty(key.toString());
     }
 
     /**
@@ -144,9 +134,9 @@ public class JSMap<V> implements Map<String, V> {
      */
     @Override
     public boolean containsValue(final Object value) {
-        String[] properties = mObject.propertyNames();
+        String[] properties = propertyNames();
         for (String key : properties) {
-            if (mObject.property(key).equals(value))
+            if (property(key).equals(value))
                 return true;
         }
         return false;
@@ -159,7 +149,7 @@ public class JSMap<V> implements Map<String, V> {
     @Override
     @SuppressWarnings("unchecked")
     public V get(final Object key) {
-        JSValue val = mObject.property(key.toString());
+        JSValue val = property(key.toString());
         if (val.isUndefined()) return null;
         return (V) val.toJavaObject(mType);
     }
@@ -171,7 +161,7 @@ public class JSMap<V> implements Map<String, V> {
     @Override
     public V put(final String key, final V value) {
         final V oldValue = get(key);
-        mObject.property(key,value);
+        property(key,value);
         return oldValue;
     }
 
@@ -182,7 +172,7 @@ public class JSMap<V> implements Map<String, V> {
     @Override
     public V remove(final Object key) {
         final V oldValue = get(key);
-        mObject.deleteProperty(key.toString());
+        deleteProperty(key.toString());
         return oldValue;
     }
 
@@ -204,8 +194,8 @@ public class JSMap<V> implements Map<String, V> {
     @Override
     public void clear()
     {
-        for (String prop : mObject.propertyNames()) {
-            mObject.deleteProperty(prop);
+        for (String prop : propertyNames()) {
+            deleteProperty(prop);
         }
     }
 
@@ -216,7 +206,7 @@ public class JSMap<V> implements Map<String, V> {
     @Override
     @SuppressWarnings("unchecked")
     public @NonNull Set keySet() {
-        return new HashSet(Arrays.asList(mObject.propertyNames()));
+        return new HashSet(Arrays.asList(propertyNames()));
     }
 
     /**
@@ -231,18 +221,18 @@ public class JSMap<V> implements Map<String, V> {
             @Override
             public V get(final int index)
             {
-                String [] propertyNames = mObject.propertyNames();
+                String [] propertyNames = propertyNames();
                 if (index > propertyNames.length)
                 {
                     throw new IndexOutOfBoundsException();
                 }
-                return JSMap.this.get(propertyNames[index]);
+                return JSObjectPropertiesMap.this.get(propertyNames[index]);
             }
 
             @Override
             public int size()
             {
-                return mObject.propertyNames().length;
+                return propertyNames().length;
             }
 
             @Override
@@ -256,7 +246,7 @@ public class JSMap<V> implements Map<String, V> {
         private String current = null;
 
         public SetIterator() {
-            String [] properties = mObject.propertyNames();
+            String [] properties = propertyNames();
             if (properties.length > 0)
                 current = properties[0];
         }
@@ -266,7 +256,7 @@ public class JSMap<V> implements Map<String, V> {
             if (current==null) return false;
 
             // Make sure 'current' still exists
-            String [] properties = mObject.propertyNames();
+            String [] properties = propertyNames();
             for (String prop : properties) {
                 if (current.equals(prop)) return true;
             }
@@ -279,7 +269,7 @@ public class JSMap<V> implements Map<String, V> {
             if (current == null)
                 throw new NoSuchElementException();
 
-            String [] properties = mObject.propertyNames();
+            String [] properties = propertyNames();
             Entry<String,V> entry = null;
             int i = 0;
             for (; i<properties.length; i++) {
@@ -318,7 +308,7 @@ public class JSMap<V> implements Map<String, V> {
         @Override
         public void remove() {
             Entry<String,V> entry = next();
-            mObject.deleteProperty(entry.getKey());
+            deleteProperty(entry.getKey());
         }
     }
 
@@ -337,7 +327,7 @@ public class JSMap<V> implements Map<String, V> {
 
             @Override
             public int size() {
-                return mObject.propertyNames().length;
+                return propertyNames().length;
             }
         };
     }

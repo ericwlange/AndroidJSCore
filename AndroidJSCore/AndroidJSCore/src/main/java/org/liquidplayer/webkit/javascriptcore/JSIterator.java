@@ -68,7 +68,8 @@ public class JSIterator<T> extends JSObjectWrapper implements Iterator<T> {
 
     /**
      * Wraps a JavaScript iterator in a Java iterator
-     * @param iterator
+     * @param iterator the JavaScript iterator object.  Assumes the object is a properly formed JS
+     *                 iterator
      */
     public JSIterator(JSObject iterator) {
         super(iterator);
@@ -82,7 +83,7 @@ public class JSIterator<T> extends JSObjectWrapper implements Iterator<T> {
 
     /**
      * The 'next' JavaScript iterator object
-     * @return
+     * @return the next JSObject in the JSIterator
      */
     public Next jsnext() {
         Next ret = next;
@@ -92,7 +93,7 @@ public class JSIterator<T> extends JSObjectWrapper implements Iterator<T> {
 
     /**
      * @see Iterator#next()
-     * @return
+     * @return next value in the iterator
      */
     @Override
     @SuppressWarnings("unchecked")
@@ -102,7 +103,7 @@ public class JSIterator<T> extends JSObjectWrapper implements Iterator<T> {
 
     /**
      * @see Iterator#hasNext()
-     * @return
+     * @return true if next() will return a value, false if no values left
      */
     @Override
     public boolean hasNext() {

@@ -159,7 +159,7 @@ public class JSObject extends JSValue {
     @SuppressWarnings("unchecked")
     public JSObject(JSContext ctx, final Map map) {
         this(ctx);
-        new JSMap<>(this,Object.class).putAll(map);
+        new JSObjectPropertiesMap<>(this,Object.class).putAll(map);
     }
 
     /**

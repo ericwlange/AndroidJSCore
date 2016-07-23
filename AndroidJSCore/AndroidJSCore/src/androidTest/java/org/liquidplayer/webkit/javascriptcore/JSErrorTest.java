@@ -96,4 +96,16 @@ public class JSErrorTest {
         }
     }
 
+    @Test
+    @SuppressWarnings("deprecation")
+    public void testDeprecatedFunctions() {
+        boolean exception = false;
+        try {
+            new JSError(new JSContext(), "foo", "bar.js", 1);
+        } catch(UnsupportedOperationException e) {
+            exception = true;
+        }
+        assertTrue(exception);
+    }
+
 }

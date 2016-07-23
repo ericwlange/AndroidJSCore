@@ -44,16 +44,13 @@ public class JSError extends JSObject {
 	 * @since 1.0
 	 * @throws JSException
 	 */
-	public JSError(JSContext ctx, String message) throws JSException {
+	public JSError(JSContext ctx, String message) {
 		context = ctx;
 		long [] args = { 
 				new JSValue(context,message).valueRef()
 		};
 		JNIReturnObject jni = makeError(context.ctxRef(), args);
-		if (jni.exception!=0) {
-			context.throwJSException(new JSException(new JSValue(jni.exception, context)));
-			jni.reference = make(context.ctxRef(), 0L);
-		}
+        if (BuildConfig.DEBUG && jni.exception != 0) throw new AssertionError();
 		valueRef = jni.reference;
 	}
 	/**
@@ -62,13 +59,10 @@ public class JSError extends JSObject {
 	 * @since 1.0
 	 * @throws JSException
 	 */
-	public JSError(JSContext ctx) throws JSException {
+	public JSError(JSContext ctx) {
 		context = ctx;
 		JNIReturnObject jni = makeError(context.ctxRef(), new long[0]);
-		if (jni.exception!=0) {
-			context.throwJSException(new JSException(new JSValue(jni.exception, context)));
-			jni.reference = make(context.ctxRef(), 0L);
-		}
+        if (BuildConfig.DEBUG && jni.exception != 0) throw new AssertionError();
 		valueRef = jni.reference;
 	}
 
@@ -127,17 +121,6 @@ public class JSError extends JSObject {
     @Deprecated
     @SuppressWarnings("unused")
     public JSError(JSContext ctx, String message, String filename, Integer lineNumber) throws JSException {
-        context = ctx;
-        long [] args = {
-                new JSValue(context,message).valueRef(),
-                new JSValue(context,filename).valueRef(),
-                new JSValue(context,lineNumber).valueRef()
-        };
-        JNIReturnObject jni = makeError(context.ctxRef(), args);
-        if (jni.exception!=0) {
-            context.throwJSException(new JSException(new JSValue(jni.exception, context)));
-            jni.reference = make(context.ctxRef(), 0L);
-        }
-        valueRef = jni.reference;
+        throw new UnsupportedOperationException();
     }
 }

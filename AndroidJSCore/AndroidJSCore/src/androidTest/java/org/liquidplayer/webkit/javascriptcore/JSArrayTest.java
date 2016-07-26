@@ -281,6 +281,9 @@ public class JSArrayTest {
         assertEquals(list.get(0),"zero");
         assertEquals(list.get(1),1);
         assertEquals(list.get(2),2);
+        list.subList(1,2).set(0,3);
+        assertEquals(list.get(1),3);
+        list.subList(1,2).set(0,1);
 
         /**
          * JSArray.equals()
@@ -515,6 +518,13 @@ public class JSArrayTest {
         assertThat(keys.next(),is(0));
         assertThat(keys.next(),is(1));
         assertThat(keys.next(),is(2));
+
+        Iterator<Integer> keys2 = sevenPrime.keys();
+        assertThat(keys2.next(),is(0));
+        assertThat(keys2.next(),is(1));
+        assertThat(keys2.next(),is(2));
+        assertThat(keys2.next(),is(3));
+        assertNull(keys2.next());
 
         // Array.prototype.lastIndexOf()
         assertThat(notPrime.lastIndexOf(8),is(notPrime.lastIndexOf(8,notPrime.size()-1)));

@@ -48,12 +48,7 @@ public class JSDate extends JSObject {
 	 */
 	public JSDate(JSContext ctx) throws JSException {
 		context = ctx;
-		JNIReturnObject jni = this.makeDate(context.ctxRef(), new long[0]);
-		if (jni.exception!=0) {
-			context.throwJSException(new JSException(new JSValue(jni.exception, context)));
-			jni.reference = make(context.ctxRef(), 0L);
-		}
-		valueRef = jni.reference;
+        valueRef = testException(this.makeDate(context.ctxRef(), new long[0]));
         context.persistObject(this);
 	}
 	/**
@@ -67,12 +62,7 @@ public class JSDate extends JSObject {
 		context = ctx;
 		JSValue time = new JSValue(context, date.getTime());
 		long [] args = { time.valueRef() };
-		JNIReturnObject jni = this.makeDate(context.ctxRef(), args);
-		if (jni.exception!=0) {
-			context.throwJSException(new JSException(new JSValue(jni.exception, context)));
-			jni.reference = make(context.ctxRef(), 0L);
-		}
-		valueRef = jni.reference;
+        valueRef = testException(this.makeDate(context.ctxRef(), args));
         context.persistObject(this);
 	}
     /**
@@ -86,12 +76,7 @@ public class JSDate extends JSObject {
         context = ctx;
         JSValue time = new JSValue(context, epoch);
         long [] args = { time.valueRef() };
-        JNIReturnObject jni = this.makeDate(context.ctxRef(), args);
-        if (jni.exception!=0) {
-            context.throwJSException(new JSException(new JSValue(jni.exception, context)));
-            jni.reference = make(context.ctxRef(), 0L);
-        }
-        valueRef = jni.reference;
+        valueRef = testException(this.makeDate(context.ctxRef(), args));
         context.persistObject(this);
     }
 
@@ -107,13 +92,17 @@ public class JSDate extends JSObject {
         for (int i=0; i<7; i++) {
             if (i < params.length) p[i] = new JSValue(context, params[i]).valueRef();
         }
-        JNIReturnObject jni = this.makeDate(context.ctxRef(), p);
+        valueRef = testException(this.makeDate(context.ctxRef(), p));
+        context.persistObject(this);
+    }
+
+    private long testException(JNIReturnObject jni) {
         if (jni.exception!=0) {
             context.throwJSException(new JSException(new JSValue(jni.exception, context)));
-            jni.reference = make(context.ctxRef(), 0L);
+            return(make(context.ctxRef(), 0L));
+        } else {
+            return jni.reference;
         }
-        valueRef = jni.reference;
-        context.persistObject(this);
     }
 
 	/* Methods */
@@ -433,7 +422,7 @@ public class JSDate extends JSObject {
      *              January 1, 1970, 00:00:00 UTC, allowing for negative numbers for times prior.
      * @since 3.0
      */
-	public void setTime(Integer value) {
+	public void setTime(Long value) {
         property("setTime").toFunction().call(this,value);
 	}
 

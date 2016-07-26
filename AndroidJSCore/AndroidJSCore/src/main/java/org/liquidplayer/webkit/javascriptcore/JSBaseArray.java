@@ -339,10 +339,6 @@ public abstract class JSBaseArray<T> extends JSFunction implements List<T> {
     @Override
     @SuppressWarnings("unchecked")
     public boolean addAll(final int index, final @NonNull Collection<? extends T> collection) {
-        if (collection.isEmpty()) {
-            return false;
-        }
-
         int i = index;
         for (Object item : collection.toArray()) {
             add(i++,(T)item);
@@ -356,9 +352,6 @@ public abstract class JSBaseArray<T> extends JSFunction implements List<T> {
      */
     @Override
     public boolean removeAll(final @NonNull Collection<?> collection) {
-        if (collection.isEmpty()) {
-            return false;
-        }
         boolean any = false;
         ListIterator<T> listIterator = listIterator();
         while (listIterator.hasNext()) {
@@ -380,9 +373,6 @@ public abstract class JSBaseArray<T> extends JSFunction implements List<T> {
      */
     @Override
     public boolean retainAll(final @NonNull Collection<?> collection) {
-        if (collection.isEmpty()) {
-            return false;
-        }
         boolean any = false;
         ListIterator<T> listIterator = listIterator();
         while (listIterator.hasNext()) {
@@ -408,9 +398,6 @@ public abstract class JSBaseArray<T> extends JSFunction implements List<T> {
      */
     @Override
     public void clear() {
-        if (isEmpty()) {
-            return;
-        }
         for (int i=size(); i > 0; --i) {
             remove(i-1);
         }
@@ -498,16 +485,6 @@ public abstract class JSBaseArray<T> extends JSFunction implements List<T> {
     @Override @NonNull
     public ListIterator<T> listIterator(final int index) {
         return new ArrayIterator(index);
-    }
-
-    /**
-     * @see List#subList(int, int)
-     * @since 3.0
-     */
-    @Override @NonNull
-    @SuppressWarnings("unchecked")
-    public List<T> subList(final int fromIndex, final int toIndex) {
-        throw new UnsupportedOperationException();
     }
 
     /**

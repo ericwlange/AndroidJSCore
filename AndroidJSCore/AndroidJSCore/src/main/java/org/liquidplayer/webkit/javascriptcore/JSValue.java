@@ -41,9 +41,7 @@ import java.util.Map;
  */
 public class JSValue {
 
-    private class JNIReturnClass implements Runnable {
-        @Override
-        public void run() {}
+    private abstract class JNIReturnClass implements Runnable {
         JNIReturnObject jni;
     }
 

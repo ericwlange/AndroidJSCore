@@ -32,8 +32,6 @@
 */
 package org.liquidplayer.webkit.javascriptcore;
 
-import org.liquidplayer.hemroid.JavaScriptCoreGTK;
-
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -236,9 +234,7 @@ public class JSContext extends JSObject {
 		return ctx;
 	}
 
-    private class JNIReturnClass implements Runnable {
-        @Override
-        public void run() {}
+    private abstract class JNIReturnClass implements Runnable {
         JNIReturnObject jni;
     }
 
@@ -375,7 +371,17 @@ public class JSContext extends JSObject {
 	protected native void garbageCollect(long ctx);
 
 	static {
-		new JavaScriptCoreGTK(null);
+		System.loadLibrary("gnustl_shared");
+		System.loadLibrary("icuhemdata");
+		System.loadLibrary("icuhemuc");
+		System.loadLibrary("icuhemi18n");
+		System.loadLibrary("ffi");
+		System.loadLibrary("iconv");
+		System.loadLibrary("intl");
+		System.loadLibrary("glib-2.0");
+		System.loadLibrary("gobject-2.0");
+		System.loadLibrary("gmodule-2.0");
+		System.loadLibrary("gio-2.0");
 		System.loadLibrary("android-js-core");
 		staticInit();
 	}

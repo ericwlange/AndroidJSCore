@@ -252,5 +252,30 @@ public class JSInt32ArrayTest {
         assertTrue(it2.next().equals(1));
 
         assertEquals(list.subList(1, 4),Arrays.asList(1,2,3));
+
+        exception = false;
+        try {
+            list.subList(-1,0);
+        } catch (IndexOutOfBoundsException e) {
+            exception = true;
+        } finally {
+            assertThat(exception,is(true));
+        }
+        exception = false;
+        try {
+            list.subList(100,101);
+        } catch (IndexOutOfBoundsException e) {
+            exception = true;
+        } finally {
+            assertThat(exception,is(true));
+        }
+        exception = false;
+        try {
+            list.subList(3,2);
+        } catch (IndexOutOfBoundsException e) {
+            exception = true;
+        } finally {
+            assertThat(exception,is(true));
+        }
     }
 }

@@ -85,6 +85,9 @@ public class JSValueTest {
         JSValue arrayValue = new JSValue(context,array);
         assertTrue(arrayValue.isArray());
         assertEquals(arrayValue.toJSArray().get(2),"third");
+
+        JSValue undefined2 = new JSValue(0L,context);
+        assertTrue(undefined2.isUndefined());
     }
 
     @org.junit.Test
@@ -309,4 +312,8 @@ public class JSValueTest {
         assertThat(array.toJSArray().size(),is(0));
     }
 
+    @org.junit.After
+    public void shutDown() {
+        Runtime.getRuntime().gc();
+    }
 }

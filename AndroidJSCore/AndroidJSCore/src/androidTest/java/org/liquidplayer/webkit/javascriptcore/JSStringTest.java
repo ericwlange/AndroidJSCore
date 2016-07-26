@@ -30,4 +30,9 @@ public class JSStringTest {
 
         assertFalse(jsString.equals(10));
     }
+
+    @org.junit.After
+    public void shutDown() {
+        Runtime.getRuntime().gc();
+    }
 }

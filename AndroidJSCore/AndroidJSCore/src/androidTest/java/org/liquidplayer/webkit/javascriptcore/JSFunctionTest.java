@@ -240,6 +240,29 @@ public class JSFunctionTest {
         }
     }
 
+    public static class TestInstance extends JSObject {
+    }
+
+    public class TestFunction extends JSFunction {
+        public TestFunction(JSContext ctx) throws NoSuchMethodException {
+            super(ctx,TestFunction.class.getMethod("myFunction",Integer.class),TestInstance.class);
+        }
+        @SuppressWarnings("unused")
+        public void myFunction(Integer x) throws Exception {
+            getThis().property("x",x);
+        }
+    }
+
+    public class TestFunction3 extends JSFunction {
+        public TestFunction3(JSContext ctx) throws NoSuchMethodException {
+            super(ctx,TestFunction3.class.getMethod("myFunction",Integer.class));
+        }
+        @SuppressWarnings("unused")
+        public void myFunction(Integer x) throws Exception {
+            getThis().property("x",x);
+        }
+    }
+
     @org.junit.Test
     public void testJSFunctionConstructors() throws Exception {
         JSContext context = new JSContext();
@@ -319,6 +342,15 @@ public class JSFunctionTest {
             assertEquals(stack.substring(0,expected.length()),expected);
         }
 
+        TestFunction testFunction = new TestFunction(context);
+        JSObject instance = testFunction.newInstance(10);
+        assertEquals(instance.getClass(),TestInstance.class);
+        assertEquals(instance.property("x").toNumber().intValue(),10);
+
+        TestFunction3 testFunction3 = new TestFunction3(context);
+        JSObject instance3 = testFunction3.newInstance(10);
+        assertEquals(instance3.getClass(),JSObject.class);
+        assertEquals(instance3.property("x").toNumber().intValue(),10);
     }
 
     private final static String functionObjectScript =
@@ -377,5 +409,90 @@ public class JSFunctionTest {
         String string1 = functionObject2.nativeFunc().apply(null,params).toJSON();
         String string2 = functionObject2.javaFunc().apply(null,params).toJSON();
         assertEquals(string1,string2);
+    }
+
+    /* Should raise NoSuchMethodException */
+    public /* do not make it static! */ class TestInstance2 extends JSObject {
+    }
+    /* Should raise IllegalAccessException */
+    private class PrivateClassFail extends JSObject {
+    }
+    /* Should raise InstantiationException */
+    public static class InstantiationExceptionFail extends JSObject {
+        public InstantiationExceptionFail(Integer foo) throws Exception {
+            assertNull(foo);
+        }
+    }
+
+    public class TestFunction2 extends JSFunction {
+        public TestFunction2(JSContext ctx, Class<? extends JSObject> c) throws NoSuchMethodException {
+            super(ctx,TestFunction.class.getMethod("myFunction",Integer.class),c);
+        }
+        @SuppressWarnings("unused")
+        public void myFunction(Integer x) throws Exception {
+            assertFalse(true);
+        }
+    }
+
+    @org.junit.Test
+    public void testExceptionCases() throws Exception {
+        JSContext context = new JSContext();
+
+        boolean exception = false;
+        try {
+            new TestFunction2(context,TestInstance2.class).newInstance(10);
+        } catch (JSException e) {
+            exception = true;
+        } finally {
+            assertTrue(exception);
+        }
+
+        exception = false;
+        try {
+            new TestFunction2(context,PrivateClassFail.class).newInstance(10);
+        } catch (JSException e) {
+            exception = true;
+        } finally {
+            assertTrue(exception);
+        }
+
+        /* Should raise InvocationTargetException */
+        exception = false;
+        try {
+            JSFunction function = new JSFunction(context,"_InvocationTargetException") {
+                @SuppressWarnings("unused")
+                public void _InvocationTargetException() throws Exception {
+                    throw new Exception();
+                }
+            };
+            function.newInstance(10);
+        } catch (JSException e) {
+            exception = true;
+        } finally {
+            assertTrue(exception);
+        }
+
+        exception = false;
+        try {
+            new TestFunction2(context,InstantiationExceptionFail.class).newInstance(10);
+        } catch (JSException e) {
+            exception = true;
+        } finally {
+            assertTrue(exception);
+        }
+
+        exception = false;
+        try {
+            new JSFunction(context,"_NoMethod").call();
+        } catch (JSException e) {
+            exception = true;
+        } finally {
+            assertTrue(exception);
+        }
+    }
+
+    @org.junit.After
+    public void shutDown() {
+        Runtime.getRuntime().gc();
     }
 }

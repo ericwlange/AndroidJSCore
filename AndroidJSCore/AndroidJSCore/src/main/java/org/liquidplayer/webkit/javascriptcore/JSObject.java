@@ -44,11 +44,7 @@ import java.util.Map;
  */
 public class JSObject extends JSValue {
 
-    private class JNIReturnClass implements Runnable {
-        @Override
-        public void run() {
-        }
-
+    private abstract class JNIReturnClass implements Runnable {
         JNIReturnObject jni;
     }
 
@@ -315,12 +311,8 @@ public class JSObject extends JSValue {
         }
     }
 
-    private class StringArrayReturnClass implements Runnable {
+    private abstract class StringArrayReturnClass implements Runnable {
         public String[] sArray;
-
-        @Override
-        public void run() {
-        }
     }
 
     /**
@@ -456,7 +448,6 @@ public class JSObject extends JSValue {
 
     protected native boolean isConstructor(long ctx, long object);
 
-    @SuppressWarnings("unused")
     protected native JNIReturnObject callAsConstructor(long ctx, long object, long[] args);
 
     protected native long copyPropertyNames(long ctx, long object);

@@ -368,5 +368,8 @@ public class JSObjectTest {
         assertTrue(exception);
     }
 
-
+    @org.junit.After
+    public void shutDown() {
+        Runtime.getRuntime().gc();
+    }
 }

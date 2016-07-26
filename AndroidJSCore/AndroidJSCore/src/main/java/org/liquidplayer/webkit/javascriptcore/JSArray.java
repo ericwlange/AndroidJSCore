@@ -65,6 +65,15 @@ public class JSArray<T> extends JSBaseArray<T> {
         JSValue callback(T currentValue, int index, JSArray<T> array);
     }
 
+    private long testException(JNIReturnObject jni) {
+        if (jni.exception!=0) {
+            context.throwJSException(new JSException(new JSValue(jni.exception, context)));
+            return(make(context.ctxRef(), 0L));
+        } else {
+            return jni.reference;
+        }
+    }
+
     /**
      * Creates a JavaScript array object, initialized with 'array' JSValues
      * @param ctx  The JSContext to create the array in
@@ -80,12 +89,7 @@ public class JSArray<T> extends JSBaseArray<T> {
         for (int i=0; i<array.length; i++) {
             valueRefs[i] = array[i].valueRef();
         }
-        JNIReturnObject jni = makeArray(context.ctxRef(), valueRefs);
-        if (jni.exception!=0) {
-            context.throwJSException(new JSException(new JSValue(jni.exception, context)));
-            jni.reference = make(context.ctxRef(), 0L);
-        }
-        valueRef = jni.reference;
+        valueRef = testException(makeArray(context.ctxRef(), valueRefs));
         context.persistObject(this);
     }
 
@@ -99,12 +103,7 @@ public class JSArray<T> extends JSBaseArray<T> {
     public JSArray(JSContext ctx, Class<T> cls) throws JSException {
         super(ctx,cls);
         long [] valueRefs = new long[0];
-        JNIReturnObject jni = makeArray(context.ctxRef(), valueRefs);
-        if (jni.exception!=0) {
-            context.throwJSException(new JSException(new JSValue(jni.exception, context)));
-            jni.reference = make(context.ctxRef(), 0L);
-        }
-        valueRef = jni.reference;
+        valueRef = testException(makeArray(context.ctxRef(), valueRefs));
         context.persistObject(this);
     }
 
@@ -124,12 +123,7 @@ public class JSArray<T> extends JSBaseArray<T> {
             JSValue v = new JSValue(context,array[i]);
             valueRefs[i] = v.valueRef();
         }
-        JNIReturnObject jni = makeArray(context.ctxRef(), valueRefs);
-        if (jni.exception!=0) {
-            context.throwJSException(new JSException(new JSValue(jni.exception, context)));
-            jni.reference = make(context.ctxRef(), 0L);
-        }
-        valueRef = jni.reference;
+        valueRef = testException(makeArray(context.ctxRef(), valueRefs));
         context.persistObject(this);
     }
 

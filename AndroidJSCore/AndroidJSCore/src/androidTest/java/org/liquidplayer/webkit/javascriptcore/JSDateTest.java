@@ -94,6 +94,10 @@ public class JSDateTest {
 
         now.setMonth(5);
         assertThat(now.getMonth(),is(5));
+
+        JSDate settime = new JSDate(context);
+        settime.setTime(ymdhmsm.getTime());
+        assertEquals(ymdhmsm.getTime(),settime.getTime());
     }
 
     @Test
@@ -165,5 +169,10 @@ public class JSDateTest {
         assertEquals(jsonString,ymdhmsm.toJSON());
         assertEquals(timeString,ymdhmsm.toTimeString());
         assertEquals(utcString,ymdhmsm.toUTCString());
+    }
+
+    @org.junit.After
+    public void shutDown() {
+        Runtime.getRuntime().gc();
     }
 }

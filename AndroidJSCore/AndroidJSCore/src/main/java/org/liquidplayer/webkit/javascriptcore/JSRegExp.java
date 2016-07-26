@@ -54,12 +54,7 @@ public class JSRegExp extends JSObject {
 				new JSValue(context,pattern).valueRef(),
 				new JSValue(context,flags).valueRef(),
 		};
-		JNIReturnObject jni = makeRegExp(context.ctxRef(), args);
-		if (jni.exception!=0) {
-			context.throwJSException(new JSException(new JSValue(jni.exception, context)));
-			jni.reference = make(context.ctxRef(), 0L);
-		}
-		valueRef = jni.reference;
+		valueRef = makeRegExp(context.ctxRef(), args).reference;
 	}
 	/**
 	 * Creates a new JavaScript regular expression
@@ -74,11 +69,7 @@ public class JSRegExp extends JSObject {
 				new JSValue(context,pattern).valueRef()
 		};
 		JNIReturnObject jni = makeRegExp(context.ctxRef(), args);
-		if (jni.exception!=0) {
-			context.throwJSException(new JSException(new JSValue(jni.exception, context)));
-			jni.reference = make(context.ctxRef(), 0L);
-		}
-		valueRef = jni.reference;
+        valueRef = makeRegExp(context.ctxRef(), args).reference;
 	}
 
     /**

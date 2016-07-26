@@ -253,5 +253,30 @@ public class JSFloat64ArrayTest {
         assertTrue(it2.next().equals(1.0));
 
         assertEquals(list.subList(1, 4),Arrays.asList(1.0,2.0,3.0));
+
+        exception = false;
+        try {
+            list.subList(-1,0);
+        } catch (IndexOutOfBoundsException e) {
+            exception = true;
+        } finally {
+            assertThat(exception,is(true));
+        }
+        exception = false;
+        try {
+            list.subList(100,101);
+        } catch (IndexOutOfBoundsException e) {
+            exception = true;
+        } finally {
+            assertThat(exception,is(true));
+        }
+        exception = false;
+        try {
+            list.subList(3,2);
+        } catch (IndexOutOfBoundsException e) {
+            exception = true;
+        } finally {
+            assertThat(exception,is(true));
+        }
     }
 }

@@ -66,4 +66,10 @@ public class JSArrayBufferTest {
         assertNotEquals(buf3.byteLength(),buf2.byteLength());
         assertThat(new JSInt32Array(buf3).get(0),is(42));
     }
+
+    @org.junit.After
+    public void shutDown() {
+        Runtime.getRuntime().gc();
+    }
+
 }

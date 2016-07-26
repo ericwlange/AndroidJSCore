@@ -3,6 +3,8 @@ package org.liquidplayer.webkit.javascriptcore;
 import android.os.Handler;
 import android.os.Looper;
 
+import org.junit.Test;
+
 import java.util.concurrent.Semaphore;
 
 import static org.junit.Assert.*;
@@ -179,5 +181,19 @@ public class JSContextTest {
         });
         mutex.acquireUninterruptibly();
         if (thrownInMainThread != null) throw thrownInMainThread;
+    }
+
+    @Test
+    public void testDeadReferences() throws Exception {
+        JSContext context = new JSContext();
+        for (int i=0; i<200; i++) {
+            new JSValue(context);
+        }
+        assertTrue(true);
+    }
+
+    @org.junit.After
+    public void shutDown() {
+        Runtime.getRuntime().gc();
     }
 }

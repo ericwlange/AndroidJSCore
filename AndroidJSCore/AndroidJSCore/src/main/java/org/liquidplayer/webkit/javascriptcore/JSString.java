@@ -41,13 +41,10 @@ public class JSString {
     private static final JSWorkerQueue workerQueue = new JSWorkerQueue(new Runnable() {
 		@Override
 		public void run() {
-
 		}
 	});
 
-    private class JNIReturnClass implements Runnable {
-        @Override
-        public void run() {}
+    private abstract class JNIReturnClass implements Runnable {
         JNIReturnObject jni;
         String string;
     }

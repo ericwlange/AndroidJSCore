@@ -244,6 +244,7 @@ public class JSObjectPropertiesMap<V> extends JSObjectWrapper implements Map<Str
 
     private class SetIterator implements Iterator<Entry<String,V>> {
         private String current = null;
+        private String removal = null;
 
         public SetIterator() {
             String [] properties = propertyNames();
@@ -294,6 +295,7 @@ public class JSObjectPropertiesMap<V> extends JSObjectWrapper implements Map<Str
                     break;
                 }
             }
+            removal = current;
             if (i+1 < properties.length)
                 current = properties[i+1];
             else
@@ -307,8 +309,11 @@ public class JSObjectPropertiesMap<V> extends JSObjectWrapper implements Map<Str
 
         @Override
         public void remove() {
-            Entry<String,V> entry = next();
-            deleteProperty(entry.getKey());
+            if (removal==null)
+                throw new NoSuchElementException();
+
+            deleteProperty(removal);
+            removal = null;
         }
     }
 

@@ -79,14 +79,19 @@ public class JSFunction extends JSObject {
                         new JSString(body).stringRef(),
                         (sourceURL == null) ? 0L : new JSString(sourceURL).stringRef(),
                         startingLineNumber);
-                if (jni.exception != 0) {
-                    context.throwJSException(new JSException(new JSValue(jni.exception, context)));
-                    jni.reference = make(context.ctxRef(), 0L);
-                }
-                valueRef = jni.reference;
+                valueRef = testException(jni);
             }
         });
         context.persistObject(this);
+    }
+
+    private long testException(JNIReturnObject jni) {
+        if (jni.exception!=0) {
+            context.throwJSException(new JSException(new JSValue(jni.exception, context)));
+            return(make(context.ctxRef(), 0L));
+        } else {
+            return jni.reference;
+        }
     }
 
     /**
@@ -395,6 +400,30 @@ public class JSFunction extends JSObject {
         return apply(thiz,args);
     }
 
+    private long [] argsToValueRefs(final Object[] args) {
+        ArrayList<JSValue> largs = new ArrayList<>();
+        if (args!=null) {
+            for (Object o: args) {
+                JSValue v;
+                if (o == null) break;
+                if (o.getClass() == Void.class)
+                    v = new JSValue(context);
+                else if (o instanceof JSValue)
+                    v = (JSValue)o;
+                else if (o instanceof Object[])
+                    v = new JSArray<>(context, (Object[])o, Object.class);
+                else
+                    v = new JSValue(context,o);
+                largs.add(v);
+            }
+        }
+        long [] valueRefs = new long[largs.size()];
+        for (int i=0; i<largs.size(); i++) {
+            valueRefs[i] = largs.get(i).valueRef();
+        }
+        return valueRefs;
+    }
+
     /**
      * Calls this JavaScript function, similar to 'Function.apply() in JavaScript
      * @param thiz  The 'this' object on which the function operates, null if not on a constructor object
@@ -407,27 +436,8 @@ public class JSFunction extends JSObject {
         JNIReturnClass runnable = new JNIReturnClass() {
             @Override
             public void run() {
-                ArrayList<JSValue> largs = new ArrayList<>();
-                if (args!=null) {
-                    for (Object o: args) {
-                        JSValue v;
-                        if (o == null) break;
-                        if (o.getClass() == Void.class)
-                            v = new JSValue(context);
-                        else if (o instanceof JSValue)
-                            v = (JSValue)o;
-                        else if (o instanceof Object[])
-                            v = new JSArray<>(context, (Object[])o, Object.class);
-                        else
-                            v = new JSValue(context,o);
-                        largs.add(v);
-                    }
-                }
-                long [] valueRefs = new long[largs.size()];
-                for (int i=0; i<largs.size(); i++) {
-                    valueRefs[i] = largs.get(i).valueRef();
-                }
-                jni = callAsFunction(context.ctxRef(), valueRef, (thiz==null)?0L:thiz.valueRef(), valueRefs);
+                jni = callAsFunction(context.ctxRef(), valueRef, (thiz==null)?0L:thiz.valueRef(),
+                        argsToValueRefs(args));
             }
         };
         context.sync(runnable);
@@ -445,6 +455,23 @@ public class JSFunction extends JSObject {
      */
     public JSValue call() throws JSException {
         return call(null);
+    }
+
+    /**
+     * Calls this JavaScript function as a constructor, i.e. same as calling 'new func(args)'
+     * @param args The argument list to be passed to the function
+     * @return an instance object of the constructor
+     * @since 3.0
+     */
+    public JSObject newInstance(final Object ... args) {
+        JNIReturnClass runnable = new JNIReturnClass() {
+            @Override
+            public void run() {
+                jni = callAsConstructor(context.ctxRef(), valueRef, argsToValueRefs(args));
+            }
+        };
+        context.sync(runnable);
+        return context.getObjectFromRef(testException(runnable.jni));
     }
 
     /**
@@ -544,18 +571,13 @@ public class JSFunction extends JSObject {
         return returnValue;
     }
 
-    private interface IJSObjectReturnClass {
-        @SuppressWarnings("unused")
-        JSObject execute();
-    }
-    private class JSObjectReturnClass implements Runnable, IJSObjectReturnClass {
+    private abstract class JSObjectReturnClass implements Runnable {
         public JSObject object;
         @Override
         public void run() {
             object = execute();
         }
-        @Override
-        public JSObject execute() { return null; }
+        abstract JSObject execute();
     }
 
     protected JSObject constructor(final JSValue [] args) throws JSException {

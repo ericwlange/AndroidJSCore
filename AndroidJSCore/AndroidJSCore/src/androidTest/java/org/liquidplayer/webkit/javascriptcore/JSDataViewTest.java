@@ -140,4 +140,9 @@ public class JSDataViewTest {
         assertTrue(view.getUint8(0).equals((byte)0xfd));
         assertTrue(view.getUint8(1).equals((byte)6));
     }
+
+    @org.junit.After
+    public void shutDown() {
+        Runtime.getRuntime().gc();
+    }
 }

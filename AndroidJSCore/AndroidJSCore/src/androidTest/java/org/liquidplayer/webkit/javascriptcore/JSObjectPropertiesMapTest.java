@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -172,8 +173,17 @@ public class JSObjectPropertiesMapTest {
         boolean gotit = false;
         for (Map.Entry<String,Object> entry : entrySet) {
             gotit = gotit || (entry.getKey().equals("float") && entry.getValue().equals(3.3));
+            entry.setValue("cleared");
         }
         assertTrue(gotit);
+        for (Map.Entry<String,Object> entry : entrySet) {
+            assertEquals(entry.getValue().toString(),"cleared");
+        }
+        Iterator<Map.Entry<String,Object>> it = entrySet.iterator();
+        int size = entrySet.size();
+        it.next();
+        it.remove();
+        assertEquals(entrySet.size(),size-1);
 
         /**
          * clear()
@@ -184,4 +194,8 @@ public class JSObjectPropertiesMapTest {
         assertThat(map2.size(),is(0));
     }
 
+    @org.junit.After
+    public void shutDown() {
+        Runtime.getRuntime().gc();
+    }
 }

@@ -21,7 +21,8 @@ repositories {
 }
 
 dependencies {
-    compile(name:'AndroidJSCore-3.0.0-release', ext:'aar')
+    compile 'com.github.ericwlange:AndroidJSCore:3.0.0'
+    //compile(name:'AndroidJSCore-3.0.0-release', ext:'aar')
 }
 
 dependencies {

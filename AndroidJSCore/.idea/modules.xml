@@ -3,7 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/AndroidJSCore.iml" filepath="$PROJECT_DIR$/AndroidJSCore.iml" />
-      <module fileurl="file://$PROJECT_DIR$/AndroidJSCore/AndroidJSCore-AndroidJSCore.iml" filepath="$PROJECT_DIR$/AndroidJSCore/AndroidJSCore-AndroidJSCore.iml" />
+      <module fileurl="file://$PROJECT_DIR$/AndroidJSCore-library/AndroidJSCore-AndroidJSCore.iml" filepath="$PROJECT_DIR$/AndroidJSCore-library/AndroidJSCore-AndroidJSCore.iml" />
     </modules>
   </component>
 </project>

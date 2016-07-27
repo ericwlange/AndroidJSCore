@@ -53,7 +53,7 @@ public class JSObjectPropertiesMap<V> extends JSObjectWrapper implements Map<Str
      * Creates a new Map object which operates on object 'object' and assumes type 'cls'.
      * Example:
      * <code>
-     *     java.util.Map<String,Double> map = new JSObjectPropertiesMap<String,Double>(object,Double.class);
+     *     java.util.Map&lt;String,Double&gt; map = new JSObjectPropertiesMap&lt;String,Double&gt;(object,Double.class);
      * </code>
      * @param object The JSObject whose properties will be mapped
      * @param cls    The class of the component Values; must match template
@@ -69,10 +69,10 @@ public class JSObjectPropertiesMap<V> extends JSObjectWrapper implements Map<Str
      * Assumes value class of type 'cls'.
      * Example:
      * <code>
-     *     java.util.Map<String,Double> map = new HashMap<>();
+     *     java.util.Map&lt;String,Double&gt; map = new HashMap&lt;&gt;();
      *     map.put("one",1.0);
      *     map.put("two",2.0);
-     *     java.util.Map<String,Double> jsmap = new JSObjectPropertiesMap<String,Double>(context,map,Double.class)
+     *     java.util.Map&lt;String,Double&gt; jsmap = new JSObjectPropertiesMap&lt;String,Double&gt;(context,map,Double.class)
      * </code>
      * @param context  The JSContext in which to create the object
      * @param map      The initial properties to set
@@ -89,7 +89,7 @@ public class JSObjectPropertiesMap<V> extends JSObjectWrapper implements Map<Str
      * Assumes value class of type 'cls'.
      * Example:
      * <code>
-     *     java.util.Map<String,Double> jsmap = new JSObjectPropertiesMap<String,Double>(context,Double.class)
+     *     java.util.Map&lt;String,Double&gt; jsmap = new JSObjectPropertiesMap&lt;String,Double&gt;(context,Double.class)
      * </code>
      * @param context  The JSContext in which to create the object
      * @param cls      The class of the component Values; must match template

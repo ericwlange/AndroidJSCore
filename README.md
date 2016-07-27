@@ -102,19 +102,24 @@ just about everything.
 
 Use AndroidJSCore in your project
 ---------------------------------
-The easy way is to simply download the file `AndroidJSCore-3.0.0-release.aar` from
-the [latest release] and drop it somewhere in your project (`libs/` is meant just for this). Then
-add the following to your app-level `build.gradle`:
+#### Step 1. Add the JitPack repository to your build file
 
-    repositories {
-        flatDir {
-            dirs 'libs'
-        }
-    }
+Add it in your root build.gradle at the end of repositories:
 
-    dependencies {
-        compile(name:'AndroidJSCore-3.0.0-release', ext:'aar')
-    }
+	allprojects {
+		repositories {
+			...
+			maven { url "https://jitpack.io" }
+		}
+	}
+	
+#### Step 2. Add the dependency
+
+	dependencies {
+	        compile 'com.github.ericwlange:AndroidJSCore:3.0.0'
+	}
+
+You should be all set!
 
 Building the AndroidJSCoreExample app
 ---------------------------------
@@ -122,12 +127,8 @@ Building the AndroidJSCoreExample app
 If you want to see AndroidJSCore in action, you can run the example app:
 
     git clone https://github.com/ericwlange/AndroidJSCore.git ~/AndroidJSCore
-    cd ~/AndroidJSCore
-    mkdir ~/AndroidJSCore/lib
 
-Then download `AndroidJSCore-3.0.0-release.aar` from the [latest release] and
-copy it into `~/AndroidJSCore/lib`.  Now you can open `~/AndroidJSCore/examples/AndroidJSCoreExample`
-in Android Studio and run it.
+Now you can open `~/AndroidJSCore/examples/AndroidJSCoreExample` in Android Studio and run it.
 
 Building AndroidJSCore-3.0 library
 ----------------------------------
@@ -151,7 +152,7 @@ add the following to your app's `build.gradle`:
     }
 
     dependencies {
-        compile(name:'AndroidJSCore-2.2-pre2-release', ext:'aar')
+        compile(name:'AndroidJSCore-3.0.0-release', ext:'aar')
     }
     
 ##### Note: The JavaScriptCore library is built using [The Hemroid Project](https://github.com/ericwlange/hemroid)

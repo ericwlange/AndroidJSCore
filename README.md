@@ -19,7 +19,7 @@ Design Goals
 
 Version
 -------
-[3.0.0](https://github.com/ericwlange/AndroidJSCore/releases/tag/3.0.0) - Please help test this version
+[3.0.0](https://github.com/ericwlange/AndroidJSCore/releases/tag/3.0.0) - First official release with extensive testing
 
 Note there are some significant changes between 3.0 and the 2.x series.  In particular, handling of functions
 and constructors is simpler (and more correct).

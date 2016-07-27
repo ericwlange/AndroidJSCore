@@ -32,7 +32,6 @@
 */
 package org.liquidplayer.androidjscoreexample;
 
-import java.lang.reflect.Method;
 import java.text.DecimalFormat;
 
 import org.liquidplayer.webkit.javascriptcore.JSContext;
@@ -62,12 +61,12 @@ public class OwenMatthewsExample implements IExample {
     // In Java                                          // In Objective-C
     //------------------------------------------------  // -------------------------------------------------------
     public interface ExportJSFunctions {
-        public String toString();
+        String toString();
     }
     public interface Property {                         // @protocol ThingJSExports <JSExport>
-        public void set(Object value)                   // @property (nonatomic, copy) NSString *name;
+        void set(Object value)                          // @property (nonatomic, copy) NSString *name;
                 throws JSException;                     // @end
-        public Object get() throws JSException;	        //
+        Object get() throws JSException;     	        //
     }                                                   // @interface Thing : NSObject <ThingJSExports>
     public class Thing extends JSObject                 // @property (nonatomic, copy) NSString *name;
     implements ExportJSFunctions {
@@ -85,7 +84,7 @@ public class OwenMatthewsExample implements IExample {
         }
         private class ThingIsPrivate 
         implements Property {
-            ThingIsPrivate(String name) {}
+            ThingIsPrivate() {}
             private Object value;
             public void set(Object value) throws JSException { this.value = value; }
             public Object get() throws JSException { return value; }
@@ -97,7 +96,7 @@ public class OwenMatthewsExample implements IExample {
         public Thing(JSContext ctx) throws JSException {
             super(ctx,ExportJSFunctions.class);
             name = new ThingJSExports("name");
-            number = new ThingIsPrivate("number");
+            number = new ThingIsPrivate();
         }
         @Override
         public String toString() {
@@ -147,6 +146,7 @@ public class OwenMatthewsExample implements IExample {
 		
         context.property("factorial",                       // context[@"factorial"] = ^(int x) {
             new JSFunction(context,"factorial") {           //
+                @SuppressWarnings("unused")                 //
                 public Integer factorial(Integer x) {       //
                     int factorial = 1;                      //     int factorial = 1;
                     for (; x > 1; x--) {                    //     for (; x > 1; x--) {

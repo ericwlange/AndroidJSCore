@@ -33,15 +33,7 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
      * may be best to switch to a
      * {@link android.support.v4.app.FragmentStatePagerAdapter}.
      */
-    private SectionsPagerAdapter mSectionsPagerAdapter;
     static JSCoreExampleFragment [] fragments = new JSCoreExampleFragment[4];
-
-    /**
-     * The {@link ViewPager} that will host the section contents.
-     */
-    private ViewPager mViewPager;
-
-    public static int position = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,15 +44,15 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
         setSupportActionBar(toolbar);
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+        SectionsPagerAdapter sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
         // Set up the ViewPager with the sections adapter.
-        mViewPager = (ViewPager) findViewById(R.id.container);
-        mViewPager.setAdapter(mSectionsPagerAdapter);
-        mViewPager.addOnPageChangeListener(this);
+        ViewPager viewPager = (ViewPager) findViewById(R.id.container);
+        viewPager.setAdapter(sectionsPagerAdapter);
+        viewPager.addOnPageChangeListener(this);
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
-        tabLayout.setupWithViewPager(mViewPager);
+        tabLayout.setupWithViewPager(viewPager);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -135,7 +127,7 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
             Bundle args = getArguments();
 
             try {
-                ExampleContext ctx = new ExampleContext(getActivity().getApplicationContext(),
+                ExampleContext ctx = new ExampleContext(
                         (TextView)rootView.findViewById(R.id.textview));
                 switch(args.getInt(ARG_OBJECT)) {
                     case 1: example = new OwenMatthewsExample(ctx); break;
@@ -170,8 +162,7 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
         public Fragment getItem(int position) {
             // getItem is called to instantiate the fragment for the given page.
             // Return a PlaceholderFragment (defined as a static inner class below).
-            JSCoreExampleFragment fragment = JSCoreExampleFragment.newInstance(position + 1);
-            return fragment;
+            return JSCoreExampleFragment.newInstance(position + 1);
         }
 
         @Override

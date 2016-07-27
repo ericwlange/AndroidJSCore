@@ -64,7 +64,7 @@ NATIVE(JSObject,jobject,makeArray) (PARAMS, jlong ctx, jlongArray args) {
 	}
 	env->ReleaseLongArrayElements(args, values, 0);
 
-	jclass ret = env->FindClass("org/liquidplayer/webkit/javascriptcore/JNIReturnObject");
+	jclass ret = env->FindClass("org/liquidplayer/webkit/javascriptcore/JSValue$JNIReturnObject");
 	jmethodID cid = env->GetMethodID(ret,"<init>","()V");
 	jobject out = env->NewObject(ret, cid);
 
@@ -95,7 +95,7 @@ NATIVE(JSObject,jobject,makeDate) (PARAMS, jlong ctx, jlongArray args) {
 	}
 	env->ReleaseLongArrayElements(args, values, 0);
 
-	jclass ret = env->FindClass("org/liquidplayer/webkit/javascriptcore/JNIReturnObject");
+	jclass ret = env->FindClass("org/liquidplayer/webkit/javascriptcore/JSValue$JNIReturnObject");
 	jmethodID cid = env->GetMethodID(ret,"<init>","()V");
 	jobject out = env->NewObject(ret, cid);
 
@@ -125,7 +125,7 @@ NATIVE(JSObject,jobject,makeError) (PARAMS, jlong ctx, jlongArray args) {
 	}
 	env->ReleaseLongArrayElements(args, values, 0);
 
-	jclass ret = env->FindClass("org/liquidplayer/webkit/javascriptcore/JNIReturnObject");
+	jclass ret = env->FindClass("org/liquidplayer/webkit/javascriptcore/JSValue$JNIReturnObject");
 	jmethodID cid = env->GetMethodID(ret,"<init>","()V");
 	jobject out = env->NewObject(ret, cid);
 
@@ -155,7 +155,7 @@ NATIVE(JSObject,jobject,makeRegExp) (PARAMS, jlong ctx, jlongArray args) {
 	}
 	env->ReleaseLongArrayElements(args, values, 0);
 
-	jclass ret = env->FindClass("org/liquidplayer/webkit/javascriptcore/JNIReturnObject");
+	jclass ret = env->FindClass("org/liquidplayer/webkit/javascriptcore/JSValue$JNIReturnObject");
 	jmethodID cid = env->GetMethodID(ret,"<init>","()V");
 	jobject out = env->NewObject(ret, cid);
 
@@ -187,7 +187,7 @@ NATIVE(JSObject,jobject,makeFunction) (PARAMS, jlong ctx, jlong name,
 	}
 	env->ReleaseLongArrayElements(parameterNames, parameters, 0);
 
-	jclass ret = env->FindClass("org/liquidplayer/webkit/javascriptcore/JNIReturnObject");
+	jclass ret = env->FindClass("org/liquidplayer/webkit/javascriptcore/JSValue$JNIReturnObject");
 	jmethodID cid = env->GetMethodID(ret,"<init>","()V");
 	jobject out = env->NewObject(ret, cid);
 
@@ -231,7 +231,7 @@ NATIVE(JSObject,jobject,getProperty) (PARAMS, jlong ctx, jlong object,
 
 	JSValueRef exception = NULL;
 
-	jclass ret = env->FindClass("org/liquidplayer/webkit/javascriptcore/JNIReturnObject");
+	jclass ret = env->FindClass("org/liquidplayer/webkit/javascriptcore/JSValue$JNIReturnObject");
 	jmethodID cid = env->GetMethodID(ret,"<init>","()V");
 	jobject out = env->NewObject(ret, cid);
 
@@ -254,7 +254,7 @@ NATIVE(JSObject,jobject,setProperty) (PARAMS, jlong ctx, jlong object, jlong pro
 	
 	JSValueRef exception = NULL;
 
-	jclass ret = env->FindClass("org/liquidplayer/webkit/javascriptcore/JNIReturnObject");
+	jclass ret = env->FindClass("org/liquidplayer/webkit/javascriptcore/JSValue$JNIReturnObject");
 	jmethodID cid = env->GetMethodID(ret,"<init>","()V");
 	jobject out = env->NewObject(ret, cid);
 
@@ -272,7 +272,7 @@ NATIVE(JSObject,jobject,deleteProperty) (PARAMS, jlong ctx, jlong object,
 	
 	JSValueRef exception = NULL;
 
-	jclass ret = env->FindClass("org/liquidplayer/webkit/javascriptcore/JNIReturnObject");
+	jclass ret = env->FindClass("org/liquidplayer/webkit/javascriptcore/JSValue$JNIReturnObject");
 	jmethodID cid = env->GetMethodID(ret,"<init>","()V");
 	jobject out = env->NewObject(ret, cid);
 
@@ -294,7 +294,7 @@ NATIVE(JSObject,jobject,getPropertyAtIndex) (PARAMS, jlong ctx, jlong object,
 	
 	JSValueRef exception = NULL;
 
-	jclass ret = env->FindClass("org/liquidplayer/webkit/javascriptcore/JNIReturnObject");
+	jclass ret = env->FindClass("org/liquidplayer/webkit/javascriptcore/JSValue$JNIReturnObject");
 	jmethodID cid = env->GetMethodID(ret,"<init>","()V");
 	jobject out = env->NewObject(ret, cid);
 
@@ -317,7 +317,7 @@ NATIVE(JSObject,jobject,setPropertyAtIndex) (PARAMS, jlong ctx, jlong object,
 
 	JSValueRef exception = NULL;
 
-	jclass ret = env->FindClass("org/liquidplayer/webkit/javascriptcore/JNIReturnObject");
+	jclass ret = env->FindClass("org/liquidplayer/webkit/javascriptcore/JSValue$JNIReturnObject");
 	jmethodID cid = env->GetMethodID(ret,"<init>","()V");
 	jobject out = env->NewObject(ret, cid);
 
@@ -358,7 +358,7 @@ NATIVE(JSObject,jobject,callAsFunction) (PARAMS, jlong ctx, jlong object,
 	}
 	env->ReleaseLongArrayElements(args, values, 0);
 
-	jclass ret = env->FindClass("org/liquidplayer/webkit/javascriptcore/JNIReturnObject");
+	jclass ret = env->FindClass("org/liquidplayer/webkit/javascriptcore/JSValue$JNIReturnObject");
 	jmethodID cid = env->GetMethodID(ret,"<init>","()V");
 	jobject out = env->NewObject(ret, cid);
 
@@ -395,7 +395,7 @@ NATIVE(JSObject,jobject,callAsConstructor) (PARAMS, jlong ctx, jlong object,
 	}
 	env->ReleaseLongArrayElements(args, values, 0);
 
-	jclass ret = env->FindClass("org/liquidplayer/webkit/javascriptcore/JNIReturnObject");
+	jclass ret = env->FindClass("org/liquidplayer/webkit/javascriptcore/JSValue$JNIReturnObject");
 	jmethodID cid = env->GetMethodID(ret,"<init>","()V");
 	jobject out = env->NewObject(ret, cid);
 

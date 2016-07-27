@@ -49,12 +49,13 @@ public class SharingFunctionsExample implements IExample {
 	//   func2 : function(x) { ... },
 	//   ...
 	// }
+	@SuppressWarnings("unused")
 	public interface IObjectWithFunctionProperties {
-		public Double add(Double a, Double b);
-		public void setLocal(String value) throws JSException;
-		public String getLocal() throws JSException;
-		public void setLocalJava(String value);
-		public String getLocalJava();
+		Double add(Double a, Double b);
+		void setLocal(String value) throws JSException;
+		String getLocal() throws JSException;
+		void setLocalJava(String value);
+		String getLocalJava();
 	}
 	public class ObjectExample extends JSObject
 	implements IObjectWithFunctionProperties {
@@ -104,16 +105,17 @@ public class SharingFunctionsExample implements IExample {
 	//     func2 : function() { ... },
 	//     ...
 	// }
+    @SuppressWarnings("unused")
 	public interface IPrototype {
 		// Prototype functions
-		public Integer incr() throws JSException;
-		public Integer decr() throws JSException;
+		Integer incr() throws JSException;
+		Integer decr() throws JSException;
 		
 		// Let's use these again, but this time as prototypes
-		public void setLocal(String value) throws JSException;
-		public String getLocal() throws JSException;
-		public void setLocalJava(String msg);
-		public String getLocalJava();
+		void setLocal(String value) throws JSException;
+		String getLocal() throws JSException;
+		void setLocalJava(String msg);
+		String getLocalJava();
 	}
 
     // We will set up our prototype exactly as in the function object example
@@ -209,6 +211,7 @@ public class SharingFunctionsExample implements IExample {
         // This function will get called when the new 'Instance' is created.  Reference the
         // instance using 'getThis()'.  Neglecting to use 'getThis()' will modify this constructor
         // function itself!
+        @SuppressWarnings("unused")
         public void constructorFunc(int number) {
             getThis().property("numbah", number);
         }

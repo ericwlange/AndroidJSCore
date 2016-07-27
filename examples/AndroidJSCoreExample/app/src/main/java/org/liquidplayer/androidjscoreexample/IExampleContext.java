@@ -33,6 +33,5 @@
 package org.liquidplayer.androidjscoreexample;
 
 public interface IExampleContext {
-	void alert(String msg);
 	void log(String msg);
 }

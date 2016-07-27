@@ -34,16 +34,9 @@ package org.liquidplayer.androidjscoreexample;
 
 import org.liquidplayer.webkit.javascriptcore.JSContext;
 import org.liquidplayer.webkit.javascriptcore.JSException;
-import org.liquidplayer.webkit.javascriptcore.JSObject;
 import org.liquidplayer.webkit.javascriptcore.JSValue;
 
 public class ExceptionHandlingExample implements IExample, JSContext.IJSExceptionHandler {
-
-    private static String naughtyFunctionCode =
-            "function naughtyFunction() { \n" +
-            "    var access = nothing.prop; \n" +
-            "    return access; \n" +
-            "} \n";
 
     public ExceptionHandlingExample(ExampleContext ctx) {
         context = ctx;
@@ -58,6 +51,12 @@ public class ExceptionHandlingExample implements IExample, JSContext.IJSExceptio
 
     @Override
     public void run() throws JSException {
+        final String naughtyFunctionCode =
+                "function naughtyFunction() { \n" +
+                        "    var access = nothing.prop; \n" +
+                        "    return access; \n" +
+                        "} \n";
+
         context.clear();
         context.clearExceptionHandler();
 
@@ -86,7 +85,6 @@ public class ExceptionHandlingExample implements IExample, JSContext.IJSExceptio
         context.log("Handle exception with context.setExceptionHandler()");
         context.log("---------------------------------------------------");
         context.setExceptionHandler(this);
-        ret = null;
         ret = context.evaluateScript("naughtyFunction()");
         context.log("return value should be undefined (not NULL): " + ((ret==null)?"NULL":ret.toString()));
         context.log("");

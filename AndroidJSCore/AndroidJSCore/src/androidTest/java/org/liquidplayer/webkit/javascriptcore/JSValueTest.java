@@ -48,9 +48,7 @@ public class JSValueTest {
          * new JSValue(context,string)
          */
         JSValue str1 = new JSValue(context,"This is a string");
-        JSValue str2 = new JSValue(context,new JSString("This is a string on drugs"));
         assertTrue(str1.isString());
-        assertTrue(str2.isString());
 
         /**
          * new JSValue(context,Object)

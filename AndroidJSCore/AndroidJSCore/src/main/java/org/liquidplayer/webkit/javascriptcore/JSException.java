@@ -101,8 +101,7 @@ public class JSException extends RuntimeException {
 	public String toString() {
 		if (error!=null) {
 			try {
-				JSString msg = error.toJSString();
-				return msg.toString();
+				return error.toString();
 			} catch (JSException e) {
 				return "Unknown Error";
 			}

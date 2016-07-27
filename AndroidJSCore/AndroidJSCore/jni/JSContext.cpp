@@ -120,7 +120,7 @@ NATIVE(JSContext,jobject,evaluateScript) (PARAMS, jlong ctx, jlong script,
 
 	JSValueRef exception = NULL;
 
-	jclass ret = env->FindClass("org/liquidplayer/webkit/javascriptcore/JNIReturnObject");
+	jclass ret = env->FindClass("org/liquidplayer/webkit/javascriptcore/JSValue$JNIReturnObject");
 	jmethodID cid = env->GetMethodID(ret,"<init>","()V");
 	jobject out = env->NewObject(ret, cid);
 
@@ -148,7 +148,7 @@ NATIVE(JSContext,jobject,checkScriptSyntax) (PARAMS, jlong ctx, jlong script,
 
 	JSValueRef exception = NULL;
 
-	jclass ret = env->FindClass("org/liquidplayer/webkit/javascriptcore/JNIReturnObject");
+	jclass ret = env->FindClass("org/liquidplayer/webkit/javascriptcore/JSValue$JNIReturnObject");
 	jmethodID cid = env->GetMethodID(ret,"<init>","()V");
 	jobject out = env->NewObject(ret, cid);
 

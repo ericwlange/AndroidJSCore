@@ -19,7 +19,7 @@ Design Goals
 
 Version
 -------
-[3.0-pre2](https://github.com/ericwlange/AndroidJSCore/releases/tag/3.0-pre2) - Please help test this version
+[3.0.0](https://github.com/ericwlange/AndroidJSCore/releases/tag/3.0.0) - Please help test this version
 
 Note there are some significant changes between 3.0 and the 2.x series.  In particular, handling of functions
 and constructors is simpler (and more correct).
@@ -102,7 +102,7 @@ just about everything.
 
 Use AndroidJSCore in your project
 ---------------------------------
-The easy way is to simply download the file `AndroidJSCore-3.0-pre2-release.aar` from
+The easy way is to simply download the file `AndroidJSCore-3.0.0-release.aar` from
 the [latest release] and drop it somewhere in your project (`libs/` is meant just for this). Then
 add the following to your app-level `build.gradle`:
 
@@ -113,7 +113,7 @@ add the following to your app-level `build.gradle`:
     }
 
     dependencies {
-        compile(name:'AndroidJSCore-3.0-pre2-release', ext:'aar')
+        compile(name:'AndroidJSCore-3.0.0-release', ext:'aar')
     }
 
 Building the AndroidJSCoreExample app
@@ -125,7 +125,7 @@ If you want to see AndroidJSCore in action, you can run the example app:
     cd ~/AndroidJSCore
     mkdir ~/AndroidJSCore/lib
 
-Then download `AndroidJSCore-3.0-pre2-release.aar` from the [latest release] and
+Then download `AndroidJSCore-3.0.0-release.aar` from the [latest release] and
 copy it into `~/AndroidJSCore/lib`.  Now you can open `~/AndroidJSCore/examples/AndroidJSCoreExample`
 in Android Studio and run it.
 
@@ -135,33 +135,13 @@ Building AndroidJSCore-3.0 library
 If you are interested in building the library directly and possibly contributing, you must
 do the following:
 
-##### Step 1: Get `hemroid` package manager and build JavaScriptCore
-
-    % git clone https://github.com/ericwlange/hemroid.git
-    % export PATH=$PATH:$PWD/hemroid
-    % export ANDROID_NDK=/path/to/ndk
-    % export ANDROID_SDK=/path/to/sdk
-    % hemroid install javascriptcore
-
-Note that `hemroid` requires [GIT LFS](https://git-lfs.github.com/).  If you don't already have it installed,
-you will need to install it.
-
-[`hemroid`](https://github.com/ericwlange/hemroid) is a package manager for Android, similar in intent
-to Homebrew on OSX or `apt` on Linux.  The JavaScriptCore library is part of WebKit.  `hemroid` manages the tweaks
-required to get it to build on Android.  Building JavaScriptCore takes a long time, upwards of an hour or more, 
-depending on your hardware.  If the process fails for any reason it will dump the build log in `/tmp/hemroid.burst`.
-Most likely some tool or another needs to be installed that is not installed on your system.  Fix the dependency
-and then re-run `hemroid install javascriptcore`.
-
-##### Step 2: Build AndroidJSCore
-
     % git clone https://github.com/ericwlange/AndroidJSCore.git
     % cd AndroidJSCore/AndroidJSCore
     % echo ndk.dir=$ANDROID_NDK > local.properties
     % echo sdk.dir=$ANDROID_SDK >> local.properties
     % ./gradlew assembleRelease
 
-Your library now sits in `AndroidJSCore/build/outputs/aar/AndroidJSCore-3.0-pre2-release.aar`.  To use it, simply
+Your library now sits in `AndroidJSCore/build/outputs/aar/AndroidJSCore-3.0.0-release.aar`.  To use it, simply
 add the following to your app's `build.gradle`:
 
     repositories {
@@ -174,6 +154,26 @@ add the following to your app's `build.gradle`:
         compile(name:'AndroidJSCore-2.2-pre2-release', ext:'aar')
     }
     
+##### Note: The JavaScriptCore library is built using [The Hemroid Project](https://github.com/ericwlange/hemroid)
+
+The shared libraries are included in binary form.  If you need to build the libraries
+directly for any reason, you can do it via `hemroid`.
+
+[`hemroid`](https://github.com/ericwlange/hemroid) is a package manager for Android, similar in intent
+to Homebrew on OSX or `apt` on Linux.  The JavaScriptCore library is part of WebKit.  `hemroid` manages the tweaks
+required to get it to build on Android.  Building JavaScriptCore takes a long time, upwards of an hour or more, 
+depending on your hardware.  If the process fails for any reason it will dump the build log in `/tmp/hemroid.burst`.
+Most likely some tool or another needs to be installed that is not installed on your system.  Fix the dependency
+and then re-run `hemroid install javascriptcore`.
+
+    % git clone https://github.com/ericwlange/hemroid.git
+    % export PATH=$PATH:$PWD/hemroid
+    % export ANDROID_NDK=/path/to/ndk
+    % export ANDROID_SDK=/path/to/sdk
+    % hemroid install javascriptcore
+
+Note that `hemroid` requires [GIT LFS](https://git-lfs.github.com/).  If you don't already have it installed,
+you will need to install it.
 
 License
 -------

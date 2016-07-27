@@ -32,14 +32,172 @@
 */
 package org.liquidplayer.webkit.javascriptcore;
 
+import android.os.AsyncTask;
+import android.os.Looper;
+import android.util.Log;
+
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 /**
  * A JavaScript value
  * @since 1.0
  */
 public class JSValue {
+
+    /**
+     * Used in communicating with JavaScriptCore JNI.
+     * Clients do not need to use this.
+     */
+    protected static class JNIReturnObject {
+        /**
+         * The boolean return value
+         */
+        public boolean bool;
+        /**
+         * The numeric return value
+         */
+        public double number;
+        /**
+         * The reference return value
+         */
+        public long reference;
+        /**
+         * The exception reference if one was thrown, otherwise 0L
+         */
+        public long exception;
+    }
+
+    protected static class JSWorkerQueue {
+        public JSWorkerQueue(final Runnable monitor) {
+            mMonitor = monitor;
+        }
+        final Runnable mMonitor;
+
+        private class JSTask extends AsyncTask<Runnable, Void, JSException> {
+            @Override
+            public JSException doInBackground(Runnable ... params) {
+                try {
+                    params[0].run();
+                    mMonitor.run();
+                } catch (JSException e) {
+                    return e;
+                }
+                return null;
+            }
+        }
+
+        public void sync(final Runnable runnable) throws JSException {
+            if (Looper.myLooper() == Looper.getMainLooper()) {
+                try {
+                    JSException e = new JSTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, runnable).get();
+                    if (e != null) throw e;
+                } catch (ExecutionException e) {
+                    Log.e("JSWorkerQueue", e.getMessage());
+                } catch (InterruptedException e) {
+                    Thread.interrupted();
+                }
+            } else {
+                runnable.run();
+                mMonitor.run();
+            }
+        }
+
+        public void async(final Runnable runnable) {
+            if (Looper.myLooper() == Looper.getMainLooper()) {
+                new JSTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, runnable);
+            } else {
+                runnable.run();
+                mMonitor.run();
+            }
+        }
+
+        public void quit() {
+
+        }
+    }
+
+    protected static class JSString {
+
+        private static final JSWorkerQueue workerQueue = new JSWorkerQueue(new Runnable() {
+            @Override
+            public void run() {
+            }
+        });
+
+        private abstract class JNIStringReturnClass implements Runnable {
+            String string;
+        }
+
+        protected Long stringRef;
+
+        /**
+         * Creates a JavaScript string from a Java string
+         * @param s  The Java string with which to initialize the JavaScript string
+         * @since 1.0
+         */
+        public JSString(final String s) {
+            if (s==null) stringRef = 0L;
+            else {
+                workerQueue.sync(new Runnable() {
+                    @Override
+                    public void run() {
+                        stringRef = createWithCharacters(s);
+                    }
+                });
+            }
+        }
+        /**
+         * Wraps an existing JavaScript string
+         * @param stringRef  The JavaScriptCore reference to the string
+         */
+        public JSString(Long stringRef) {
+            this.stringRef = stringRef;
+        }
+        @Override
+        protected void finalize() throws Throwable {
+            super.finalize();
+            if (stringRef != 0)
+                release(stringRef);
+        }
+
+        @Override
+        public String toString() {
+            JNIStringReturnClass payload = new JNIStringReturnClass() {
+                @Override
+                public void run() {
+                    string = JSString.this.toString(stringRef);
+                }
+            };
+            workerQueue.sync(payload);
+            return payload.string;
+        }
+
+        /**
+         * Gets the JavaScriptCore string reference
+         * @return  the JavaScriptCore string reference
+         * @since 1.0
+         */
+        public Long stringRef() {
+            return stringRef;
+        }
+
+        protected native long createWithCharacters(String str);
+        protected native long retain(long strRef);
+        protected native void release(long stringRef);
+        protected native boolean isEqual(long a, long b);
+        protected native String toString(long strRef);
+
+        @SuppressWarnings("unused")
+        protected native int getLength(long stringRef);
+        @SuppressWarnings("unused")
+        protected native long createWithUTF8CString(String str);
+        @SuppressWarnings("unused")
+        protected native int getMaximumUTF8CStringSize(long stringRef);
+        @SuppressWarnings("unused")
+        protected native boolean isEqualToUTF8CString(long a, String b);
+    }
 
     private abstract class JNIReturnClass implements Runnable {
         JNIReturnObject jni;
@@ -116,8 +274,6 @@ public class JSValue {
                 } else if (val instanceof String) {
                     JSString s = new JSString((String)val);
                     valueRef = makeString(context.ctxRef(), s.stringRef);
-                } else if (val instanceof JSString) {
-                    valueRef = makeString(context.ctxRef(), ((JSString) val).stringRef);
                 } else {
                     valueRef = makeUndefined(context.ctxRef());
                 }
@@ -417,7 +573,7 @@ public class JSValue {
 	 * @since 1.0
 	 * @throws JSException
 	 */
-	public JSString toJSString() throws JSException {
+	protected JSString toJSString() throws JSException {
         JNIReturnClass runnable = new JNIReturnClass() {
             @Override
             public void run() {
@@ -546,8 +702,6 @@ public class JSValue {
             return toNumber().shortValue();
         else if (clazz == Boolean.class || clazz == boolean.class)
             return toBoolean();
-        else if (clazz == JSString.class)
-            return toJSString();
         else if (clazz.isArray())
             return toJSArray().toArray(clazz.getComponentType());
         else if (JSObject.class.isAssignableFrom(clazz))

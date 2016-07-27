@@ -58,7 +58,8 @@ public class AsyncExample implements IExample {
 	// used to in the browser.  To access HTTP, you will need to expose some Java functions
 	// to handle that for you.
 	public interface IAsyncObj {
-		public void callMeMaybe(Integer ms, JSValue callback) throws JSException;
+		@SuppressWarnings("unused")
+		void callMeMaybe(Integer ms, JSValue callback) throws JSException;
 	}
 	public class AsyncObj extends JSObject implements IAsyncObj {
 		public AsyncObj(JSContext ctx) throws JSException { super(ctx,IAsyncObj.class); }
@@ -95,7 +96,7 @@ public class AsyncExample implements IExample {
 				try {
 					callback.call(null, "This is a delayed message from Java!");
 				} catch (JSException e) {
-					System.out.println(e);
+					System.out.println(e.toString());
 				}
 			}
 		}

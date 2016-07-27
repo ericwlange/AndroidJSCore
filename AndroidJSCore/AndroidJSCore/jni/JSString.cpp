@@ -33,7 +33,7 @@
 
 #include "JSJNI.h"
 
-NATIVE(JSString,jlong,createWithCharacters) (PARAMS, jstring str)
+NATIVE(JSValue_00024JSString,jlong,createWithCharacters) (PARAMS, jstring str)
 {
 	const jchar *chars = env->GetStringChars(str, NULL);
 	JSStringRef string = JSStringRetain(JSStringCreateWithCharacters(chars,
@@ -42,7 +42,7 @@ NATIVE(JSString,jlong,createWithCharacters) (PARAMS, jstring str)
 	return (long)string;
 }
 
-NATIVE(JSString,jlong,createWithUTF8CString) (PARAMS, jstring str)
+NATIVE(JSValue_00024JSString,jlong,createWithUTF8CString) (PARAMS, jstring str)
 {
     const char *string = env->GetStringUTFChars(str, NULL);
 	JSStringRef ret = JSStringRetain(JSStringCreateWithUTF8CString(string));
@@ -50,19 +50,19 @@ NATIVE(JSString,jlong,createWithUTF8CString) (PARAMS, jstring str)
 	return (long)ret;
 }
 
-NATIVE(JSString,jlong,retain) (PARAMS, jlong strRef) {
+NATIVE(JSValue_00024JSString,jlong,retain) (PARAMS, jlong strRef) {
 	return (jlong) JSStringRetain((JSStringRef)strRef);
 }
 
-NATIVE(JSString,void,release) (PARAMS, jlong stringRef) {
+NATIVE(JSValue_00024JSString,void,release) (PARAMS, jlong stringRef) {
     JSStringRelease((JSStringRef)stringRef);
 }
 
-NATIVE(JSString,jint,getLength) (PARAMS, jlong stringRef) {
+NATIVE(JSValue_00024JSString,jint,getLength) (PARAMS, jlong stringRef) {
 	return (jint) JSStringGetLength((JSStringRef)stringRef);
 }
 
-NATIVE(JSString,jstring,toString) (PARAMS, jlong stringRef) {
+NATIVE(JSValue_00024JSString,jstring,toString) (PARAMS, jlong stringRef) {
     char *buffer = new char[JSStringGetMaximumUTF8CStringSize((JSStringRef)stringRef)+1];
     JSStringGetUTF8CString((JSStringRef)stringRef, buffer,
         JSStringGetMaximumUTF8CStringSize((JSStringRef)stringRef)+1);
@@ -71,15 +71,15 @@ NATIVE(JSString,jstring,toString) (PARAMS, jlong stringRef) {
 	return ret;
 }
 
-NATIVE(JSString,jint,getMaximumUTF8CStringSize) (PARAMS, jlong stringRef) {
+NATIVE(JSValue_00024JSString,jint,getMaximumUTF8CStringSize) (PARAMS, jlong stringRef) {
     return (jint) JSStringGetMaximumUTF8CStringSize((JSStringRef)stringRef);
 }
 
-NATIVE(JSString,jboolean,isEqual) (PARAMS, jlong a, jlong b) {
+NATIVE(JSValue_00024JSString,jboolean,isEqual) (PARAMS, jlong a, jlong b) {
     return (jboolean) JSStringIsEqual((JSStringRef)a, (JSStringRef)b);
 }
 
-NATIVE(JSString,jboolean,isEqualToUTF8CString) (PARAMS, jlong a, jstring b) {
+NATIVE(JSValue_00024JSString,jboolean,isEqualToUTF8CString) (PARAMS, jlong a, jstring b) {
 	const char *string = env->GetStringUTFChars(b, NULL);
 	jboolean ret = JSStringIsEqualToUTF8CString((JSStringRef)a, string);
 	env->ReleaseStringUTFChars(b, string);

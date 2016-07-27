@@ -35,21 +35,17 @@ package org.liquidplayer.androidjscoreexample;
 import org.liquidplayer.webkit.javascriptcore.JSContext;
 import org.liquidplayer.webkit.javascriptcore.JSException;
 
-import android.content.Context;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.os.Handler;
 import android.os.Looper;
 
 public class ExampleContext extends JSContext implements IExampleContext {
 
-	ExampleContext(Context androidCtx, TextView tv) throws JSException {
+	ExampleContext(TextView tv) throws JSException {
 		super(IExampleContext.class);
-		this.androidCtx = androidCtx;
 		this.tv = tv;
 	}
 	
-	private final Context androidCtx;
 	private final TextView tv;
 	private String log = "";
 
@@ -58,24 +54,6 @@ public class ExampleContext extends JSContext implements IExampleContext {
 		tv.setText(log);
 	}
 	
-	@Override
-	public void alert(String msg) {
-		final String message = msg;
-		Handler handler = new Handler(Looper.getMainLooper());
-		handler.post(
-				new Runnable() {
-					@Override
-					public void run() {
-						CharSequence text = message.toString();
-						int duration = Toast.LENGTH_LONG;
-
-						Toast toast = Toast.makeText(androidCtx, text, duration);
-						toast.show();
-					}
-				}
-		);
-	}
-
 	@Override
 	public void log(String msg) {
 		final String message = msg;

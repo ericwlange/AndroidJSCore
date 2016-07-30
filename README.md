@@ -19,7 +19,7 @@ Design Goals
 
 Version
 -------
-[3.0.0](https://github.com/ericwlange/AndroidJSCore/releases/tag/3.0.0) - First official release with extensive testing
+[3.0.1](https://github.com/ericwlange/AndroidJSCore/releases/tag/3.0.1) - First official release with extensive testing
 
 Note there are some significant changes between 3.0 and the 2.x series.  In particular, handling of functions
 and constructors is simpler (and more correct).
@@ -116,7 +116,7 @@ Add it in your root build.gradle at the end of repositories:
 #### Step 2. Add the dependency
 
 	dependencies {
-	        compile 'com.github.ericwlange:AndroidJSCore:3.0.0'
+	        compile 'com.github.ericwlange:AndroidJSCore:3.0.1'
 	}
 
 You should be all set!
@@ -142,7 +142,7 @@ do the following:
     % echo sdk.dir=$ANDROID_SDK >> local.properties
     % ./gradlew assembleRelease
 
-Your library now sits in `AndroidJSCore/build/outputs/aar/AndroidJSCore-3.0.0-release.aar`.  To use it, simply
+Your library now sits in `AndroidJSCore/build/outputs/aar/AndroidJSCore-3.0.1-release.aar`.  To use it, simply
 add the following to your app's `build.gradle`:
 
     repositories {
@@ -152,7 +152,7 @@ add the following to your app's `build.gradle`:
     }
 
     dependencies {
-        compile(name:'AndroidJSCore-3.0.0-release', ext:'aar')
+        compile(name:'AndroidJSCore-3.0.1-release', ext:'aar')
     }
     
 ##### Note: The JavaScriptCore library is built using [The Hemroid Project](https://github.com/ericwlange/hemroid)

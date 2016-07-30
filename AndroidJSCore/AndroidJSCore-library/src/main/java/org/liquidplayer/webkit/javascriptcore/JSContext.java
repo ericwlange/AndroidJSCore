@@ -39,7 +39,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 /**
  * Wraps a JavaScriptCore context 
  */
@@ -103,6 +102,7 @@ public class JSContext extends JSObject {
         context = this;
         sync(new Runnable() {
             @Override public void run() {
+                static_init();
                 ctx = create();
                 valueRef = getGlobalObject(ctx);
             }
@@ -117,6 +117,7 @@ public class JSContext extends JSObject {
         context = this;
         sync(new Runnable() {
             @Override public void run() {
+                static_init();
                 ctx = createInGroup(inGroup.groupRef());
                 valueRef = getGlobalObject(ctx);
             }
@@ -133,6 +134,7 @@ public class JSContext extends JSObject {
         context = this;
         sync(new Runnable() {
             @Override public void run() {
+                static_init();
                 ctx = create();
                 valueRef = getGlobalObject(ctx);
                 Method[] methods = iface.getDeclaredMethods();
@@ -156,6 +158,7 @@ public class JSContext extends JSObject {
         context = this;
         sync(new Runnable() {
             @Override public void run() {
+                static_init();
                 ctx = createInGroup(inGroup.groupRef());
                 valueRef = getGlobalObject(ctx);
                 Method[] methods = iface.getDeclaredMethods();
@@ -370,19 +373,13 @@ public class JSContext extends JSObject {
 	protected native JNIReturnObject checkScriptSyntax(long ctx, long script, long sourceURL, int startingLineNumber);
 	protected native void garbageCollect(long ctx);
 
-	static {
-		System.loadLibrary("gnustl_shared");
-		System.loadLibrary("icuhemdata");
-		System.loadLibrary("icuhemuc");
-		System.loadLibrary("icuhemi18n");
-		System.loadLibrary("ffi");
-		System.loadLibrary("iconv");
-		System.loadLibrary("intl");
-		System.loadLibrary("glib-2.0");
-		System.loadLibrary("gobject-2.0");
-		System.loadLibrary("gmodule-2.0");
-		System.loadLibrary("gio-2.0");
-		System.loadLibrary("android-js-core");
-		staticInit();
-	}
+    static boolean isInit = false;
+
+    private static void static_init() {
+        if (!isInit) {
+            System.loadLibrary("javascriptcoregtk-4.0");
+            System.loadLibrary("android-js-core");
+            isInit = true;
+        }
+    }
 }

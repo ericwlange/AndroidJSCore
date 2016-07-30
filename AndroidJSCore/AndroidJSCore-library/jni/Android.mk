@@ -34,65 +34,7 @@ LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE    := javascriptcore
-LOCAL_SHARED_LIBRARIES := glib icu
 LOCAL_SRC_FILES := lib/$(TARGET_ARCH_ABI)/libjavascriptcoregtk-4.0.so
-include $(PREBUILT_SHARED_LIBRARY)
-
-include $(CLEAR_VARS)
-LOCAL_MODULE    := icuuc
-LOCAL_SHARED_LIBRARIES := icudata
-LOCAL_SRC_FILES := lib/$(TARGET_ARCH_ABI)/libicuhemuc.so
-include $(PREBUILT_SHARED_LIBRARY)
-
-include $(CLEAR_VARS)
-LOCAL_MODULE    := icui18n
-LOCAL_SHARED_LIBRARIES := icudata
-LOCAL_SRC_FILES := lib/$(TARGET_ARCH_ABI)/libicuhemi18n.so
-include $(PREBUILT_SHARED_LIBRARY)
-
-include $(CLEAR_VARS)
-LOCAL_MODULE    := icudata
-LOCAL_SRC_FILES := lib/$(TARGET_ARCH_ABI)/libicuhemdata.so
-include $(PREBUILT_SHARED_LIBRARY)
-
-include $(CLEAR_VARS)
-LOCAL_MODULE    := ffi
-LOCAL_SRC_FILES := lib/$(TARGET_ARCH_ABI)/libffi.so
-include $(PREBUILT_SHARED_LIBRARY)
-
-include $(CLEAR_VARS)
-LOCAL_MODULE    := intl
-LOCAL_SHARED_LIBRARIES := iconv
-LOCAL_SRC_FILES := lib/$(TARGET_ARCH_ABI)/libintl.so
-include $(PREBUILT_SHARED_LIBRARY)
-
-include $(CLEAR_VARS)
-LOCAL_MODULE    := glib
-LOCAL_SHARED_LIBRARIES := iconv ffi intl
-LOCAL_SRC_FILES := lib/$(TARGET_ARCH_ABI)/libglib-2.0.so
-include $(PREBUILT_SHARED_LIBRARY)
-
-include $(CLEAR_VARS)
-LOCAL_MODULE    := gmodule
-LOCAL_SHARED_LIBRARIES := glib
-LOCAL_SRC_FILES := lib/$(TARGET_ARCH_ABI)/libgmodule-2.0.so
-include $(PREBUILT_SHARED_LIBRARY)
-
-include $(CLEAR_VARS)
-LOCAL_MODULE           := gio
-LOCAL_SHARED_LIBRARIES := glib gmodule
-LOCAL_SRC_FILES        := lib/$(TARGET_ARCH_ABI)/libgio-2.0.so
-include $(PREBUILT_SHARED_LIBRARY)
-
-include $(CLEAR_VARS)
-LOCAL_MODULE    := gobject
-LOCAL_SHARED_LIBRARIES := glib ffi
-LOCAL_SRC_FILES := lib/$(TARGET_ARCH_ABI)/libgobject-2.0.so
-include $(PREBUILT_SHARED_LIBRARY)
-
-include $(CLEAR_VARS)
-LOCAL_MODULE    := iconv
-LOCAL_SRC_FILES := lib/$(TARGET_ARCH_ABI)/libiconv.so
 include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)

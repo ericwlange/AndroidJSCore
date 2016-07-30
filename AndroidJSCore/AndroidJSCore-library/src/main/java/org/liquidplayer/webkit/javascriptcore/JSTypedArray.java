@@ -214,6 +214,13 @@ public abstract class JSTypedArray<T> extends JSBaseArray<T> {
         setElement.call(null,this,index,value);
     }
 
+    /**
+     * Always throws UnsupportedOperationException.  Typed Arrays operate on a fixed
+     * JSArrayBuffer.  Items cannot be added, inserted or removed, only modified.
+     * @param val  The value to add to the array
+     * @return nothing
+     * @throws UnsupportedOperationException always
+     */
     @Override
     public boolean add(final T val) throws JSException {
         throw new UnsupportedOperationException();

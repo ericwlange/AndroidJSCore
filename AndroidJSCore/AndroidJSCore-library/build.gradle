@@ -9,7 +9,7 @@ android {
         minSdkVersion 11
         targetSdkVersion 24
         versionCode 3
-        versionName "3.0.0"
+        versionName "3.0.1"
         setProperty("archivesBaseName", "AndroidJSCore-$versionName")
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }

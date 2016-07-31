@@ -1,5 +1,6 @@
 apply plugin: 'com.android.library'
 apply plugin: 'jacoco'
+apply plugin: 'com.github.dcendents.android-maven'
 
 android {
     compileSdkVersion 24
@@ -35,6 +36,31 @@ dependencies {
     androidTestCompile 'com.android.support.test:rules:0.5'
     androidTestCompile 'org.hamcrest:hamcrest-library:1.3'
 }
+
+// build a jar with source files
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
+task javadoc(type: Javadoc) {
+    failOnError  false
+    source = android.sourceSets.main.java.sourceFiles
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    classpath += configurations.compile
+}
+
+// build a jar with javadoc
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
+
 
 apply plugin: 'com.github.dcendents.android-maven'
 

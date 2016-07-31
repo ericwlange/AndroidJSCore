@@ -77,9 +77,8 @@ public abstract class JSBaseArray<T> extends JSFunction implements List<T> {
      *                String.class, JSValue.class, etc.)
      * @return The captured static array
      * @since 3.0
-     * @throws JSException
      */
-    public Object[] toArray(Class clazz) throws JSException {
+    public Object[] toArray(Class clazz) {
         int count = size();
 
         Object [] array = (Object[]) Array.newInstance(clazz,count);
@@ -93,10 +92,9 @@ public abstract class JSBaseArray<T> extends JSFunction implements List<T> {
      * Extracts Java JSValue array from JavaScript array
      * @see List#toArray()
      * @return JavaScript array as Java array of JSValues
-     * @throws JSException
      */
     @Override @NonNull
-    public Object [] toArray() throws JSException {
+    public Object [] toArray() {
         return toArray(mType);
     }
 
@@ -106,7 +104,6 @@ public abstract class JSBaseArray<T> extends JSFunction implements List<T> {
      * @param index  Index of the element to get
      * @return  The JSValue at index 'index'
      * @since 1.0
-     * @throws JSException
      */
     @Override
     @SuppressWarnings("unchecked")
@@ -123,10 +120,9 @@ public abstract class JSBaseArray<T> extends JSFunction implements List<T> {
      * @see List#add(Object)
      * @param val  The Java object to add to the array, will get converted to a JSValue
      * @since 1.0
-     * @throws JSException
      */
     @Override
-    public boolean add(final T val) throws JSException {
+    public boolean add(final T val) {
         int count = size();
         elementAtIndex(count,val);
         return true;

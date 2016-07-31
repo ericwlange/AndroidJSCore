@@ -128,9 +128,8 @@ public class JSContext extends JSObject {
 	 * object must implement 'iface'.  The methods in 'iface' will be exposed to the JavaScript environment.
 	 * @param iface  The interface to expose to JavaScript
 	 * @since 1.0
-	 * @throws JSException
 	 */
-	public JSContext(final Class<?> iface) throws JSException {
+	public JSContext(final Class<?> iface) {
         context = this;
         sync(new Runnable() {
             @Override public void run() {
@@ -152,9 +151,8 @@ public class JSContext extends JSObject {
 	 * @param inGroup  The context group to create the context in
 	 * @param iface  The interface to expose to JavaScript
 	 * @since 1.0
-	 * @throws JSException
 	 */
-	public JSContext(final JSContextGroup inGroup, final Class<?> iface) throws JSException {
+	public JSContext(final JSContextGroup inGroup, final Class<?> iface) {
         context = this;
         sync(new Runnable() {
             @Override public void run() {
@@ -205,7 +203,7 @@ public class JSContext extends JSObject {
 	 * @param exception The JSException to be thrown
 	 * @since 2.1
 	 */
-	public void throwJSException(JSException exception) throws JSException {
+	public void throwJSException(JSException exception) {
 		if (exceptionHandler == null) {
 			throw exception;
 		} else {
@@ -249,10 +247,9 @@ public class JSContext extends JSObject {
 	 * @param startingLineNumber  The beginning line number, only used for reporting in stack trace (optional)
 	 * @return  The return value returned by 'script'
 	 * @since 1.0
-	 * @throws JSException
 	 */
 	public JSValue evaluateScript(final String script, final JSObject thiz,
-			final String sourceURL, final int startingLineNumber) throws JSException {
+			final String sourceURL, final int startingLineNumber) {
 
         JNIReturnClass runnable = new JNIReturnClass() {
             @Override public void run() {
@@ -279,9 +276,8 @@ public class JSContext extends JSObject {
 	 * @param thiz  The 'this' object
 	 * @return  The return value returned by 'script'
 	 * @since 1.0
-	 * @throws JSException
 	 */
-	public JSValue evaluateScript(String script, JSObject thiz) throws JSException {
+	public JSValue evaluateScript(String script, JSObject thiz) {
 		return evaluateScript(script,thiz,null,0);
 	}
 	/**
@@ -289,9 +285,8 @@ public class JSContext extends JSObject {
 	 * @param script  The code to execute
 	 * @return  The return value returned by 'script'
 	 * @since 1.0
-	 * @throws JSException
 	 */
-	public JSValue evaluateScript(String script) throws JSException {
+	public JSValue evaluateScript(String script) {
 		return evaluateScript(script,null,null,0);
 	}
 	
@@ -321,6 +316,7 @@ public class JSContext extends JSObject {
 	 * Reuses a stored reference to a JavaScript object if it exists, otherwise, it creates the
 	 * reference.
 	 * @param objRef the JavaScriptCore object reference
+     * @param create whether to create the object if it does not exist
 	 * @since 1.0
 	 * @return The JSObject representing the reference
 	 */
@@ -379,6 +375,7 @@ public class JSContext extends JSObject {
         if (!isInit) {
             System.loadLibrary("javascriptcoregtk-4.0");
             System.loadLibrary("android-js-core");
+            staticInit();
             isInit = true;
         }
     }

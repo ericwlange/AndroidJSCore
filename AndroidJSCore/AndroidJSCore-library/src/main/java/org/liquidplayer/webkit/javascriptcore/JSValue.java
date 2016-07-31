@@ -88,7 +88,7 @@ public class JSValue {
             }
         }
 
-        public void sync(final Runnable runnable) throws JSException {
+        public void sync(final Runnable runnable) {
             if (Looper.myLooper() == Looper.getMainLooper()) {
                 try {
                     JSException e = new JSTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, runnable).get();
@@ -442,9 +442,8 @@ public class JSValue {
 	 * @param constructor  The constructor object to test
 	 * @return  true if the value is an instance of the given constructor object, false otherwise
 	 * @since 1.0
-	 * @throws JSException
 	 */
-	public Boolean isInstanceOfConstructor(final JSObject constructor) throws JSException {
+	public Boolean isInstanceOfConstructor(final JSObject constructor) {
         JNIReturnClass runnable = new JNIReturnClass() {
             @Override
             public void run() {
@@ -543,9 +542,8 @@ public class JSValue {
 	 * Gets the numeric value of this JS value
 	 * @return  The numeric value
 	 * @since 1.0
-	 * @throws JSException
 	 */
-	public Double toNumber() throws JSException {
+	public Double toNumber() {
         JNIReturnClass runnable = new JNIReturnClass() {
             @Override
             public void run() {
@@ -571,9 +569,8 @@ public class JSValue {
 	 * Gets the JSString value of this JS value
 	 * @return  The JSString value
 	 * @since 1.0
-	 * @throws JSException
 	 */
-	protected JSString toJSString() throws JSException {
+	protected JSString toJSString() {
         JNIReturnClass runnable = new JNIReturnClass() {
             @Override
             public void run() {
@@ -591,9 +588,8 @@ public class JSValue {
 	 * If the JS value is an object, gets the JSObject
 	 * @return  The JSObject for this value
 	 * @since 1.0
-	 * @throws JSException  if not an object
 	 */
-	public JSObject toObject() throws JSException {
+	public JSObject toObject() {
         JNIReturnClass runnable = new JNIReturnClass() {
             @Override
             public void run() {
@@ -612,9 +608,8 @@ public class JSValue {
      * If the JS value is a function, gets the JSFunction
      * @return  The JSFunction for this value
      * @since 3.0
-     * @throws JSException  if not a function
      */
-	public JSFunction toFunction() throws JSException {
+	public JSFunction toFunction() {
 		if (isObject() && toObject() instanceof JSFunction) {
 			return (JSFunction)toObject();
 		} else if (!isObject()) {
@@ -630,9 +625,8 @@ public class JSValue {
      * If the JS value is an array, gets the JSArray
      * @return  The JSArray for this value
      * @since 3.0
-     * @throws JSException  if not an array
      */
-    public JSBaseArray toJSArray() throws JSException {
+    public JSBaseArray toJSArray() {
         if (isObject() && toObject() instanceof JSBaseArray) {
             return (JSBaseArray)toObject();
         } else if (!isObject()) {
@@ -649,9 +643,8 @@ public class JSValue {
 	 * @param indent  number of spaces to indent
 	 * @return  the JSON representing this value, or null if value is undefined
 	 * @since 1.0
-	 * @throws JSException
 	 */
-	public String toJSON(final int indent) throws JSException {
+	public String toJSON(final int indent) {
         JNIReturnClass runnable = new JNIReturnClass() {
             @Override
             public void run() {
@@ -672,9 +665,8 @@ public class JSValue {
 	 * Gets the JSON of this JS value
 	 * @return  the JSON representing this value
 	 * @since 1.0
-	 * @throws JSException
 	 */
-	public String toJSON() throws JSException {
+	public String toJSON() {
 		return toJSON(0);
 	}
 
@@ -746,7 +738,7 @@ public class JSValue {
 
     /* Native functions */
     @SuppressWarnings("unused")
-	protected native int getType(long ctxRef, long valueRef); /**/
+	protected native int getType(long ctxRef, long valueRef);
 	protected native boolean isUndefined(long ctxRef, long valueRef);
 	protected native boolean isNull(long ctxRef, long valueRef );
 	protected native boolean isBoolean(long ctxRef, long valueRef );
@@ -769,7 +761,7 @@ public class JSValue {
 	protected native JNIReturnObject toNumber(long ctxRef, long valueRef);
 	protected native JNIReturnObject toStringCopy(long ctxRef, long valueRef);
 	protected native JNIReturnObject toObject(long ctxRef, long valueRef);
-	protected native void protect(long ctx, long valueRef); /**/
-	protected native void unprotect(long ctx, long valueRef); /**/
+	protected native void protect(long ctx, long valueRef);
+	protected native void unprotect(long ctx, long valueRef);
 	protected native void setException(long valueRef, long exceptionRefRef);
 }

@@ -37,7 +37,7 @@ package org.liquidplayer.webkit.javascriptcore;
  * subclassed by JSInt8Array, JSInt16Array, JSInt32Array, JSUint8Array, JSUint16Array,
  * JSUint32Array, JSUint8ClampedArray, JSFloat32Array, and JSFloat64Array
  * @since 3.0
- * @param <T>
+ * @param <T> Parameterized type of array elements
  */
 public abstract class JSTypedArray<T> extends JSBaseArray<T> {
 

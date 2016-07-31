@@ -46,9 +46,8 @@ public class JSRegExp extends JSObject {
 	 * @param pattern  The REGEXP pattern
 	 * @param flags  The REGEXP flags
 	 * @since 1.0
-	 * @throws JSException
 	 */
-	public JSRegExp(JSContext ctx, String pattern, String flags) throws JSException {
+	public JSRegExp(JSContext ctx, String pattern, String flags) {
 		context = ctx;
 		long [] args = { 
 				new JSValue(context,pattern).valueRef(),
@@ -61,9 +60,8 @@ public class JSRegExp extends JSObject {
 	 * @param ctx  The context in which to create the regular expression
 	 * @param pattern  The REGEXP pattern
 	 * @since 1.0
-	 * @throws JSException
 	 */
-	public JSRegExp(JSContext ctx, String pattern) throws JSException {
+	public JSRegExp(JSContext ctx, String pattern) {
 		context = ctx;
 		long [] args = { 
 				new JSValue(context,pattern).valueRef()

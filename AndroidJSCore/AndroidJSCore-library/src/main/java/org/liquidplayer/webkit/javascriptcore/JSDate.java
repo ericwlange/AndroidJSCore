@@ -44,9 +44,8 @@ public class JSDate extends JSObject {
 	 * Creates a new date object with the current date and time
 	 * @param ctx  The JSContext in which to create the date object
 	 * @since 1.0
-	 * @throws JSException
 	 */
-	public JSDate(JSContext ctx) throws JSException {
+	public JSDate(JSContext ctx) {
 		context = ctx;
         valueRef = testException(this.makeDate(context.ctxRef(), new long[0]));
         context.persistObject(this);
@@ -56,9 +55,8 @@ public class JSDate extends JSObject {
 	 * @param ctx  The JSContext in which to create the date object
 	 * @param date  The Date with which to initialize the object
 	 * @since 1.0
-	 * @throws JSException
 	 */
-	public JSDate(JSContext ctx, Date date) throws JSException {
+	public JSDate(JSContext ctx, Date date) {
 		context = ctx;
 		JSValue time = new JSValue(context, date.getTime());
 		long [] args = { time.valueRef() };
@@ -70,9 +68,8 @@ public class JSDate extends JSObject {
      * @param ctx  The JSContext in which to create the date object
      * @param epoch  Milliseconds since since 1 January 1970 00:00:00 UTC
      * @since 3.0
-     * @throws JSException
      */
-    public JSDate(JSContext ctx, Long epoch) throws JSException {
+    public JSDate(JSContext ctx, Long epoch) {
         context = ctx;
         JSValue time = new JSValue(context, epoch);
         long [] args = { time.valueRef() };
@@ -110,6 +107,7 @@ public class JSDate extends JSObject {
 	/**
      * JavaScript Date.now(), see:
      * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/now
+     * @param ctx The JavaScript context
 	 * @return Returns the numeric value corresponding to the current time - the number of milliseconds
 	 * elapsed since 1 January 1970 00:00:00 UTC.
      * @since 3.0

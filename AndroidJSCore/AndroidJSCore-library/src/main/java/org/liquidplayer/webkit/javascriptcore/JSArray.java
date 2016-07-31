@@ -51,7 +51,7 @@ public class JSArray<T> extends JSBaseArray<T> {
     /**
      * Interface containing a map function
      * @since 3.0
-     * @param <T>
+     * @param <T> Parameterized type of array elements
      */
     public interface MapCallback<T> {
         /**
@@ -80,10 +80,9 @@ public class JSArray<T> extends JSBaseArray<T> {
      * @param array  An array of JSValues with which to initialize the JavaScript array object
      * @param cls  The class of the component objects
      * @since 3.0
-     * @throws JSException
      */
     @SuppressWarnings("unused")
-    public JSArray(JSContext ctx, JSValue [] array, Class<T> cls) throws JSException {
+    public JSArray(JSContext ctx, JSValue [] array, Class<T> cls) {
         super(ctx,cls);
         long [] valueRefs = new long[array.length];
         for (int i=0; i<array.length; i++) {
@@ -98,9 +97,8 @@ public class JSArray<T> extends JSBaseArray<T> {
      * @param ctx  The JSContext to create the array in
      * @param cls  The class of the component objects
      * @since 3.0
-     * @throws JSException
      */
-    public JSArray(JSContext ctx, Class<T> cls) throws JSException {
+    public JSArray(JSContext ctx, Class<T> cls) {
         super(ctx,cls);
         long [] valueRefs = new long[0];
         valueRef = testException(makeArray(context.ctxRef(), valueRefs));
@@ -114,9 +112,8 @@ public class JSArray<T> extends JSBaseArray<T> {
      *               Object will be converted to a JSValue
      * @param cls  The class of the component objects
      * @since 3.0
-     * @throws JSException
      */
-    public JSArray(JSContext ctx, Object [] array, Class<T> cls) throws JSException {
+    public JSArray(JSContext ctx, Object [] array, Class<T> cls) {
         super(ctx,cls);
         long [] valueRefs = new long[array.length];
         for (int i=0; i<array.length; i++) {
@@ -149,9 +146,8 @@ public class JSArray<T> extends JSBaseArray<T> {
      *             object will be converted to a JSValue
      * @param cls  The class of the component objects
      * @since 3.0
-     * @throws JSException
      */
-    public JSArray(JSContext ctx, Collection list, Class<T> cls) throws JSException {
+    public JSArray(JSContext ctx, Collection list, Class<T> cls) {
         this(ctx,list.toArray(),cls);
     }
 
@@ -393,7 +389,7 @@ public class JSArray<T> extends JSBaseArray<T> {
     /**
      * Interface containing a condition test callback function
      * @since 3.0
-     * @param <T>
+     * @param <T> Parameterized type of array elements
      */
     public interface EachBooleanCallback<T> {
         /**
@@ -410,7 +406,7 @@ public class JSArray<T> extends JSBaseArray<T> {
     /**
      * Interface containing a function to call on each element of an array
      * @since 3.0
-     * @param <T>
+     * @param <T> Parameterized type of array elements
      */
     public interface ForEachCallback<T> {
         /**
@@ -444,7 +440,7 @@ public class JSArray<T> extends JSBaseArray<T> {
     /**
      * Interface containing a compare function callback for sort
      * @since 3.0
-     * @param <T>
+     * @param <T> Parameterized type of array elements
      */
     public interface SortCallback<T> {
         /**
@@ -490,7 +486,7 @@ public class JSArray<T> extends JSBaseArray<T> {
     /**
      * An array entry Iterator
      * @since 3.0
-     * @param <U>
+     * @param <U> Parameterized type of array elements
      */
     public class EntriesIterator<U> extends JSIterator<Map.Entry<Integer,U>> {
         protected EntriesIterator(JSObject iterator) {
@@ -869,7 +865,7 @@ public class JSArray<T> extends JSBaseArray<T> {
     /**
      * An array value iterator
      * @since 3.0
-     * @param <U>
+     * @param <U> Parameterized type of array elements
      */
     public class ValuesIterator<U> extends JSIterator<U> {
         protected ValuesIterator(JSObject iterator) {

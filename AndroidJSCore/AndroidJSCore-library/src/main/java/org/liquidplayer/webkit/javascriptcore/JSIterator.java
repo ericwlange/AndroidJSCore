@@ -37,7 +37,7 @@ import java.util.Iterator;
 /**
  * A JavaScript iterator interface shadow object
  * @since 3.0
- * @param <T>
+ * @param <T> Parameterized type of iterator elements
  */
 public class JSIterator<T> extends JSObjectWrapper implements Iterator<T> {
     /**

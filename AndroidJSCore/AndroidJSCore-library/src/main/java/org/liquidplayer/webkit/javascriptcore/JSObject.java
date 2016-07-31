@@ -126,10 +126,9 @@ public class JSObject extends JSValue {
      *
      * @param ctx   The JSContext to create the object in
      * @param iface The Java Interface defining the methods to expose to JavaScript
-     * @throws JSException
      * @since 1.0
      */
-    public JSObject(JSContext ctx, final Class<?> iface) throws JSException {
+    public JSObject(JSContext ctx, final Class<?> iface) {
         context = ctx;
         context.sync(new Runnable() {
             @Override
@@ -182,10 +181,9 @@ public class JSObject extends JSValue {
      *
      * @param prop The name of the property to fetch
      * @return The JSValue of the property, or null if it does not exist
-     * @throws JSException
      * @since 1.0
      */
-    public JSValue property(final String prop) throws JSException {
+    public JSValue property(final String prop) {
         JNIReturnClass runnable = new JNIReturnClass() {
             @Override
             public void run() {
@@ -207,10 +205,9 @@ public class JSObject extends JSValue {
      * @param value      The Java object to set.  The Java object will be converted to a JavaScript object
      *                   automatically.
      * @param attributes And OR'd list of JSProperty constants
-     * @throws JSException
      * @since 1.0
      */
-    public void property(final String prop, final Object value, final int attributes) throws JSException {
+    public void property(final String prop, final Object value, final int attributes) {
         JNIReturnClass runnable = new JNIReturnClass() {
             @Override
             public void run() {
@@ -235,10 +232,9 @@ public class JSObject extends JSValue {
      * @param prop  The name of the property to set
      * @param value The Java object to set.  The Java object will be converted to a JavaScript object
      *              automatically.
-     * @throws JSException
      * @since 1.0
      */
-    public void property(String prop, Object value) throws JSException {
+    public void property(String prop, Object value) {
         property(prop, value, JSPropertyAttributeNone);
     }
 
@@ -247,10 +243,9 @@ public class JSObject extends JSValue {
      *
      * @param prop The name of the property to delete
      * @return true if the property was deleted, false otherwise
-     * @throws JSException
      * @since 1.0
      */
-    public boolean deleteProperty(final String prop) throws JSException {
+    public boolean deleteProperty(final String prop) {
         JNIReturnClass runnable = new JNIReturnClass() {
             @Override
             public void run() {
@@ -271,10 +266,9 @@ public class JSObject extends JSValue {
      *
      * @param index The index of the property
      * @return The JSValue of the property at index 'index'
-     * @throws JSException
      * @since 1.0
      */
-    public JSValue propertyAtIndex(final int index) throws JSException {
+    public JSValue propertyAtIndex(final int index) {
         JNIReturnClass runnable = new JNIReturnClass() {
             @Override
             public void run() {
@@ -294,10 +288,9 @@ public class JSObject extends JSValue {
      *
      * @param index The index of the property to set
      * @param value The Java object to set, will be automatically converted to a JavaScript value
-     * @throws JSException
      * @since 1.0
      */
-    public void propertyAtIndex(final int index, final Object value) throws JSException {
+    public void propertyAtIndex(final int index, final Object value) {
         JNIReturnClass runnable = new JNIReturnClass() {
             @Override
             public void run() {
@@ -469,11 +462,10 @@ public class JSObject extends JSValue {
      * @param iface deprecated
      * @param subclass deprecated
      * @since 1.0
-     * @throws JSException
      */
     @Deprecated
     @SuppressWarnings("unused")
-    public JSObject(JSContext ctx, Class<?> iface, Class<? extends JSObject> subclass) throws JSException {
+    public JSObject(JSContext ctx, Class<?> iface, Class<? extends JSObject> subclass) {
         throw new UnsupportedOperationException();
     }
 
@@ -483,11 +475,10 @@ public class JSObject extends JSValue {
      * @param invoke deprecated
      * @param method deprecated
      * @since 1.0
-     * @throws JSException
      */
     @Deprecated
     @SuppressWarnings("unused")
-    public JSObject(JSContext ctx, JSObject invoke, final Method method) throws JSException {
+    public JSObject(JSContext ctx, JSObject invoke, final Method method) {
         throw new UnsupportedOperationException();
     }
 
@@ -498,11 +489,10 @@ public class JSObject extends JSValue {
      * @param args deprecated
      * @return deprecated
      * @since 1.0
-     * @throws JSException
      */
     @Deprecated
     @SuppressWarnings("unused")
-    public JSValue callAsFunction(final JSObject thiz, final JSValue [] args) throws JSException {
+    public JSValue callAsFunction(final JSObject thiz, final JSValue [] args) {
         throw new UnsupportedOperationException();
     }
 
@@ -512,11 +502,10 @@ public class JSObject extends JSValue {
      * @param thiz deprecated
      * @return deprecated
      * @since 2.2
-     * @throws JSException
      */
     @Deprecated
     @SuppressWarnings("unused")
-    public JSValue callAsFunction(final JSObject thiz) throws JSException {
+    public JSValue callAsFunction(final JSObject thiz) {
         throw new UnsupportedOperationException();
     }
 
@@ -526,11 +515,10 @@ public class JSObject extends JSValue {
      * @param args deprecated
      * @return deprecated
      * @since 2.2
-     * @throws JSException
      */
     @Deprecated
     @SuppressWarnings("unused")
-    public JSValue callAsFunction(final JSValue [] args) throws JSException {
+    public JSValue callAsFunction(final JSValue [] args) {
         throw new UnsupportedOperationException();
     }
 
@@ -539,11 +527,10 @@ public class JSObject extends JSValue {
      *             JSFunction.apply instead
      * @return deprecated
      * @since 2.2
-     * @throws JSException
      */
     @Deprecated
     @SuppressWarnings("unused")
-    public JSValue callAsFunction() throws JSException {
+    public JSValue callAsFunction() {
         throw new UnsupportedOperationException();
     }
 

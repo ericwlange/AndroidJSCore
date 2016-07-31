@@ -42,7 +42,6 @@ public class JSError extends JSObject {
 	 * @param ctx  The context in which to create the error
 	 * @param message  The description of the error
 	 * @since 1.0
-	 * @throws JSException
 	 */
 	public JSError(JSContext ctx, String message) {
 		context = ctx;
@@ -57,7 +56,6 @@ public class JSError extends JSObject {
 	 * Generates a JavaScript throwable exception object
 	 * @param ctx  The context in which to create the error
 	 * @since 1.0
-	 * @throws JSException
 	 */
 	public JSError(JSContext ctx) {
 		context = ctx;
@@ -116,11 +114,10 @@ public class JSError extends JSObject {
      * @param lineNumber  The line number where the error occurred. This is used for stack tracing
      *                    and is optional.
      * @since 1.0
-     * @throws JSException
      */
     @Deprecated
     @SuppressWarnings("unused")
-    public JSError(JSContext ctx, String message, String filename, Integer lineNumber) throws JSException {
+    public JSError(JSContext ctx, String message, String filename, Integer lineNumber) {
         throw new UnsupportedOperationException();
     }
 }

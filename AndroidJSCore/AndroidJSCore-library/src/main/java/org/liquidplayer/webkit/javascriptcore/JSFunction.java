@@ -58,12 +58,11 @@ public class JSFunction extends JSObject {
      * @param body               The JavaScript code to execute in the function
      * @param sourceURL          The URI of the source file, only used for reporting in stack trace (optional)
      * @param startingLineNumber The beginning line number, only used for reporting in stack trace (optional)
-     * @throws JSException
      * @since 2.2
      */
     public JSFunction(JSContext ctx, final String name, final String[] parameterNames,
                       final String body, final String sourceURL, final int startingLineNumber)
-            throws JSException {
+            {
         context = ctx;
         context.sync(new Runnable() {
             @Override
@@ -129,13 +128,12 @@ public class JSFunction extends JSObject {
      * @param method The method to invoke
      * @param instanceClass The class to be created on 'new' call
      * @param invokeObject  The object on which to invoke the method
-     * @throws JSException
      * @since 3.0
      */
     public JSFunction(JSContext ctx,
                       final Method method,
                       final Class<? extends JSObject> instanceClass,
-                      JSObject invokeObject) throws JSException {
+                      JSObject invokeObject) {
         context = ctx;
         this.method = method;
         this.invokeObject = (invokeObject==null) ? this: invokeObject;
@@ -181,12 +179,11 @@ public class JSFunction extends JSObject {
      * @param ctx    The JSContext to create the object in
      * @param method The method to invoke
      * @param instanceClass The class to be created on 'new' call
-     * @throws JSException
      * @since 3.0
      */
     public JSFunction(JSContext ctx,
                       final Method method,
-                      final Class<? extends JSObject> instanceClass) throws JSException {
+                      final Class<? extends JSObject> instanceClass) {
         this(ctx,method,instanceClass,null);
     }
     /**
@@ -218,11 +215,10 @@ public class JSFunction extends JSObject {
      *
      * @param ctx    The JSContext to create the object in
      * @param method The method to invoke
-     * @throws JSException
      * @since 3.0
      */
     public JSFunction(JSContext ctx,
-                      final Method method) throws JSException {
+                      final Method method) {
         this(ctx,method,JSObject.class);
     }
     /**
@@ -241,10 +237,9 @@ public class JSFunction extends JSObject {
      *
      *
      * @param ctx    The JSContext to create the object in
-     * @throws JSException
      * @since 3.0
      */
-    public JSFunction(JSContext ctx) throws JSException {
+    public JSFunction(JSContext ctx) {
         this(ctx,(String)null);
     }
 
@@ -283,13 +278,12 @@ public class JSFunction extends JSObject {
      * @param methodName The method to invoke (searches for first instance)
      * @param instanceClass The class to be created on 'new' call
      * @param invokeObject  The object on which to invoke the method
-     * @throws JSException
      * @since 3.0
      */
     public JSFunction(JSContext ctx,
                       final String methodName,
                       final Class<? extends JSObject> instanceClass,
-                      JSObject invokeObject) throws JSException {
+                      JSObject invokeObject) {
         context = ctx;
         this.invokeObject = (invokeObject==null) ? this : invokeObject;
         String name = (methodName==null) ? "__nullFunc" : methodName;
@@ -339,12 +333,11 @@ public class JSFunction extends JSObject {
      * @param ctx    The JSContext to create the object in
      * @param methodName The method to invoke (searches for first instance)
      * @param instanceClass The class to be created on 'new' call
-     * @throws JSException
      * @since 3.0
      */
     public JSFunction(JSContext ctx,
                       final String methodName,
-                      final Class<? extends JSObject> instanceClass) throws JSException {
+                      final Class<? extends JSObject> instanceClass) {
         this(ctx,methodName,instanceClass,null);
     }
     /**
@@ -370,11 +363,10 @@ public class JSFunction extends JSObject {
      *
      * @param ctx    The JSContext to create the object in
      * @param methodName The method to invoke (searches for first instance)
-     * @throws JSException
      * @since 3.0
      */
     public JSFunction(JSContext ctx,
-                      final String methodName) throws JSException {
+                      final String methodName) {
         this(ctx,methodName,JSObject.class);
     }
 
@@ -394,9 +386,8 @@ public class JSFunction extends JSObject {
      * @param args  The argument list to be passed to the function
      * @return The JSValue returned by the function
      * @since 3.0
-     * @throws JSException
      */
-    public JSValue call(final JSObject thiz, final Object ... args) throws JSException {
+    public JSValue call(final JSObject thiz, final Object ... args) {
         return apply(thiz,args);
     }
 
@@ -430,9 +421,8 @@ public class JSFunction extends JSObject {
      * @param args  An array of arguments to be passed to the function
      * @return The JSValue returned by the function
      * @since 3.0
-     * @throws JSException
      */
-    public JSValue apply(final JSObject thiz, final Object [] args) throws JSException {
+    public JSValue apply(final JSObject thiz, final Object [] args) {
         JNIReturnClass runnable = new JNIReturnClass() {
             @Override
             public void run() {
@@ -451,9 +441,8 @@ public class JSFunction extends JSObject {
      * Calls this JavaScript function with no args and 'this' as null
      * @return The JSValue returned by the function
      * @since 3.0
-     * @throws JSException
      */
-    public JSValue call() throws JSException {
+    public JSValue call() {
         return call(null);
     }
 
@@ -531,11 +520,11 @@ public class JSFunction extends JSObject {
         }
     }
 
-    protected JSValue function(JSObject thiz, JSValue [] args) throws JSException {
+    protected JSValue function(JSObject thiz, JSValue [] args) {
         return function(thiz,args,this);
     }
 
-    protected JSValue function(JSObject thiz, JSValue [] args, final JSObject invokeObject) throws JSException {
+    protected JSValue function(JSObject thiz, JSValue [] args, final JSObject invokeObject) {
         Class<?>[] pType  = method.getParameterTypes();
         Object [] passArgs = new Object[pType.length];
         for (int i=0; i<passArgs.length; i++) {
@@ -580,7 +569,7 @@ public class JSFunction extends JSObject {
         abstract JSObject execute();
     }
 
-    protected JSObject constructor(final JSValue [] args) throws JSException {
+    protected JSObject constructor(final JSValue [] args) {
         JSObjectReturnClass runnable = new JSObjectReturnClass() {
             @Override
             public JSObject execute() {

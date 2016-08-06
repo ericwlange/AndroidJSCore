@@ -101,7 +101,9 @@ JSValueRef JSFunction::FunctionCallback(JSContextRef ctx, JSObjectRef function, 
         env->DeleteLocalRef(cls);
         if (super == NULL || env->ExceptionCheck()) {
             if (super != NULL) env->DeleteLocalRef(super);
-            jvm->DetachCurrentThread();
+            if (getEnvStat == JNI_EDETACHED) {
+                jvm->DetachCurrentThread();
+            }
             return NULL;
         }
         cls = super;
@@ -144,7 +146,9 @@ JSObjectRef JSFunction::ConstructorCallback(JSContextRef ctx, JSObjectRef constr
         env->DeleteLocalRef(cls);
         if (super == NULL || env->ExceptionCheck()) {
             if (super != NULL) env->DeleteLocalRef(super);
-            jvm->DetachCurrentThread();
+            if (getEnvStat == JNI_EDETACHED) {
+                jvm->DetachCurrentThread();
+            }
             return NULL;
         }
         cls = super;
@@ -187,7 +191,9 @@ bool JSFunction::HasInstanceCallback(JSContextRef ctx, JSObjectRef constructor,
         env->DeleteLocalRef(cls);
         if (super == NULL || env->ExceptionCheck()) {
             if (super != NULL) env->DeleteLocalRef(super);
-            jvm->DetachCurrentThread();
+            if (getEnvStat == JNI_EDETACHED) {
+                jvm->DetachCurrentThread();
+            }
             return NULL;
         }
         cls = super;

@@ -40,29 +40,29 @@ import java.util.Date;
  * @since 1.0
  */
 public class JSDate extends JSObject {
-	/**
-	 * Creates a new date object with the current date and time
-	 * @param ctx  The JSContext in which to create the date object
-	 * @since 1.0
-	 */
-	public JSDate(JSContext ctx) {
-		context = ctx;
+    /**
+     * Creates a new date object with the current date and time
+     * @param ctx  The JSContext in which to create the date object
+     * @since 1.0
+     */
+    public JSDate(JSContext ctx) {
+        context = ctx;
         valueRef = testException(this.makeDate(context.ctxRef(), new long[0]));
         context.persistObject(this);
-	}
-	/**
-	 * Creates a new date object, initialized with a Java timestamp
-	 * @param ctx  The JSContext in which to create the date object
-	 * @param date  The Date with which to initialize the object
-	 * @since 1.0
-	 */
-	public JSDate(JSContext ctx, Date date) {
-		context = ctx;
-		JSValue time = new JSValue(context, date.getTime());
-		long [] args = { time.valueRef() };
+    }
+    /**
+     * Creates a new date object, initialized with a Java timestamp
+     * @param ctx  The JSContext in which to create the date object
+     * @param date  The Date with which to initialize the object
+     * @since 1.0
+     */
+    public JSDate(JSContext ctx, Date date) {
+        context = ctx;
+        JSValue time = new JSValue(context, date.getTime());
+        long [] args = { time.valueRef() };
         valueRef = testException(this.makeDate(context.ctxRef(), args));
         context.persistObject(this);
-	}
+    }
     /**
      * Creates a new date object, initialized with a Java timestamp
      * @param ctx  The JSContext in which to create the date object
@@ -102,19 +102,19 @@ public class JSDate extends JSObject {
         }
     }
 
-	/* Methods */
+    /* Methods */
 
-	/**
+    /**
      * JavaScript Date.now(), see:
      * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/now
      * @param ctx The JavaScript context
-	 * @return Returns the numeric value corresponding to the current time - the number of milliseconds
-	 * elapsed since 1 January 1970 00:00:00 UTC.
+     * @return Returns the numeric value corresponding to the current time - the number of milliseconds
+     * elapsed since 1 January 1970 00:00:00 UTC.
      * @since 3.0
      */
-	public static Long now(JSContext ctx) {
-		return ctx.property("Date").toObject().property("now").toFunction().call().toNumber().longValue();
-	}
+    public static Long now(JSContext ctx) {
+        return ctx.property("Date").toObject().property("now").toFunction().call().toNumber().longValue();
+    }
 
     /**
      * JavaScript Date.parse(), see:
@@ -163,7 +163,7 @@ public class JSDate extends JSObject {
      * @return Returns the day of the month (1-31) for the specified date according to local time.
      * @since 3.0
      */
-	public Integer getDate() {
+    public Integer getDate() {
         return property("getDate").toFunction().call(this).toNumber().intValue();
     }
 
@@ -348,7 +348,7 @@ public class JSDate extends JSObject {
      * @param value Sets the day of the month for a specified date according to local time.
      * @since 3.0
      */
-	public void setDate(Integer value) {
+    public void setDate(Integer value) {
         property("setDate").toFunction().call(this,value);
     }
 
@@ -361,7 +361,7 @@ public class JSDate extends JSObject {
      */
     public void setFullYear(Integer value) {
         property("setFullYear").toFunction().call(this,value);
-	}
+    }
 
     /**
      * JavaScript Date.prototype.setHours(), see:
@@ -369,9 +369,9 @@ public class JSDate extends JSObject {
      * @param value Sets the hours for a specified date according to local time.
      * @since 3.0
      */
-	public void setHours(Integer value) {
+    public void setHours(Integer value) {
         property("setHours").toFunction().call(this,value);
-	}
+    }
 
     /**
      * JavaScript Date.prototype.setMilliseconds(), see:
@@ -379,9 +379,9 @@ public class JSDate extends JSObject {
      * @param value Sets the milliseconds for a specified date according to local time.
      * @since 3.0
      */
-	public void setMilliseconds(Integer value) {
+    public void setMilliseconds(Integer value) {
         property("setMilliseconds").toFunction().call(this,value);
-	}
+    }
 
     /**
      * JavaScript Date.prototype.setMinutes(), see:
@@ -389,9 +389,9 @@ public class JSDate extends JSObject {
      * @param value Sets the minutes for a specified date according to local time.
      * @since 3.0
      */
-	public void setMinutes(Integer value) {
+    public void setMinutes(Integer value) {
         property("setMinutes").toFunction().call(this,value);
-	}
+    }
 
     /**
      * JavaScript Date.prototype.setMonth(), see:
@@ -399,9 +399,9 @@ public class JSDate extends JSObject {
      * @param value Sets the month for a specified date according to local time.
      * @since 3.0
      */
-	public void setMonth(Integer value) {
+    public void setMonth(Integer value) {
         property("setMonth").toFunction().call(this,value);
-	}
+    }
 
     /**
      * JavaScript Date.prototype.setSeconds(), see:
@@ -409,9 +409,9 @@ public class JSDate extends JSObject {
      * @param value Sets the seconds for a specified date according to local time.
      * @since 3.0
      */
-	public void setSeconds(Integer value) {
+    public void setSeconds(Integer value) {
         property("setSeconds").toFunction().call(this,value);
-	}
+    }
 
     /**
      * JavaScript Date.prototype.setTime(), see:
@@ -420,9 +420,9 @@ public class JSDate extends JSObject {
      *              January 1, 1970, 00:00:00 UTC, allowing for negative numbers for times prior.
      * @since 3.0
      */
-	public void setTime(Long value) {
+    public void setTime(Long value) {
         property("setTime").toFunction().call(this,value);
-	}
+    }
 
     /**
      * JavaScript Date.prototype.setUTCDate(), see:
@@ -430,9 +430,9 @@ public class JSDate extends JSObject {
      * @param value Sets the day of the month for a specified date according to universal time.
      * @since 3.0
      */
-	public void setUTCDate(Integer value) {
+    public void setUTCDate(Integer value) {
         property("setUTCDate").toFunction().call(this,value);
-	}
+    }
 
     /**
      * JavaScript Date.prototype.setUTCFullYear(), see:
@@ -441,9 +441,9 @@ public class JSDate extends JSObject {
      *              according to universal time.
      * @since 3.0
      */
-	public void setUTCFullYear(Integer value) {
+    public void setUTCFullYear(Integer value) {
         property("setUTCFullYear").toFunction().call(this,value);
-	}
+    }
 
     /**
      * JavaScript Date.prototype.setUTCHours(), see:
@@ -451,9 +451,9 @@ public class JSDate extends JSObject {
      * @param value Sets the hour for a specified date according to universal time.
      * @since 3.0
      */
-	public void setUTCHours(Integer value) {
+    public void setUTCHours(Integer value) {
         property("setUTCHours").toFunction().call(this,value);
-	}
+    }
 
     /**
      * JavaScript Date.prototype.setUTCMilliseconds(), see:
@@ -461,9 +461,9 @@ public class JSDate extends JSObject {
      * @param value Sets the milliseconds for a specified date according to universal time.
      * @since 3.0
      */
-	public void setUTCMilliseconds(Integer value) {
+    public void setUTCMilliseconds(Integer value) {
         property("setUTCMilliseconds").toFunction().call(this,value);
-	}
+    }
 
     /**
      * JavaScript Date.prototype.setUTCMinutes(), see:
@@ -471,9 +471,9 @@ public class JSDate extends JSObject {
      * @param value Sets the minutes for a specified date according to universal time.
      * @since 3.0
      */
-	public void setUTCMinutes(Integer value) {
+    public void setUTCMinutes(Integer value) {
         property("setUTCMinutes").toFunction().call(this,value);
-	}
+    }
 
     /**
      * JavaScript Date.prototype.setUTCMonth(), see:
@@ -481,9 +481,9 @@ public class JSDate extends JSObject {
      * @param value Sets the month for a specified date according to universal time.
      * @since 3.0
      */
-	public void setUTCMonth(Integer value) {
+    public void setUTCMonth(Integer value) {
         property("setUTCMonth").toFunction().call(this,value);
-	}
+    }
 
     /**
      * JavaScript Date.prototype.setUTCSeconds(), see:
@@ -491,11 +491,11 @@ public class JSDate extends JSObject {
      * @param value Sets the seconds for a specified date according to universal time.
      * @since 3.0
      */
-	public void setUTCSeconds(Integer value) {
+    public void setUTCSeconds(Integer value) {
         property("setUTCSeconds").toFunction().call(this,value);
     }
 
-	/* Conversion getter */
+    /* Conversion getter */
 
     /**
      * JavaScript Date.prototype.toDateString(), see:
@@ -503,7 +503,7 @@ public class JSDate extends JSObject {
      * @return Returns the "date" portion of the Date as a human - readable string.
      * @since 3.0
      */
-	public String toDateString() {
+    public String toDateString() {
         return property("toDateString").toFunction().call(this).toString();
     }
 
@@ -524,9 +524,9 @@ public class JSDate extends JSObject {
      * by JSON.stringify().
      * @since 3.0
      */
-	public String toJSON() {
+    public String toJSON() {
         return property("toJSON").toFunction().call(this).toString();
-	}
+    }
 
     /**
      * JavaScript Date.prototype.toTimeString(), see:
@@ -534,7 +534,7 @@ public class JSDate extends JSObject {
      * @return Returns the "time" portion of the Date as a human - readable string.
      * @since 3.0
      */
-	public String toTimeString() {
+    public String toTimeString() {
         return property("toTimeString").toFunction().call(this).toString();
     }
 

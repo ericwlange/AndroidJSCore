@@ -37,10 +37,10 @@ package org.liquidplayer.webkit.javascriptcore;
  * @since 3.0
  */
 public class JSON extends JSValue {
-	private JSON(JSContext ctx, String str) {
-		context = ctx;
-		valueRef = this.makeFromJSONString(context.ctxRef(), new JSString(str).stringRef());
-	}
+    private JSON(JSContext ctx, String str) {
+        context = ctx;
+        valueRef = this.makeFromJSONString(context.ctxRef(), new JSString(str).stringRef());
+    }
 
     /**
      * Gets a JSON string representation of any object
@@ -61,7 +61,7 @@ public class JSON extends JSValue {
      * @return a JSON string representing 'object'
      * @since 3.0
      */
-	public static String stringify(JSContext ctx, Object object) {
+    public static String stringify(JSContext ctx, Object object) {
         return ctx.property("JSON").toObject()
                 .property("stringify").toFunction().call(null,object)
                 .toString();

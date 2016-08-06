@@ -40,35 +40,35 @@ package org.liquidplayer.webkit.javascriptcore;
  * @since 1.0
  */
 public class JSRegExp extends JSObject {
-	/**
-	 * Creates a new JavaScript regular expression
-	 * @param ctx  The context in which to create the regular expression
-	 * @param pattern  The REGEXP pattern
-	 * @param flags  The REGEXP flags
-	 * @since 1.0
-	 */
-	public JSRegExp(JSContext ctx, String pattern, String flags) {
-		context = ctx;
-		long [] args = { 
-				new JSValue(context,pattern).valueRef(),
-				new JSValue(context,flags).valueRef(),
-		};
-		valueRef = makeRegExp(context.ctxRef(), args).reference;
-	}
-	/**
-	 * Creates a new JavaScript regular expression
-	 * @param ctx  The context in which to create the regular expression
-	 * @param pattern  The REGEXP pattern
-	 * @since 1.0
-	 */
-	public JSRegExp(JSContext ctx, String pattern) {
-		context = ctx;
-		long [] args = { 
-				new JSValue(context,pattern).valueRef()
-		};
-		JNIReturnObject jni = makeRegExp(context.ctxRef(), args);
+    /**
+     * Creates a new JavaScript regular expression
+     * @param ctx  The context in which to create the regular expression
+     * @param pattern  The REGEXP pattern
+     * @param flags  The REGEXP flags
+     * @since 1.0
+     */
+    public JSRegExp(JSContext ctx, String pattern, String flags) {
+        context = ctx;
+        long [] args = {
+                new JSValue(context,pattern).valueRef(),
+                new JSValue(context,flags).valueRef(),
+        };
         valueRef = makeRegExp(context.ctxRef(), args).reference;
-	}
+    }
+    /**
+     * Creates a new JavaScript regular expression
+     * @param ctx  The context in which to create the regular expression
+     * @param pattern  The REGEXP pattern
+     * @since 1.0
+     */
+    public JSRegExp(JSContext ctx, String pattern) {
+        context = ctx;
+        long [] args = {
+                new JSValue(context,pattern).valueRef()
+        };
+        JNIReturnObject jni = makeRegExp(context.ctxRef(), args);
+        valueRef = makeRegExp(context.ctxRef(), args).reference;
+    }
 
     /**
      * A special JSArray returned by the result of JSRegExp.exec()
@@ -106,7 +106,7 @@ public class JSRegExp extends JSObject {
      * @return an ExecResult JSArray, containing match information
      * @since 3.0
      */
-	public ExecResult exec(String str) {
+    public ExecResult exec(String str) {
         JSValue result = property("exec").toFunction().call(this,str);
         return (result.isNull()) ? null : new ExecResult(result.toObject());
     }

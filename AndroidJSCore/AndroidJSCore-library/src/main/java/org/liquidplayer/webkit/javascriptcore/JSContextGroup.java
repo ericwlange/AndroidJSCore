@@ -41,39 +41,39 @@ package org.liquidplayer.webkit.javascriptcore;
  *
  */
 public class JSContextGroup {
-	private Long group;
-	
-	/**
-	 * Creates a new context group
-	 * @since 1.0
-	 */
-	public JSContextGroup() {
-		group = create();
-	}
-	/**
-	 * Wraps an existing context group
-	 * @param groupRef  the JavaScriptCore context group reference
-	 * @since 1.0
-	 */
-	public JSContextGroup(Long groupRef)
-	{
-		group = groupRef;
-	}
+    private Long group;
 
-	@Override
-	protected void finalize() throws Throwable {
-		if (group!=0) release(group);
-		super.finalize();
-	}
-	
-	/**
-	 * Gets the JavaScriptCore context group reference
-	 * @since 1.0
-	 * @return  the JavaScriptCore context group reference
-	 */
-	public Long groupRef() {
-		return group;
-	}
+    /**
+     * Creates a new context group
+     * @since 1.0
+     */
+    public JSContextGroup() {
+        group = create();
+    }
+    /**
+     * Wraps an existing context group
+     * @param groupRef  the JavaScriptCore context group reference
+     * @since 1.0
+     */
+    public JSContextGroup(Long groupRef)
+    {
+        group = groupRef;
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        if (group!=0) release(group);
+        super.finalize();
+    }
+
+    /**
+     * Gets the JavaScriptCore context group reference
+     * @since 1.0
+     * @return  the JavaScriptCore context group reference
+     */
+    public Long groupRef() {
+        return group;
+    }
 
     /**
      * Checks if two JSContextGroups refer to the same JS context group
@@ -81,16 +81,16 @@ public class JSContextGroup {
      * @return true if refer to same context group, false otherwise
      * @since 2.2
      */
-	@Override
-	public boolean equals(Object other) {
-		return (other !=null) &&
-        		(this == other) ||
-				(other instanceof JSContextGroup) &&
-				!(groupRef() == null || groupRef() == 0) &&
-				groupRef().equals(((JSContextGroup)other).groupRef());
-	}
-	
-	protected native long create();
-	protected native long retain(long group);
-	protected native void release(long group);
+    @Override
+    public boolean equals(Object other) {
+        return (other !=null) &&
+                (this == other) ||
+                (other instanceof JSContextGroup) &&
+                !(groupRef() == null || groupRef() == 0) &&
+                groupRef().equals(((JSContextGroup)other).groupRef());
+    }
+
+    protected native long create();
+    protected native long retain(long group);
+    protected native void release(long group);
 }

@@ -204,42 +204,42 @@ public class JSValue {
     }
 
     protected Long valueRef = 0L;
-	protected JSContext context = null;
-	protected Boolean isDefunct = false;
-	
-	/* Constructors */
-	/**
-	 * Creates an empty JSValue.  This can only be used by subclasses, and those
-	 * subclasses must define 'context' and 'valueRef' themselves
-	 * @since 1.0
-	 */
-	protected JSValue() {
+    protected JSContext context = null;
+    protected Boolean isDefunct = false;
+
+    /* Constructors */
+    /**
+     * Creates an empty JSValue.  This can only be used by subclasses, and those
+     * subclasses must define 'context' and 'valueRef' themselves
+     * @since 1.0
+     */
+    protected JSValue() {
     }
-	/**
-	 * Creates a new undefined JavaScript value
-	 * @param ctx  The context in which to create the value
-	 * @since 1.0
-	 */
-	public JSValue(final JSContext ctx) {
-		context = ctx;
+    /**
+     * Creates a new undefined JavaScript value
+     * @param ctx  The context in which to create the value
+     * @since 1.0
+     */
+    public JSValue(final JSContext ctx) {
+        context = ctx;
         context.sync(new Runnable() {
             @Override
             public void run() {
                 valueRef = makeUndefined(context.ctxRef());
             }
         });
-	}
-	/**
-	 * Creates a new JavaScript value from a Java value.  Classes supported are:
-	 * Boolean, Double, Integer, Long, String, and JSString.  Any other object will
-	 * generate an undefined JavaScript value.
-	 * @param ctx  The context in which to create the value
-	 * @param val  The Java value
-	 * @since 1.0
-	 */
+    }
+    /**
+     * Creates a new JavaScript value from a Java value.  Classes supported are:
+     * Boolean, Double, Integer, Long, String, and JSString.  Any other object will
+     * generate an undefined JavaScript value.
+     * @param ctx  The context in which to create the value
+     * @param val  The Java value
+     * @since 1.0
+     */
     @SuppressWarnings("unchecked")
-	public JSValue(JSContext ctx, final Object val) {
-		context = ctx;
+    public JSValue(JSContext ctx, final Object val) {
+        context = ctx;
         context.sync(new Runnable() {
             @Override
             public void run() {
@@ -279,42 +279,42 @@ public class JSValue {
                 }
             }
         });
-	}
+    }
 
     /**
-	 * Wraps an existing JavaScript value
-	 * @param valueRef  The JavaScriptCore reference to the value
-	 * @param ctx  The context in which the value exists
-	 * @since 1.0
-	 */
-	protected JSValue(final long valueRef, JSContext ctx) {
-		context = ctx;
+     * Wraps an existing JavaScript value
+     * @param valueRef  The JavaScriptCore reference to the value
+     * @param ctx  The context in which the value exists
+     * @since 1.0
+     */
+    protected JSValue(final long valueRef, JSContext ctx) {
+        context = ctx;
         context.sync(new Runnable() {
             @Override
             public void run() {
                 if (valueRef == 0) {
-					JSValue.this.valueRef = makeUndefined(context.ctxRef());
-				}
+                    JSValue.this.valueRef = makeUndefined(context.ctxRef());
+                }
                 else {
-					JSValue.this.valueRef = valueRef;
+                    JSValue.this.valueRef = valueRef;
                     protect(context.ctxRef(), valueRef);
-				}
+                }
             }
         });
-	}
-	@Override
-	protected void finalize() throws Throwable {
-		super.finalize();
+    }
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
         unprotect();
-	}
-	
-	/* Testers */
-	/**
-	 * Tests whether the value is undefined
-	 * @return  true if undefined, false otherwise
-	 * @since 1.0
-	 */
-	public Boolean isUndefined() {
+    }
+
+    /* Testers */
+    /**
+     * Tests whether the value is undefined
+     * @return  true if undefined, false otherwise
+     * @since 1.0
+     */
+    public Boolean isUndefined() {
         JNIReturnClass runnable = new JNIReturnClass() {
             @Override
             public void run() {
@@ -323,14 +323,14 @@ public class JSValue {
             }
         };
         context.sync(runnable);
-		return runnable.jni.bool;
-	}
-	/**
-	 * Tests whether the value is null
-	 * @return  true if null, false otherwise
-	 * @since 1.0
-	 */
-	public Boolean isNull() {
+        return runnable.jni.bool;
+    }
+    /**
+     * Tests whether the value is null
+     * @return  true if null, false otherwise
+     * @since 1.0
+     */
+    public Boolean isNull() {
         JNIReturnClass runnable = new JNIReturnClass() {
             @Override
             public void run() {
@@ -340,13 +340,13 @@ public class JSValue {
         };
         context.sync(runnable);
         return runnable.jni.bool;
-	}
-	/**
-	 * Tests whether the value is boolean
-	 * @return  true if boolean, false otherwise
-	 * @since 1.0
-	 */
-	public Boolean isBoolean() {
+    }
+    /**
+     * Tests whether the value is boolean
+     * @return  true if boolean, false otherwise
+     * @since 1.0
+     */
+    public Boolean isBoolean() {
         JNIReturnClass runnable = new JNIReturnClass() {
             @Override
             public void run() {
@@ -356,13 +356,13 @@ public class JSValue {
         };
         context.sync(runnable);
         return runnable.jni.bool;
-	}
-	/**
-	 * Tests whether the value is a number
-	 * @return  true if a number, false otherwise
-	 * @since 1.0
-	 */
-	public Boolean isNumber() {
+    }
+    /**
+     * Tests whether the value is a number
+     * @return  true if a number, false otherwise
+     * @since 1.0
+     */
+    public Boolean isNumber() {
         JNIReturnClass runnable = new JNIReturnClass() {
             @Override
             public void run() {
@@ -372,13 +372,13 @@ public class JSValue {
         };
         context.sync(runnable);
         return runnable.jni.bool;
-	}
-	/**
-	 * Tests whether the value is a string
-	 * @return  true if a string, false otherwise
-	 * @since 1.0
-	 */
-	public Boolean isString() {
+    }
+    /**
+     * Tests whether the value is a string
+     * @return  true if a string, false otherwise
+     * @since 1.0
+     */
+    public Boolean isString() {
         JNIReturnClass runnable = new JNIReturnClass() {
             @Override
             public void run() {
@@ -388,13 +388,13 @@ public class JSValue {
         };
         context.sync(runnable);
         return runnable.jni.bool;
-	}
-	/**
-	 * Tests whether the value is an array
-	 * @return  true if an array, false otherwise
-	 * @since 2.2
-	 */
-	public Boolean isArray() {
+    }
+    /**
+     * Tests whether the value is an array
+     * @return  true if an array, false otherwise
+     * @since 2.2
+     */
+    public Boolean isArray() {
         JNIReturnClass runnable = new JNIReturnClass() {
             @Override
             public void run() {
@@ -404,7 +404,7 @@ public class JSValue {
         };
         context.sync(runnable);
         return runnable.jni.bool;
-	}
+    }
     /**
      * Tests whether the value is a date object
      * @return  true if a date object, false otherwise
@@ -437,13 +437,13 @@ public class JSValue {
         context.sync(runnable);
         return runnable.jni.bool;
     }
-	/**
-	 * Tests whether a value in an instance of a constructor object
-	 * @param constructor  The constructor object to test
-	 * @return  true if the value is an instance of the given constructor object, false otherwise
-	 * @since 1.0
-	 */
-	public Boolean isInstanceOfConstructor(final JSObject constructor) {
+    /**
+     * Tests whether a value in an instance of a constructor object
+     * @param constructor  The constructor object to test
+     * @return  true if the value is an instance of the given constructor object, false otherwise
+     * @since 1.0
+     */
+    public Boolean isInstanceOfConstructor(final JSObject constructor) {
         JNIReturnClass runnable = new JNIReturnClass() {
             @Override
             public void run() {
@@ -456,14 +456,14 @@ public class JSValue {
             runnable.jni.bool = false;
         }
         return runnable.jni.bool;
-	}
-	
-	/* Comparators */
-	@Override
+    }
+
+    /* Comparators */
+    @Override
     @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
-	public boolean equals(Object other) {
+    public boolean equals(Object other) {
         return isEqual(other);
-	}
+    }
 
     /**
      * JavaScript definition of equality (==).  JSValue.equals() and JSValue.isEqual() represent
@@ -494,14 +494,14 @@ public class JSValue {
         context.sync(runnable);
         return runnable.jni.exception==0 && runnable.jni.bool;
     }
-	
-	/**
-	 * Tests whether two values are strict equal.  In JavaScript, equivalent to '===' operator.
-	 * @param other  The value to test against
-	 * @return  true if values are strict equal, false otherwise
-	 * @since 1.0
-	 */
-	public boolean isStrictEqual(Object other) {
+
+    /**
+     * Tests whether two values are strict equal.  In JavaScript, equivalent to '===' operator.
+     * @param other  The value to test against
+     * @return  true if values are strict equal, false otherwise
+     * @since 1.0
+     */
+    public boolean isStrictEqual(Object other) {
         if (other == this) return true;
         JSValue otherJSValue;
         if (other instanceof JSValue) {
@@ -519,15 +519,15 @@ public class JSValue {
         };
         context.sync(runnable);
         return runnable.jni.bool;
-	}
-	
-	/* Getters */
-	/**
-	 * Gets the Boolean value of this JS value
-	 * @return  the Boolean value
-	 * @since 1.0
-	 */
-	public Boolean toBoolean() {
+    }
+
+    /* Getters */
+    /**
+     * Gets the Boolean value of this JS value
+     * @return  the Boolean value
+     * @since 1.0
+     */
+    public Boolean toBoolean() {
         JNIReturnClass runnable = new JNIReturnClass() {
             @Override
             public void run() {
@@ -536,14 +536,14 @@ public class JSValue {
             }
         };
         context.sync(runnable);
-		return runnable.jni.bool;
-	}
-	/**
-	 * Gets the numeric value of this JS value
-	 * @return  The numeric value
-	 * @since 1.0
-	 */
-	public Double toNumber() {
+        return runnable.jni.bool;
+    }
+    /**
+     * Gets the numeric value of this JS value
+     * @return  The numeric value
+     * @since 1.0
+     */
+    public Double toNumber() {
         JNIReturnClass runnable = new JNIReturnClass() {
             @Override
             public void run() {
@@ -551,26 +551,26 @@ public class JSValue {
             }
         };
         context.sync(runnable);
-		if (runnable.jni.exception!=0) {
-			context.throwJSException(new JSException(new JSValue(runnable.jni.exception, context)));
+        if (runnable.jni.exception!=0) {
+            context.throwJSException(new JSException(new JSValue(runnable.jni.exception, context)));
             return 0.0;
-		}
-		return runnable.jni.number;
-	}
-	@Override
-	public String toString() {
-		try {
-			return toJSString().toString();
-		} catch (JSException e) {
-			return e.toString();
-		}
-	}
-	/**
-	 * Gets the JSString value of this JS value
-	 * @return  The JSString value
-	 * @since 1.0
-	 */
-	protected JSString toJSString() {
+        }
+        return runnable.jni.number;
+    }
+    @Override
+    public String toString() {
+        try {
+            return toJSString().toString();
+        } catch (JSException e) {
+            return e.toString();
+        }
+    }
+    /**
+     * Gets the JSString value of this JS value
+     * @return  The JSString value
+     * @since 1.0
+     */
+    protected JSString toJSString() {
         JNIReturnClass runnable = new JNIReturnClass() {
             @Override
             public void run() {
@@ -578,18 +578,18 @@ public class JSValue {
             }
         };
         context.sync(runnable);
-		if (runnable.jni.exception!=0) {
-			context.throwJSException(new JSException(new JSValue(runnable.jni.exception, context)));
+        if (runnable.jni.exception!=0) {
+            context.throwJSException(new JSException(new JSValue(runnable.jni.exception, context)));
             return null;
-		}
-		return new JSString(runnable.jni.reference);
-	}
-	/**
-	 * If the JS value is an object, gets the JSObject
-	 * @return  The JSObject for this value
-	 * @since 1.0
-	 */
-	public JSObject toObject() {
+        }
+        return new JSString(runnable.jni.reference);
+    }
+    /**
+     * If the JS value is an object, gets the JSObject
+     * @return  The JSObject for this value
+     * @since 1.0
+     */
+    public JSObject toObject() {
         JNIReturnClass runnable = new JNIReturnClass() {
             @Override
             public void run() {
@@ -597,29 +597,29 @@ public class JSValue {
             }
         };
         context.sync(runnable);
-		if (runnable.jni.exception!=0) {
-			context.throwJSException(new JSException(new JSValue(runnable.jni.exception, context)));
+        if (runnable.jni.exception!=0) {
+            context.throwJSException(new JSException(new JSValue(runnable.jni.exception, context)));
             return new JSObject(context);
-		}
-		return context.getObjectFromRef(runnable.jni.reference);
-	}
+        }
+        return context.getObjectFromRef(runnable.jni.reference);
+    }
 
     /**
      * If the JS value is a function, gets the JSFunction
      * @return  The JSFunction for this value
      * @since 3.0
      */
-	public JSFunction toFunction() {
-		if (isObject() && toObject() instanceof JSFunction) {
-			return (JSFunction)toObject();
-		} else if (!isObject()) {
-			toObject();
-			return null;
-		} else {
+    public JSFunction toFunction() {
+        if (isObject() && toObject() instanceof JSFunction) {
+            return (JSFunction)toObject();
+        } else if (!isObject()) {
+            toObject();
+            return null;
+        } else {
             context.throwJSException(new JSException(context, "JSObject not a function"));
             return null;
         }
-	}
+    }
 
     /**
      * If the JS value is an array, gets the JSArray
@@ -639,12 +639,12 @@ public class JSValue {
     }
 
     /**
-	 * Gets the JSON of this JS value
-	 * @param indent  number of spaces to indent
-	 * @return  the JSON representing this value, or null if value is undefined
-	 * @since 1.0
-	 */
-	public String toJSON(final int indent) {
+     * Gets the JSON of this JS value
+     * @param indent  number of spaces to indent
+     * @return  the JSON representing this value, or null if value is undefined
+     * @since 1.0
+     */
+    public String toJSON(final int indent) {
         JNIReturnClass runnable = new JNIReturnClass() {
             @Override
             public void run() {
@@ -652,23 +652,23 @@ public class JSValue {
             }
         };
         context.sync(runnable);
-		if (runnable.jni.exception!=0) {
-			context.throwJSException(new JSException(new JSValue(runnable.jni.exception, context)));
+        if (runnable.jni.exception!=0) {
+            context.throwJSException(new JSException(new JSValue(runnable.jni.exception, context)));
             return null;
-		}
-		if (runnable.jni.reference==0) {
-			return null;
-		}
-		return new JSString(runnable.jni.reference).toString();
-	}
-	/**
-	 * Gets the JSON of this JS value
-	 * @return  the JSON representing this value
-	 * @since 1.0
-	 */
-	public String toJSON() {
-		return toJSON(0);
-	}
+        }
+        if (runnable.jni.reference==0) {
+            return null;
+        }
+        return new JSString(runnable.jni.reference).toString();
+    }
+    /**
+     * Gets the JSON of this JS value
+     * @return  the JSON representing this value
+     * @since 1.0
+     */
+    public String toJSON() {
+        return toJSON(0);
+    }
 
     @SuppressWarnings("unchecked")
     protected Object toJavaObject(Class clazz) {
@@ -713,21 +713,21 @@ public class JSValue {
     }
 
     /**
-	 * Gets the JSContext of this value
-	 * @return the JSContext of this value
-	 * @since 1.0
-	 */
-	public JSContext getContext() {
-		return context;
-	}
-	/**
-	 * Gets the JavaScriptCore value reference
-	 * @return  the JavaScriptCore value reference
-	 * @since 1.0
-	 */
-	public Long valueRef() {
-		return valueRef;
-	}
+     * Gets the JSContext of this value
+     * @return the JSContext of this value
+     * @since 1.0
+     */
+    public JSContext getContext() {
+        return context;
+    }
+    /**
+     * Gets the JavaScriptCore value reference
+     * @return  the JavaScriptCore value reference
+     * @since 1.0
+     */
+    public Long valueRef() {
+        return valueRef;
+    }
 
     protected void unprotect() {
         if (isProtected && !context.isDefunct)
@@ -738,30 +738,30 @@ public class JSValue {
 
     /* Native functions */
     @SuppressWarnings("unused")
-	protected native int getType(long ctxRef, long valueRef);
-	protected native boolean isUndefined(long ctxRef, long valueRef);
-	protected native boolean isNull(long ctxRef, long valueRef );
-	protected native boolean isBoolean(long ctxRef, long valueRef );
-	protected native boolean isNumber(long ctxRef, long valueRef );
-	protected native boolean isString(long ctxRef, long valueRef );
-	protected native boolean isObject(long ctxRef, long valueRef );
+    protected native int getType(long ctxRef, long valueRef);
+    protected native boolean isUndefined(long ctxRef, long valueRef);
+    protected native boolean isNull(long ctxRef, long valueRef );
+    protected native boolean isBoolean(long ctxRef, long valueRef );
+    protected native boolean isNumber(long ctxRef, long valueRef );
+    protected native boolean isString(long ctxRef, long valueRef );
+    protected native boolean isObject(long ctxRef, long valueRef );
     protected native boolean isArray(long ctxRef, long valueRef );
     protected native boolean isDate(long ctxRef, long valueRef );
-	protected native JNIReturnObject isEqual(long ctxRef, long a, long b );
-	protected native boolean isStrictEqual(long ctxRef, long a, long b );
-	protected native JNIReturnObject isInstanceOfConstructor(long ctxRef, long valueRef, long constructor);
-	protected native long makeUndefined(long ctx);
-	protected native long makeNull(long ctx);
-	protected native long makeBoolean(long ctx, boolean bool);
-	protected native long makeNumber(long ctx, double number);
-	protected native long makeString(long ctx, long stringRef);
-	protected native long makeFromJSONString(long ctx, long stringRef);
-	protected native JNIReturnObject createJSONString(long ctxRef, long valueRef, int indent);
-	protected native boolean toBoolean(long ctx, long valueRef);
-	protected native JNIReturnObject toNumber(long ctxRef, long valueRef);
-	protected native JNIReturnObject toStringCopy(long ctxRef, long valueRef);
-	protected native JNIReturnObject toObject(long ctxRef, long valueRef);
-	protected native void protect(long ctx, long valueRef);
-	protected native void unprotect(long ctx, long valueRef);
-	protected native void setException(long valueRef, long exceptionRefRef);
+    protected native JNIReturnObject isEqual(long ctxRef, long a, long b );
+    protected native boolean isStrictEqual(long ctxRef, long a, long b );
+    protected native JNIReturnObject isInstanceOfConstructor(long ctxRef, long valueRef, long constructor);
+    protected native long makeUndefined(long ctx);
+    protected native long makeNull(long ctx);
+    protected native long makeBoolean(long ctx, boolean bool);
+    protected native long makeNumber(long ctx, double number);
+    protected native long makeString(long ctx, long stringRef);
+    protected native long makeFromJSONString(long ctx, long stringRef);
+    protected native JNIReturnObject createJSONString(long ctxRef, long valueRef, int indent);
+    protected native boolean toBoolean(long ctx, long valueRef);
+    protected native JNIReturnObject toNumber(long ctxRef, long valueRef);
+    protected native JNIReturnObject toStringCopy(long ctxRef, long valueRef);
+    protected native JNIReturnObject toObject(long ctxRef, long valueRef);
+    protected native void protect(long ctx, long valueRef);
+    protected native void unprotect(long ctx, long valueRef);
+    protected native void setException(long valueRef, long exceptionRefRef);
 }

@@ -37,32 +37,32 @@ package org.liquidplayer.webkit.javascriptcore;
  * @since 1.0
  */
 public class JSError extends JSObject {
-	/**
-	 * Generates a JavaScript throwable exception object
-	 * @param ctx  The context in which to create the error
-	 * @param message  The description of the error
-	 * @since 1.0
-	 */
-	public JSError(JSContext ctx, String message) {
-		context = ctx;
-		long [] args = { 
-				new JSValue(context,message).valueRef()
-		};
-		JNIReturnObject jni = makeError(context.ctxRef(), args);
+    /**
+     * Generates a JavaScript throwable exception object
+     * @param ctx  The context in which to create the error
+     * @param message  The description of the error
+     * @since 1.0
+     */
+    public JSError(JSContext ctx, String message) {
+        context = ctx;
+        long [] args = {
+                new JSValue(context,message).valueRef()
+        };
+        JNIReturnObject jni = makeError(context.ctxRef(), args);
         if (BuildConfig.DEBUG && jni.exception != 0) throw new AssertionError();
-		valueRef = jni.reference;
-	}
-	/**
-	 * Generates a JavaScript throwable exception object
-	 * @param ctx  The context in which to create the error
-	 * @since 1.0
-	 */
-	public JSError(JSContext ctx) {
-		context = ctx;
-		JNIReturnObject jni = makeError(context.ctxRef(), new long[0]);
+        valueRef = jni.reference;
+    }
+    /**
+     * Generates a JavaScript throwable exception object
+     * @param ctx  The context in which to create the error
+     * @since 1.0
+     */
+    public JSError(JSContext ctx) {
+        context = ctx;
+        JNIReturnObject jni = makeError(context.ctxRef(), new long[0]);
         if (BuildConfig.DEBUG && jni.exception != 0) throw new AssertionError();
-		valueRef = jni.reference;
-	}
+        valueRef = jni.reference;
+    }
 
     /**
      * Constructs a JSError from a JSValue.  Assumes JSValue is a properly constructed JS Error
@@ -79,7 +79,7 @@ public class JSError extends JSObject {
      * @return stack trace for error
      * @since 3.0
      */
-	public String stack() {
+    public String stack() {
         return property("stack").toString();
     }
 

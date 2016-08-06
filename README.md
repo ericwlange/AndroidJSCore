@@ -21,6 +21,9 @@ Version
 -------
 [3.0.1](https://github.com/ericwlange/AndroidJSCore/releases/tag/3.0.1) - Get it through [JitPack](https://jitpack.io/#ericwlange/AndroidJSCore/3.0.1)
 
+[![Release](https://jitpack.io/v/ericwlange/AndroidJSCore.svg)](https://jitpack.io/#ericwlange/AndroidJSCore)
+
+
 Note there are some significant changes between 3.0 and the 2.x series.  In particular, handling of functions
 and constructors is simpler (and more correct).
 
@@ -102,7 +105,6 @@ just about everything.
 
 Use AndroidJSCore in your project
 ---------------------------------
-[![Release](https://jitpack.io/v/User/Repo.svg)](https://jitpack.io/#ericwlange/AndroidJSCore)
 
 #### Step 1. Add the JitPack repository to your build file
 

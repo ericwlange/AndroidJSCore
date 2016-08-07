@@ -161,8 +161,7 @@ add the following to your app's `build.gradle`:
     
 ##### Note: The JavaScriptCore library is built using [The Hemroid Project](https://github.com/ericwlange/hemroid)
 
-The shared libraries are included in binary form.  If you need to build the libraries
-directly for any reason, you can do it via `hemroid`.
+The Webkit shared libraries are included in binary form in the repository at `AndroidJSCore/AndroidJSCore-library/jni/lib`.  Under most circumstances, you will have no need to build those libraries yourself.  However, if for any reason you feel the need to build the libraries directly, it must be done via `hemroid`.
 
 [`hemroid`](https://github.com/ericwlange/hemroid) is a package manager for Android, similar in intent
 to Homebrew on OSX or `apt` on Linux.  The JavaScriptCore library is part of WebKit.  `hemroid` manages the tweaks
@@ -172,10 +171,13 @@ Most likely some tool or another needs to be installed that is not installed on 
 and then re-run `hemroid install javascriptcore`.
 
     % git clone https://github.com/ericwlange/hemroid.git
+    % git checkout tags/AndroidJSCore-3.0.1
     % export PATH=$PATH:$PWD/hemroid
     % export ANDROID_NDK=/path/to/ndk
     % export ANDROID_SDK=/path/to/sdk
     % hemroid install javascriptcore
+    
+Upon successful completion of the build, the JavaScriptCore libraries will be located at `$PWD/hemroid/vault/hemroot/**/libjavascriptcore-4.0.so`, where `**` represents each of the seven different ABIs (`armeabi`, `armeabi-v7a`, `arm64-v8a`, `x86`, `x86_64`, `mips` and `mips64`).  You will need to copy those libraries into `AndroidJSCore/AndroidJSCore-library/jni/lib/**/` and then perform a clean build of AndroidJSCore.  You might want to blow away all `intermediates` and `obj` directories to be 100% sure your new library doesn't get passed over due to an old cached version.
 
 Note that `hemroid` requires [GIT LFS](https://git-lfs.github.com/).  If you don't already have it installed,
 you will need to install it.

@@ -146,7 +146,7 @@ do the following:
     % echo sdk.dir=$ANDROID_SDK >> local.properties
     % ./gradlew assembleRelease
 
-Your library now sits in `AndroidJSCore/build/outputs/aar/AndroidJSCore-3.0.1-release.aar`.  To use it, simply
+Your library now sits in `AndroidJSCore-library/build/outputs/aar/AndroidJSCore-3.0.1-release.aar`.  To use it, simply
 add the following to your app's `build.gradle`:
 
     repositories {

@@ -182,6 +182,19 @@ Upon successful completion of the build, the JavaScriptCore libraries will be lo
 Note that `hemroid` requires [GIT LFS](https://git-lfs.github.com/).  If you don't already have it installed,
 you will need to install it.
 
+Frequently Asked Questions
+--------------------------
+
+#### What features of JavaScript does `AndroidJSCore` support?
+`AndroidJSCore` is a port of Webkit's JavaScriptCore for Android.  It is, itself, based on a Linux GTK port, called [WebKitGTK+](https://webkitgtk.org/).  The current version is built on WebKitGTK+ 2.10.7, which is rougly equivalent to Safari 9, in terms of support.  See [the comparison table](http://kangax.github.io/compat-table/es6/) to find out what JavaScript capabilities are supported.  The "SF 9" column is a pretty accurate reflection.  I am planning for version 3.1.0+ of `AndroidJSCore` to provide the same support as Safari 10.
+
+#### Can I use this to download web pages and manipulate HTML?
+#### Can I use `JQuery` with this?
+No.  `AndroidJSCore` is just the JavaScript runtime environment.  It does not contain any Web capabilities, such as DOM parsing, HTTP support, File Reading, HTML5 extensions, etc.  Those, from a WebKit standpoint, are contained in WebCore, not JavaScriptCore, which I have not ported, nor do I have any immediate plans to do so.  If you need this level of browser support, then your best bet is to actually load a page using a `WebView` and calling [`evaluateJavascript()`](https://developer.android.com/reference/android/webkit/WebView.html#evaluateJavascript(java.lang.String, android.webkit.ValueCallback<java.lang.String>)) to inject JavaScript.
+
+#### This library makes my APK look Yuuuuge!
+Was that a question?  Yes, the library is a pig and currently balloons your APK to about 40MB.  I am looking at ways to reduce this.  The issue is that I have to compile the JavaScriptCore library for each architecture (`x86`, `armeabi-v7a`, ...). There are 7 ABIs, and the library compresses to about 6MB per ABI. That's where the bloated size is coming from.  I will try to figure out if there is a way to reduce this footprint, but in the meantime, please check out this link: https://realm.io/news/reducing-apk-size-native-libraries/.  See the section on "APK Splits". You only need one ABI for any given APK, so you should theoretically be able to get the size down to around 6MB.
+
 License
 -------
 

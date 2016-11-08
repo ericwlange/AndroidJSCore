@@ -111,7 +111,7 @@ public class AsyncExample implements IExample {
 		context.evaluateScript(
 				"log('Please call me back in 5 seconds');\n" +
 				"async.callMeMaybe(5000, function(msg) {\n" +
-				"    alert(msg);\n" +
+				"    log(msg);\n" +
 				"    log('Whoomp. There it is.');\n" +
 				"});\n" +
 				"log('async.callMeMaybe() has returned, but wait for it ...');\n"

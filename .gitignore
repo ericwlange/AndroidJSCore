@@ -1,5 +1,7 @@
 .classpath
 .settings
+.idea/workspace.xml
+.idea/tasks.xml
 bin
 gen
 libs/

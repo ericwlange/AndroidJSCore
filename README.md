@@ -16,6 +16,12 @@ Design Goals
 ------------
   - Enable full JavaScript support on Android with a Java-only interface (no need to write C/C++ code)
   - Maintain feature-level compatibility with the Objective-C JavaScriptCore framework
+  
+NOTICE
+------
+AndroidJSCore is currently unsupported.  Instead, I am moving all of this functionality and more to
+its permanent home, [LiquidCore](https://github.com/LiquidPlayer/LiquidCore).  Please migrate to this
+version going forward.
 
 Version
 -------

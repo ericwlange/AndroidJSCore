@@ -32,11 +32,11 @@
 */
 package org.liquidplayer.androidjscoreexample;
 
-import org.liquidplayer.webkit.javascriptcore.JSContext;
-import org.liquidplayer.webkit.javascriptcore.JSException;
-import org.liquidplayer.webkit.javascriptcore.JSFunction;
-import org.liquidplayer.webkit.javascriptcore.JSObject;
-import org.liquidplayer.webkit.javascriptcore.JSValue;
+import org.liquidplayer.javascript.JSContext;
+import org.liquidplayer.javascript.JSException;
+import org.liquidplayer.javascript.JSFunction;
+import org.liquidplayer.javascript.JSObject;
+import org.liquidplayer.javascript.JSValue;
 
 import android.os.AsyncTask;
 import android.os.Handler;

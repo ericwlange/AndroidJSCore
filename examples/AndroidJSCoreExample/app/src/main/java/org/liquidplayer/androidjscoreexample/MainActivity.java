@@ -20,7 +20,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.liquidplayer.webkit.javascriptcore.JSException;
+import org.liquidplayer.javascript.JSException;
 
 public class MainActivity extends AppCompatActivity implements ViewPager.OnPageChangeListener {
 

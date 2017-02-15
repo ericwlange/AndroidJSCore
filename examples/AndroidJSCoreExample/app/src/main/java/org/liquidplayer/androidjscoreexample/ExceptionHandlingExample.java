@@ -32,9 +32,9 @@
 */
 package org.liquidplayer.androidjscoreexample;
 
-import org.liquidplayer.webkit.javascriptcore.JSContext;
-import org.liquidplayer.webkit.javascriptcore.JSException;
-import org.liquidplayer.webkit.javascriptcore.JSValue;
+import org.liquidplayer.javascript.JSContext;
+import org.liquidplayer.javascript.JSException;
+import org.liquidplayer.javascript.JSValue;
 
 public class ExceptionHandlingExample implements IExample, JSContext.IJSExceptionHandler {
 
@@ -60,7 +60,7 @@ public class ExceptionHandlingExample implements IExample, JSContext.IJSExceptio
         context.clear();
         context.clearExceptionHandler();
 
-        context.evaluateScript(naughtyFunctionCode, null, "source.js", 1);
+        context.evaluateScript(naughtyFunctionCode, "source.js", 1);
 
         context.log("Handle exception with JavaScript try/catch block");
         context.log("------------------------------------------------");

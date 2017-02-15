@@ -32,7 +32,7 @@
 */
 package org.liquidplayer.androidjscoreexample;
 
-import org.liquidplayer.webkit.javascriptcore.JSException;
+import org.liquidplayer.javascript.JSException;
 
 public interface IExample {
 	void run() throws JSException;

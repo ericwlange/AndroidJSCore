@@ -32,10 +32,10 @@
 */
 package org.liquidplayer.androidjscoreexample;
 
-import org.liquidplayer.webkit.javascriptcore.JSContext;
-import org.liquidplayer.webkit.javascriptcore.JSException;
-import org.liquidplayer.webkit.javascriptcore.JSFunction;
-import org.liquidplayer.webkit.javascriptcore.JSObject;
+import org.liquidplayer.javascript.JSContext;
+import org.liquidplayer.javascript.JSException;
+import org.liquidplayer.javascript.JSFunction;
+import org.liquidplayer.javascript.JSObject;
 
 public class SharingFunctionsExample implements IExample {
 	public SharingFunctionsExample(ExampleContext ctx) {
@@ -261,7 +261,7 @@ public class SharingFunctionsExample implements IExample {
 		context.log("js_inst.incr() = " + context.evaluateScript("js_inst.incr()"));
 		context.evaluateScript("var java_inst = new java_const(5)");
 		context.log("java_inst.incr = " + context.evaluateScript("java_inst.incr"));
-		context.log("java_inst.incr() = " + context.evaluateScript("java_inst.incr()"));
+//		context.log("java_inst.incr() = " + context.evaluateScript("java_inst.incr()"));
 		// As in the ObjectExample, we can set properties on the object instance.
 		// Also note that ExampleContext is itself a Java-wrapped object, so context.log()
 		// is accessible from JavaScript as well.

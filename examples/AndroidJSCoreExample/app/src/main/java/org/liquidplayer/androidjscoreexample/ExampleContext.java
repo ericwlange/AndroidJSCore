@@ -32,9 +32,10 @@
 */
 package org.liquidplayer.androidjscoreexample;
 
-import org.liquidplayer.webkit.javascriptcore.JSContext;
-import org.liquidplayer.webkit.javascriptcore.JSException;
+import org.liquidplayer.javascript.JSContext;
+import org.liquidplayer.javascript.JSException;
 
+import android.util.Log;
 import android.widget.TextView;
 import android.os.Handler;
 import android.os.Looper;
@@ -56,6 +57,7 @@ public class ExampleContext extends JSContext implements IExampleContext {
 	
 	@Override
 	public void log(String msg) {
+		Log.d("js", msg);
 		final String message = msg;
 		Handler handler = new Handler(Looper.getMainLooper());
 		handler.post(

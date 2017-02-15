@@ -34,11 +34,11 @@ package org.liquidplayer.androidjscoreexample;
 
 import java.text.DecimalFormat;
 
-import org.liquidplayer.webkit.javascriptcore.JSContext;
-import org.liquidplayer.webkit.javascriptcore.JSException;
-import org.liquidplayer.webkit.javascriptcore.JSFunction;
-import org.liquidplayer.webkit.javascriptcore.JSObject;
-import org.liquidplayer.webkit.javascriptcore.JSValue;
+import org.liquidplayer.javascript.JSContext;
+import org.liquidplayer.javascript.JSException;
+import org.liquidplayer.javascript.JSFunction;
+import org.liquidplayer.javascript.JSObject;
+import org.liquidplayer.javascript.JSValue;
 
 public class OwenMatthewsExample implements IExample {
 
@@ -63,7 +63,8 @@ public class OwenMatthewsExample implements IExample {
     public interface ExportJSFunctions {
         String toString();
     }
-    public interface Property {                         // @protocol ThingJSExports <JSExport>
+/*
+    public interface IProperty {                         // @protocol ThingJSExports <JSExport>
         void set(Object value)                          // @property (nonatomic, copy) NSString *name;
                 throws JSException;                     // @end
         Object get() throws JSException;     	        //
@@ -71,7 +72,7 @@ public class OwenMatthewsExample implements IExample {
     public class Thing extends JSObject                 // @property (nonatomic, copy) NSString *name;
     implements ExportJSFunctions {
         private class ThingJSExports                    // @property (nonatomic) NSInteger number;
-        implements Property {                           // @end
+        implements IProperty {                           // @end
             ThingJSExports(String name) {               //
                 this.name = name; }                     // @implementation Thing
             private final String name;                  // - (NSString *)description {
@@ -83,7 +84,7 @@ public class OwenMatthewsExample implements IExample {
                 return property(name); }
         }
         private class ThingIsPrivate 
-        implements Property {
+        implements IProperty {
             ThingIsPrivate() {}
             private Object value;
             public void set(Object value) throws JSException { this.value = value; }
@@ -105,7 +106,7 @@ public class OwenMatthewsExample implements IExample {
             } catch (JSException e) { return null; }
         }
     }
-	
+*/
     /*
      * To get the most out of this example, it is best to read along with Owen Matthews' excellent
      * blog post introducing JavaScriptCore in iOS 7.  The following example follows his article
@@ -165,6 +166,7 @@ public class OwenMatthewsExample implements IExample {
         context.log("");
         context.log("Wrapping Up");
         context.log("--------------------");
+/*
         // In Java                                          // In Objective-C
         //------------------------------------------------  // -------------------------------------------------------
         Thing thing = new Thing(context);                   // Thing *thing = [[Thing alloc] init];
@@ -184,5 +186,7 @@ public class OwenMatthewsExample implements IExample {
             "thing.name = \"Carlos\"; thing.number = 5");   //     @"thing.name = \"Carlos\"; thing.number = 5"];
         context.log("Thing: " + thing);                     // NSLog(@"Thing: %@", thing);
         context.log("Thing JSValue: " + thingValue);        // NSLog(@"Thing JSValue: %@", thingValue);
+*/
     }
+
 }

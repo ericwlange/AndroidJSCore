@@ -1,11 +1,11 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion "23.0.2"
+    compileSdkVersion 25
+    buildToolsVersion "25.0.2"
     defaultConfig {
         applicationId "org.liquidplayer.androidjscoreexample"
-        minSdkVersion 11
+        minSdkVersion 16
         targetSdkVersion 24
         versionCode 1
         versionName "1.0"
@@ -14,20 +14,22 @@ android {
     }
 }
 
-repositories {
-    flatDir {
-        dirs '../../../AndroidJSCore/AndroidJSCore/build/outputs/aar/', '../../../lib'
-    }
-}
+//repositories {
+//    flatDir {
+//        dirs '../../../AndroidJSCore/AndroidJSCore/build/outputs/aar/', '../../../lib'
+//    }
+//}
 
 dependencies {
-    compile 'com.github.ericwlange:AndroidJSCore:3.0.1'
+//    compile 'com.github.ericwlange:AndroidJSCore:3.0.1'
+    compile 'com.github.liquidplayer:LiquidCore:v0.1.0'
+
     //compile(name:'AndroidJSCore-3.0.0-release', ext:'aar')
 }
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:24.1.1'
-    compile 'com.android.support:design:24.1.1'
+    compile 'com.android.support:appcompat-v7:25.1.1'
+    compile 'com.android.support:design:25.1.1'
 }
